@@ -1,0 +1,83 @@
+00:02:17,099 |-INFO in ch.qos.logback.classic.LoggerContext[default] - This is logback-classic version 1.4.5
+00:02:17,125 |-INFO in ch.qos.logback.classic.LoggerContext[default] - Could NOT find resource [logback-test.xml]
+00:02:17,126 |-INFO in ch.qos.logback.classic.LoggerContext[default] - Could NOT find resource [logback.xml]
+00:02:17,128 |-INFO in ch.qos.logback.classic.BasicConfigurator@7c7a06ec - Setting up default configuration.
+00:02:17,655 |-INFO in ch.qos.logback.core.joran.spi.ConfigurationWatchList@75d4a5c2 - URL [jar:file:/D:/商场项目/java_shop-master/java_shop-master/server/target/biyesheji-0.0.1-SNAPSHOT.jar!/BOOT-INF/classes!/logback-spring.xml] is not of type file
+00:02:17,726 |-INFO in ch.qos.logback.core.model.processor.AppenderModelHandler - Processing appender named [stdout]
+00:02:17,726 |-INFO in ch.qos.logback.core.model.processor.AppenderModelHandler - About to instantiate appender of type [ch.qos.logback.core.ConsoleAppender]
+00:02:17,739 |-WARN in ch.qos.logback.core.ConsoleAppender[stdout] - This appender no longer admits a layout as a sub-component, set an encoder instead.
+00:02:17,739 |-WARN in ch.qos.logback.core.ConsoleAppender[stdout] - To ensure compatibility, wrapping your layout in LayoutWrappingEncoder.
+00:02:17,739 |-WARN in ch.qos.logback.core.ConsoleAppender[stdout] - See also http://logback.qos.ch/codes.html#layoutInsteadOfEncoder for details
+00:02:17,739 |-INFO in ch.qos.logback.core.model.processor.AppenderModelHandler - Processing appender named [appLogAppender]
+00:02:17,739 |-INFO in ch.qos.logback.core.model.processor.AppenderModelHandler - About to instantiate appender of type [ch.qos.logback.core.rolling.RollingFileAppender]
+00:02:17,747 |-INFO in c.q.l.core.rolling.TimeBasedRollingPolicy@1434234664 - No compression will be used
+00:02:17,748 |-INFO in c.q.l.core.rolling.TimeBasedRollingPolicy@1434234664 - Will use the pattern my-log/springboot-demo-%d{yyyy-MM-dd}-%i.log for the active file
+00:02:17,766 |-INFO in ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP@408d971b - The date pattern is 'yyyy-MM-dd' from file name pattern 'my-log/springboot-demo-%d{yyyy-MM-dd}-%i.log'.
+00:02:17,766 |-INFO in ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP@408d971b - Roll-over at midnight.
+00:02:17,771 |-INFO in ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP@408d971b - Setting initial period to Fri Mar 27 00:00:53 CST 2026
+00:02:17,771 |-WARN in ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP@408d971b - SizeAndTimeBasedFNATP is deprecated. Use SizeAndTimeBasedRollingPolicy instead
+00:02:17,771 |-WARN in ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP@408d971b - For more information see http://logback.qos.ch/manual/appenders.html#SizeAndTimeBasedRollingPolicy
+00:02:17,774 |-WARN in ch.qos.logback.core.rolling.RollingFileAppender[appLogAppender] - This appender no longer admits a layout as a sub-component, set an encoder instead.
+00:02:17,774 |-WARN in ch.qos.logback.core.rolling.RollingFileAppender[appLogAppender] - To ensure compatibility, wrapping your layout in LayoutWrappingEncoder.
+00:02:17,774 |-WARN in ch.qos.logback.core.rolling.RollingFileAppender[appLogAppender] - See also http://logback.qos.ch/codes.html#layoutInsteadOfEncoder for details
+00:02:17,776 |-INFO in ch.qos.logback.core.rolling.RollingFileAppender[appLogAppender] - Active log file name: my-log/springboot-demo.log
+00:02:17,776 |-INFO in ch.qos.logback.core.rolling.RollingFileAppender[appLogAppender] - File property is set to [my-log/springboot-demo.log]
+00:02:17,777 |-INFO in ch.qos.logback.classic.model.processor.LoggerModelHandler - Setting level of logger [com.atguigu] to DEBUG
+00:02:17,777 |-INFO in ch.qos.logback.classic.jul.LevelChangePropagator@6c6cb480 - Propagating DEBUG level on Logger[com.atguigu] onto the JUL framework
+00:02:17,777 |-INFO in ch.qos.logback.classic.model.processor.LoggerModelHandler - Setting level of logger [org.springframework] to DEBUG
+00:02:17,777 |-INFO in ch.qos.logback.classic.jul.LevelChangePropagator@6c6cb480 - Propagating DEBUG level on Logger[org.springframework] onto the JUL framework
+00:02:17,779 |-INFO in ch.qos.logback.classic.model.processor.LoggerModelHandler - Setting additivity of logger [org.springframework] to false
+00:02:17,779 |-INFO in ch.qos.logback.classic.model.processor.RootLoggerModelHandler - Setting level of ROOT logger to INFO
+00:02:17,779 |-INFO in ch.qos.logback.classic.jul.LevelChangePropagator@6c6cb480 - Propagating INFO level on Logger[ROOT] onto the JUL framework
+00:02:17,780 |-INFO in ch.qos.logback.core.model.processor.AppenderRefModelHandler - Attaching appender named [stdout] to Logger[ROOT]
+00:02:17,780 |-INFO in ch.qos.logback.core.model.processor.AppenderRefModelHandler - Attaching appender named [appLogAppender] to Logger[ROOT]
+00:02:17,780 |-INFO in ch.qos.logback.core.model.processor.DefaultProcessor@3c46e67a - End of configuration.
+00:02:17,780 |-INFO in org.springframework.boot.logging.logback.SpringBootJoranConfigurator@c730b35 - Registering current configuration as safe fallback point
+
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::                (v3.0.2)
+
+2026-03-27 00:02:17.894 [main] INFO  com.gk.study.MySpringApplication - Starting MySpringApplication v0.0.1-SNAPSHOT using Java 17.0.13 with PID 41556 (D:\商场项目\java_shop-master\java_shop-master\server\target\biyesheji-0.0.1-SNAPSHOT.jar started by Administrator in D:\商场项目\java_shop-master\java_shop-master\server)
+2026-03-27 00:02:17.896 [main] DEBUG com.gk.study.MySpringApplication - Running with Spring Boot v3.0.2, Spring v6.0.4
+2026-03-27 00:02:17.898 [main] INFO  com.gk.study.MySpringApplication - No active profile set, falling back to 1 default profile: "default"
+2026-03-27 00:02:18.688 [main] DEBUG c.b.m.autoconfigure.MybatisPlusAutoConfiguration - Searching for mappers annotated with @Mapper
+2026-03-27 00:02:18.688 [main] DEBUG c.b.m.autoconfigure.MybatisPlusAutoConfiguration - Using auto-configuration base package 'com.gk.study'
+2026-03-27 00:02:18.811 [main] DEBUG org.mybatis.spring.mapper.ClassPathMapperScanner - Identified candidate component class: URL [jar:file:/D:/商场项目/java_shop-master/java_shop-master/server/target/biyesheji-0.0.1-SNAPSHOT.jar!/BOOT-INF/classes!/com/gk/study/mapper/AddressMapper.class]
+2026-03-27 00:02:18.812 [main] DEBUG org.mybatis.spring.mapper.ClassPathMapperScanner - Identified candidate component class: URL [jar:file:/D:/商场项目/java_shop-master/java_shop-master/server/target/biyesheji-0.0.1-SNAPSHOT.jar!/BOOT-INF/classes!/com/gk/study/mapper/AdMapper.class]
+2026-03-27 00:02:18.813 [main] DEBUG org.mybatis.spring.mapper.ClassPathMapperScanner - Identified candidate component class: URL [jar:file:/D:/商场项目/java_shop-master/java_shop-master/server/target/biyesheji-0.0.1-SNAPSHOT.jar!/BOOT-INF/classes!/com/gk/study/mapper/BannerMapper.class]
+2026-03-27 00:02:18.813 [main] DEBUG org.mybatis.spring.mapper.ClassPathMapperScanner - Identified candidate component class: URL [jar:file:/D:/商场项目/java_shop-master/java_shop-master/server/target/biyesheji-0.0.1-SNAPSHOT.jar!/BOOT-INF/classes!/com/gk/study/mapper/ClassificationMapper.class]
+2026-03-27 00:02:18.813 [main] DEBUG org.mybatis.spring.mapper.ClassPathMapperScanner - Identified candidate component class: URL [jar:file:/D:/商场项目/java_shop-master/java_shop-master/server/target/biyesheji-0.0.1-SNAPSHOT.jar!/BOOT-INF/classes!/com/gk/study/mapper/CommentMapper.class]
+2026-03-27 00:02:18.813 [main] DEBUG org.mybatis.spring.mapper.ClassPathMapperScanner - Identified candidate component class: URL [jar:file:/D:/商场项目/java_shop-master/java_shop-master/server/target/biyesheji-0.0.1-SNAPSHOT.jar!/BOOT-INF/classes!/com/gk/study/mapper/ErrorLogMapper.class]
+2026-03-27 00:02:18.813 [main] DEBUG org.mybatis.spring.mapper.ClassPathMapperScanner - Identified candidate component class: URL [jar:file:/D:/商场项目/java_shop-master/java_shop-master/server/target/biyesheji-0.0.1-SNAPSHOT.jar!/BOOT-INF/classes!/com/gk/study/mapper/NoticeMapper.class]
+2026-03-27 00:02:18.814 [main] DEBUG org.mybatis.spring.mapper.ClassPathMapperScanner - Identified candidate component class: URL [jar:file:/D:/商场项目/java_shop-master/java_shop-master/server/target/biyesheji-0.0.1-SNAPSHOT.jar!/BOOT-INF/classes!/com/gk/study/mapper/OpLogMapper.class]
+2026-03-27 00:02:18.814 [main] DEBUG org.mybatis.spring.mapper.ClassPathMapperScanner - Identified candidate component class: URL [jar:file:/D:/商场项目/java_shop-master/java_shop-master/server/target/biyesheji-0.0.1-SNAPSHOT.jar!/BOOT-INF/classes!/com/gk/study/mapper/OrderMapper.class]
+2026-03-27 00:02:18.814 [main] DEBUG org.mybatis.spring.mapper.ClassPathMapperScanner - Identified candidate component class: URL [jar:file:/D:/商场项目/java_shop-master/java_shop-master/server/target/biyesheji-0.0.1-SNAPSHOT.jar!/BOOT-INF/classes!/com/gk/study/mapper/OverviewMapper.class]
+2026-03-27 00:02:18.814 [main] DEBUG org.mybatis.spring.mapper.ClassPathMapperScanner - Identified candidate component class: URL [jar:file:/D:/商场项目/java_shop-master/java_shop-master/server/target/biyesheji-0.0.1-SNAPSHOT.jar!/BOOT-INF/classes!/com/gk/study/mapper/TagMapper.class]
+2026-03-27 00:02:18.814 [main] DEBUG org.mybatis.spring.mapper.ClassPathMapperScanner - Identified candidate component class: URL [jar:file:/D:/商场项目/java_shop-master/java_shop-master/server/target/biyesheji-0.0.1-SNAPSHOT.jar!/BOOT-INF/classes!/com/gk/study/mapper/ThingCollectMapper.class]
+2026-03-27 00:02:18.814 [main] DEBUG org.mybatis.spring.mapper.ClassPathMapperScanner - Identified candidate component class: URL [jar:file:/D:/商场项目/java_shop-master/java_shop-master/server/target/biyesheji-0.0.1-SNAPSHOT.jar!/BOOT-INF/classes!/com/gk/study/mapper/ThingMapper.class]
+2026-03-27 00:02:18.814 [main] DEBUG org.mybatis.spring.mapper.ClassPathMapperScanner - Identified candidate component class: URL [jar:file:/D:/商场项目/java_shop-master/java_shop-master/server/target/biyesheji-0.0.1-SNAPSHOT.jar!/BOOT-INF/classes!/com/gk/study/mapper/ThingTagMapper.class]
+2026-03-27 00:02:18.815 [main] DEBUG org.mybatis.spring.mapper.ClassPathMapperScanner - Identified candidate component class: URL [jar:file:/D:/商场项目/java_shop-master/java_shop-master/server/target/biyesheji-0.0.1-SNAPSHOT.jar!/BOOT-INF/classes!/com/gk/study/mapper/ThingWishMapper.class]
+2026-03-27 00:02:18.815 [main] DEBUG org.mybatis.spring.mapper.ClassPathMapperScanner - Identified candidate component class: URL [jar:file:/D:/商场项目/java_shop-master/java_shop-master/server/target/biyesheji-0.0.1-SNAPSHOT.jar!/BOOT-INF/classes!/com/gk/study/mapper/UserMapper.class]
+2026-03-27 00:02:18.817 [main] DEBUG org.mybatis.spring.mapper.ClassPathMapperScanner - Creating MapperFactoryBean with name 'addressMapper' and 'com.gk.study.mapper.AddressMapper' mapperInterface
+2026-03-27 00:02:18.818 [main] DEBUG org.mybatis.spring.mapper.ClassPathMapperScanner - Creating MapperFactoryBean with name 'adMapper' and 'com.gk.study.mapper.AdMapper' mapperInterface
+2026-03-27 00:02:18.819 [main] DEBUG org.mybatis.spring.mapper.ClassPathMapperScanner - Creating MapperFactoryBean with name 'bannerMapper' and 'com.gk.study.mapper.BannerMapper' mapperInterface
+2026-03-27 00:02:18.819 [main] DEBUG org.mybatis.spring.mapper.ClassPathMapperScanner - Creating MapperFactoryBean with name 'classificationMapper' and 'com.gk.study.mapper.ClassificationMapper' mapperInterface
+2026-03-27 00:02:18.819 [main] DEBUG org.mybatis.spring.mapper.ClassPathMapperScanner - Creating MapperFactoryBean with name 'commentMapper' and 'com.gk.study.mapper.CommentMapper' mapperInterface
+2026-03-27 00:02:18.819 [main] DEBUG org.mybatis.spring.mapper.ClassPathMapperScanner - Creating MapperFactoryBean with name 'errorLogMapper' and 'com.gk.study.mapper.ErrorLogMapper' mapperInterface
+2026-03-27 00:02:18.820 [main] DEBUG org.mybatis.spring.mapper.ClassPathMapperScanner - Creating MapperFactoryBean with name 'noticeMapper' and 'com.gk.study.mapper.NoticeMapper' mapperInterface
+2026-03-27 00:02:18.820 [main] DEBUG org.mybatis.spring.mapper.ClassPathMapperScanner - Creating MapperFactoryBean with name 'opLogMapper' and 'com.gk.study.mapper.OpLogMapper' mapperInterface
+2026-03-27 00:02:18.820 [main] DEBUG org.mybatis.spring.mapper.ClassPathMapperScanner - Creating MapperFactoryBean with name 'orderMapper' and 'com.gk.study.mapper.OrderMapper' mapperInterface
+2026-03-27 00:02:18.821 [main] DEBUG org.mybatis.spring.mapper.ClassPathMapperScanner - Creating MapperFactoryBean with name 'overviewMapper' and 'com.gk.study.mapper.OverviewMapper' mapperInterface
+2026-03-27 00:02:18.821 [main] DEBUG org.mybatis.spring.mapper.ClassPathMapperScanner - Creating MapperFactoryBean with name 'tagMapper' and 'com.gk.study.mapper.TagMapper' mapperInterface
+2026-03-27 00:02:18.822 [main] DEBUG org.mybatis.spring.mapper.ClassPathMapperScanner - Creating MapperFactoryBean with name 'thingCollectMapper' and 'com.gk.study.mapper.ThingCollectMapper' mapperInterface
+2026-03-27 00:02:18.822 [main] DEBUG org.mybatis.spring.mapper.ClassPathMapperScanner - Creating MapperFactoryBean with name 'thingMapper' and 'com.gk.study.mapper.ThingMapper' mapperInterface
+2026-03-27 00:02:18.822 [main] DEBUG org.mybatis.spring.mapper.ClassPathMapperScanner - Creating MapperFactoryBean with name 'thingTagMapper' and 'com.gk.study.mapper.ThingTagMapper' mapperInterface
+2026-03-27 00:02:18.824 [main] DEBUG org.mybatis.spring.mapper.ClassPathMapperScanner - Creating MapperFactoryBean with name 'thingWishMapper' and 'com.gk.study.mapper.ThingWishMapper' mapperInterface
+2026-03-27 00:02:18.824 [main] DEBUG org.mybatis.spring.mapper.ClassPathMapperScanner - Creating MapperFactoryBean with name 'userMapper' and 'com.gk.study.mapper.UserMapper' mapperInterface
+2026-03-27 00:02:18.863 [main] DEBUG d.l.service.spring.ClassPathAiServiceScanner - Identified candidate component class: URL [jar:file:/D:/商场项目/java_shop-master/java_shop-master/server/target/biyesheji-0.0.1-SNAPSHOT.jar!/BOOT-INF/classes!/com/gk/study/ai/CustomerServiceAi.class]

@@ -1,0 +1,6 @@
+2026-03-26 23:58:29.954 [ main ] - [ INFO  ] [ com.gk.study.MySpringApplication : 51 ] - Starting MySpringApplication v0.0.1-SNAPSHOT using Java 17.0.13 with PID 32252 (D:\商场项目\java_shop-master\java_shop-master\server\target\biyesheji-0.0.1-SNAPSHOT.jar started by Administrator in D:\商场项目\java_shop-master\java_shop-master)
+2026-03-26 23:58:29.958 [ main ] - [ DEBUG ] [ com.gk.study.MySpringApplication : 52 ] - Running with Spring Boot v3.0.2, Spring v6.0.4
+2026-03-26 23:58:29.959 [ main ] - [ INFO  ] [ com.gk.study.MySpringApplication : 630 ] - No active profile set, falling back to 1 default profile: "default"
+2026-03-26 23:58:43.804 [ main ] - [ INFO  ] [ com.gk.study.MySpringApplication : 51 ] - Starting MySpringApplication v0.0.1-SNAPSHOT using Java 17.0.13 with PID 28092 (D:\商场项目\java_shop-master\java_shop-master\server\target\biyesheji-0.0.1-SNAPSHOT.jar started by Administrator in D:\商场项目\java_shop-master\java_shop-master)
+2026-03-26 23:58:43.808 [ main ] - [ DEBUG ] [ com.gk.study.MySpringApplication : 52 ] - Running with Spring Boot v3.0.2, Spring v6.0.4
+2026-03-26 23:58:43.810 [ main ] - [ INFO  ] [ com.gk.study.MySpringApplication : 630 ] - No active profile set, falling back to 1 default profile: "default"
