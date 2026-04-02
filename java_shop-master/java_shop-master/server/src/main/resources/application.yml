@@ -9,6 +9,18 @@ spring:
   main:
     web-application-type: servlet
 
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password: 123456
+      database: 0
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 0
+
   datasource:
     username: root
     password: 123456
@@ -94,9 +106,9 @@ logging:
     org.apache: error
     com.gk.study: debug
 
-# AI：提供方 + 对话模型 + Embedding（客服与 /rag/stream 共用）
+
 ai:
-  # 提供方：ollama（本地）/ bailian（阿里百炼 OpenAI 兼容）
+  # 提供方： bailian（阿里百炼 ）
   provider: bailian
 
   # 阿里百炼（OpenAI 兼容端点）
@@ -107,13 +119,25 @@ ai:
     embedding-model: text-embedding-v3
     timeout-seconds: 120
     temperature: 0.2
-
-  # 客服多轮记忆：消息窗口大小（15 轮问答约 30 条 user+assistant 消息）
   customer:
     memory:
       max-messages: 30
 
+# AI 客服对话在 Redis 中的 key 前缀（与 spring.data.redis 使用同一连接）
+app:
+  redis:
+    chat-memory:
+      key-prefix: "ai:chat:memory:"
+
 rag:
+  # RAG 向量库：LangChain4j Redis 实现需 Redis Stack（RediSearch + RedisJSON）。普通 Redis 无 FT.* 命令。
+  # false=内存向量（默认，可启动）；true=向量存 Redis（需先安装 Stack 并设好密码等）。
+  redis:
+    stack-enabled: false
+    index-name: java-shop-rag-index
+    key-prefix: "rag:embedding:"
+    # 须与当前 Embedding 模型维度一致（百炼 text-embedding-v3 默认 1024）
+    embedding-dimension: 1024
   # 知识库目录（src/main/resources/Rag/Knowledge）
   knowledge-pattern: classpath*:Rag/Knowledge/*.md
   # 文本分块参数：块越大语义越完整，块越小检索越精确

@@ -7,7 +7,6 @@ import dev.langchain4j.data.document.splitter.DocumentByCharacterSplitter;
 import dev.langchain4j.data.segment.TextSegment;
 import dev.langchain4j.model.embedding.EmbeddingModel;
 import dev.langchain4j.store.embedding.EmbeddingStore;
-import dev.langchain4j.store.embedding.inmemory.InMemoryEmbeddingStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -27,11 +26,6 @@ import java.util.Objects;
 public class RagConfiguration {
 
     private static final Logger log = LoggerFactory.getLogger(RagConfiguration.class);
-
-    @Bean
-    public EmbeddingStore<TextSegment> embeddingStore() {
-        return new InMemoryEmbeddingStore<>();
-    }
 
     @Bean
     public RagKnowledgeBase ragKnowledgeBase(EmbeddingModel embeddingModel,

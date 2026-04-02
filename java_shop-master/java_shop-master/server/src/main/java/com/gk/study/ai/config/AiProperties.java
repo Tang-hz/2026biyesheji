@@ -103,7 +103,6 @@ public class AiProperties {
     }
 
     public static class Bailian {
-
         private String baseUrl = "https://dashscope.aliyuncs.com/compatible-mode/v1";
         private String apiKey = "";
         private String chatModel = "qwen-turbo";

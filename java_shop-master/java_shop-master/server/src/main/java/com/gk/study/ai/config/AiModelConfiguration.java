@@ -19,7 +19,7 @@ import com.gk.study.ai.tool.AiOrderTool;
 import java.time.Duration;
 
 /**
- * 统一装配：按 {@link AiProperties#getProvider()} 选择 Ollama 或百炼（OpenAI 兼容），
+ * 统一装配：按 {@link AiProperties#getProvider()} 选择阿里百炼（OpenAI 兼容），
  * 供非 RAG {@code /stream} 与 RAG {@code /rag/stream} 共用，行为与拆分配置类时一致。
  */
 @Configuration
