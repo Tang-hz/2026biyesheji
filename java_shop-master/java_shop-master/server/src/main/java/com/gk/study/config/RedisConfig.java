@@ -3,7 +3,7 @@ package com.gk.study.config;
 import dev.langchain4j.data.segment.TextSegment;
 import dev.langchain4j.store.embedding.EmbeddingStore;
 import dev.langchain4j.store.embedding.inmemory.InMemoryEmbeddingStore;
-import dev.langchain4j.store.embedding.redis.RedisEmbeddingStoreBootstrap;
+import dev.langchain4j.store.embedding.redis.RedisEmbeddingStore;
 import dev.langchain4j.store.memory.chat.ChatMemoryStore;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -34,20 +34,21 @@ public class RedisConfig {
     public EmbeddingStore<TextSegment> redisStackEmbeddingStore(
             @Value("${spring.data.redis.host}") String host,
             @Value("${spring.data.redis.port}") int port,
-            @Value("${spring.data.redis.database:0}") int database,
             @Value("${spring.data.redis.password:}") String password,
             @Value("${rag.redis.index-name:java-shop-rag-index}") String indexName,
             @Value("${rag.redis.key-prefix:rag:embedding:}") String prefix,
             @Value("${rag.redis.embedding-dimension:1024}") int dimension) {
-        return RedisEmbeddingStoreBootstrap.createWithUri(
-                host,
-                port,
-                database,
-                password,
-                indexName,
-                ensurePrefixEndsWithColon(prefix),
-                dimension,
-                List.of("source"));
+        var builder = RedisEmbeddingStore.builder()
+                .host(host)
+                .port(port)
+                .indexName(indexName)
+                .prefix(ensurePrefixEndsWithColon(prefix))
+                .dimension(dimension)
+                .metadataKeys(List.of("source"));
+        if (password != null && !password.isBlank()) {
+            builder.password(password);
+        }
+        return builder.build();
     }
 
     @Bean

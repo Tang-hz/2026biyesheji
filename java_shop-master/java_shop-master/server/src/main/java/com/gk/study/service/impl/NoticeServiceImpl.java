@@ -23,7 +23,7 @@ public class NoticeServiceImpl extends ServiceImpl<NoticeMapper, Notice> impleme
     @Override
     public void createNotice(Notice notice) {
         System.out.println(notice);
-        notice.setCreateTime(String.valueOf(System.currentTimeMillis()));
+        notice.setCreateTime(java.time.LocalDateTime.now());
         mapper.insert(notice);
     }
 

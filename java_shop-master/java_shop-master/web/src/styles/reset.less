@@ -33,4 +33,39 @@ textarea {
 body {
   font-size: 14px;
   font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  scroll-behavior: smooth;
+}
+
+// Selection styling
+::selection {
+  background: rgba(70, 132, 226, 0.2);
+  color: inherit;
+}
+
+// Scrollbar styling
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: @border-subtle;
+  border-radius: @radius-full;
+
+  &:hover {
+    background: @navy-light;
+  }
+}
+
+// Focus visible for accessibility
+:focus-visible {
+  outline: 2px solid @primary-blue;
+  outline-offset: 2px;
 }

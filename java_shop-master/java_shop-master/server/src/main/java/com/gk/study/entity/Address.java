@@ -22,7 +22,7 @@ public class Address implements Serializable {
     @TableField
     public String def; // 默认
     @TableField
-    public String createTime;
+    public java.time.LocalDateTime createTime;
     @TableField
     public String userId;
 

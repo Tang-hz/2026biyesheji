@@ -12,6 +12,8 @@ import dev.langchain4j.agent.tool.ToolMemoryId;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * AI 客服工具（Function Calling）：商品检索、订单查询、下单。
@@ -49,7 +51,8 @@ public class AiOrderTool {
         int n = Math.min(raw.size(), SEARCH_RESULT_LIMIT);
         List<Thing> slice = raw.subList(0, n);
         StringBuilder sb = new StringBuilder();
-        sb.append("共找到至少 ").append(raw.size()).append(" 条相关商品，为您列出前 ").append(n).append(" 条（下单时请尽量使用下列完整标题）：\n");
+        sb.append("共找到至少 ").append(raw.size()).append(" 条相关商品，为您列出前 ").append(n).append(" 条。\n");
+        sb.append("下单说明：优先使用「商品ID」调用按ID下单工具最准确；或使用下列「标题」原文调用按标题下单（勿带星号等 Markdown）。\n");
         for (int i = 0; i < slice.size(); i++) {
             Thing t = slice.get(i);
             if (t == null) {
@@ -58,7 +61,7 @@ public class AiOrderTool {
             sb.append(i + 1).append(") ");
             sb.append("标题：").append(nullToEmpty(t.getTitle()));
             sb.append("；商品ID：").append(t.getId() == null ? "-" : String.valueOf(t.getId()));
-            sb.append("；价格：").append(nullToEmpty(t.getPrice()));
+            sb.append("；价格：").append(nullToEmpty(t.getPrice() == null ? null : t.getPrice().toString()));
             String stock = nullToEmpty(t.getRepertory());
             if (!stock.isEmpty()) {
                 sb.append("；库存参考：").append(stock);
@@ -66,7 +69,7 @@ public class AiOrderTool {
             sb.append("\n");
         }
         if (raw.size() > n) {
-            sb.append("若有多条都可能符合，请让用户确认要买哪一条（或说完整标题）。");
+            sb.append("若有多条都可能符合，请让用户确认要买哪一条（说序号、完整标题或商品ID）。");
         }
         return sb.toString().trim();
     }
@@ -120,9 +123,44 @@ public class AiOrderTool {
         return sb.toString();
     }
 
-    @Tool("用户明确说要下单/购买某商品时调用。参数为商品名称；内部会查询商品、取默认收货地址并调用现有 OrderService 创建订单，返回下单结果与订单号。")
+    @Tool("用户已提供检索结果中的数字「商品ID」、或粘贴含 ID 的片段时要下单，调用本工具。比按标题匹配更可靠。用户只说「帮我下单」且上一轮检索仅一条时，用该条的商品ID调用本工具。")
+    public String orderByThingId(
+            @P("商品主键 ID，纯数字；可从上一轮检索结果的「商品ID：」后复制，或从用户粘贴内容中解析。")
+            String thingId,
+
+            @P(value = "数量，可选；不提供或非法则默认 1。", required = false)
+            Integer count,
+
+            @P(value = "备注信息，可选。", required = false)
+            String remark,
+
+            @ToolMemoryId
+            String userId
+    ) {
+        String idStr = parseThingIdString(thingId);
+        if (idStr.isEmpty()) {
+            return "我没识别到有效的商品ID（应为数字）。请让用户从检索列表里复制「商品ID」后的数字，或再说一次商品。";
+        }
+
+        String uid = userId == null ? "" : userId.trim();
+        if (uid.isBlank() || "guest".equalsIgnoreCase(uid)) {
+            return "请先登录后再下单。";
+        }
+
+        Thing thing = thingService.selectThingById(idStr);
+        if (thing == null) {
+            return "商品ID「" + idStr + "」在系统中不存在，请核对是否复制正确或重新检索商品。";
+        }
+
+        int quantity = (count == null || count < 1) ? 1 : count;
+        String finalRemark = (remark == null || remark.trim().isEmpty()) ? null : remark.trim();
+
+        return placeOrder(thing, uid, quantity, finalRemark);
+    }
+
+    @Tool("用户要按「商品标题/名称」下单时调用（用户粘贴了完整标题或未提供 ID 时）。若上一轮已检索出唯一一条，用户说「帮我下单」时也可把该条完整标题传入。有商品ID时优先用按ID下单工具。")
     public String orderByThingTitle(
-            @P("用户要下单的商品标题/名称，例如“爆款奶茶”。需要尽量准确。")
+            @P("商品标题：尽量与检索结果中「标题：」后的原文一致；可从对话上文最近一次检索工具返回值中复制，不要加 ** 等符号。")
             String thingTitle,
 
             @P(value = "数量，可选；不提供或非法则默认 1。", required = false)
@@ -136,12 +174,11 @@ public class AiOrderTool {
     ) {
         String normalizedTitle = normalizeTitle(thingTitle);
         if (normalizedTitle.isBlank()) {
-            return "我没理解到你要下单的商品名称。请再告诉我一次“商品名称”。";
+            return "我没理解到你要下单的商品名称。请再告诉我一次「商品名称」或「商品ID」。";
         }
 
         String uid = userId == null ? "" : userId.trim();
         if (uid.isBlank() || "guest".equalsIgnoreCase(uid)) {
-            // 你的 AI 对话 guest 共享会话不对应真实订单数据隔离。
             return "请先登录后再下单。";
         }
 
@@ -150,9 +187,13 @@ public class AiOrderTool {
 
         Thing thing = findBestThingByTitle(normalizedTitle);
         if (thing == null) {
-            return "我没在商品列表里找到《" + normalizedTitle + "》。请提供更准确的商品名称。";
+            return "我没在商品列表里找到与「" + normalizedTitle + "」匹配的商品。请提供更准确的标题，或使用检索结果中的「商品ID」下单。";
         }
 
+        return placeOrder(thing, uid, quantity, finalRemark);
+    }
+
+    private String placeOrder(Thing thing, String uid, int quantity, String finalRemark) {
         List<Address> addresses = addressService.getAddressList(uid);
         if (addresses == null || addresses.isEmpty()) {
             return "你还没有收货地址。请先去【地址管理】新增地址后再下单。";
@@ -174,17 +215,15 @@ public class AiOrderTool {
             order.setRemark(finalRemark);
         }
 
-        // 直接复用你现有的下单逻辑：落库 MySQL
         orderService.createOrder(order);
 
         if (order.getOrderNumber() == null || order.getOrderNumber().isBlank()) {
             return "下单成功，但订单号生成失败，请稍后重试。";
         }
-        return "已为你下单《" + thing.getTitle() + "》，订单号：" + order.getOrderNumber();
+        return "已为你下单《" + nullToEmpty(thing.getTitle()) + "》，订单号：" + order.getOrderNumber();
     }
 
     private Thing findBestThingByTitle(String normalizedTitle) {
-        // 标题 + 标签（含「衣服/服装」等）并集后，再 exact > 包含 > 第一条
         List<Thing> candidates = thingService.searchThingsByTitleOrTag(normalizedTitle);
         if (candidates == null || candidates.isEmpty()) {
             return null;
@@ -211,7 +250,6 @@ public class AiOrderTool {
     private Address pickDefaultAddress(List<Address> addresses) {
         for (Address a : addresses) {
             if (a == null) continue;
-            // 你的 AddressController / confirm.vue 按 def=1 表示默认地址
             if ("1".equals(a.getDef())) {
                 return a;
             }
@@ -219,12 +257,34 @@ public class AiOrderTool {
         return null;
     }
 
+    /**
+     * 从用户或模型传入的字符串中提取商品 ID（纯数字），取长数字串避免误取数量「2」等。
+     */
+    private static String parseThingIdString(String raw) {
+        if (raw == null || raw.isBlank()) {
+            return "";
+        }
+        String t = raw.trim().replaceAll("[*`_#]", "");
+        if (t.matches("\\d+")) {
+            return t;
+        }
+        String best = "";
+        Matcher m = Pattern.compile("\\d+").matcher(t);
+        while (m.find()) {
+            String g = m.group();
+            if (g.length() >= best.length()) {
+                best = g;
+            }
+        }
+        return best;
+    }
+
     private static String normalizeTitle(String title) {
         if (title == null) return "";
         String t = title.trim();
-        // 去掉用户可能输入的引号/书名号
         t = t.replaceAll("[《》\"“”‘’'\\[\\]（）(){}]", "");
-        // 去掉多余空白
+        // 去掉 Markdown 常见符号，避免 **标题** 导致匹配失败
+        t = t.replaceAll("[*`_#]+", "");
         t = t.replaceAll("\\s+", "");
         return t;
     }
@@ -244,22 +304,10 @@ public class AiOrderTool {
         };
     }
 
-    private static String formatOrderTime(String orderTime) {
-        if (orderTime == null || orderTime.isBlank()) {
+    private static String formatOrderTime(java.time.LocalDateTime orderTime) {
+        if (orderTime == null) {
             return "";
         }
-        try {
-            long ms = Long.parseLong(orderTime.trim());
-            if (ms <= 0) {
-                return orderTime;
-            }
-            java.time.Instant instant = java.time.Instant.ofEpochMilli(ms);
-            return java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
-                    .withZone(java.time.ZoneId.systemDefault())
-                    .format(instant);
-        } catch (NumberFormatException e) {
-            return orderTime;
-        }
+        return java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(orderTime);
     }
 }
-

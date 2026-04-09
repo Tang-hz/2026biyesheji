@@ -7,6 +7,8 @@ import com.gk.study.permission.Access;
 import com.gk.study.permission.AccessLevel;
 import com.gk.study.service.NoticeService;
 import com.gk.study.service.NoticeUserStateService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,6 +24,7 @@ import java.util.List;
  * 提供公告的查询、创建、删除、更新等功能
  * 所有修改操作需要管理员权限
  */
+@Tag(name = "系统公告控制层")
 @RestController
 @RequestMapping("/notice")
 public class NoticeController {
@@ -38,6 +41,7 @@ public class NoticeController {
      * 
      * @return APIResponse 包含公告列表的响应对象
      */
+    @Operation(summary = "公告列表（全部）")
     @RequestMapping(value = "/list", method = RequestMethod.GET)
     public APIResponse list(){
         List<Notice> list =  service.getNoticeList();
@@ -47,6 +51,7 @@ public class NoticeController {
     /**
      * 获取“我的消息”（用户端）：过滤掉该用户已删除的公告
      */
+    @Operation(summary = "我的消息列表（登录用户）")
     @Access(level = AccessLevel.LOGIN)
     @RequestMapping(value = "/userList", method = RequestMethod.GET)
     public APIResponse userList(Long userId) {
@@ -57,6 +62,7 @@ public class NoticeController {
     /**
      * 删除一条消息（仅对该用户生效）
      */
+    @Operation(summary = "删除我的消息（仅对该用户生效）")
     @Access(level = AccessLevel.LOGIN)
     @RequestMapping(value = "/userDelete", method = RequestMethod.POST)
     public APIResponse userDelete(Long userId, Long noticeId) {
@@ -72,6 +78,7 @@ public class NoticeController {
      * @return APIResponse 创建结果响应
      * @throws IOException 可能抛出的 IO 异常
      */
+    @Operation(summary = "新增公告")
     @Access(level = AccessLevel.ADMIN)
     @RequestMapping(value = "/create", method = RequestMethod.POST)
     @Transactional
@@ -87,6 +94,7 @@ public class NoticeController {
      * @param ids 要删除的公告 ID 字符串，多个 ID 用逗号分隔
      * @return APIResponse 删除结果响应
      */
+    @Operation(summary = "批量删除公告")
     @Access(level = AccessLevel.ADMIN)
     @RequestMapping(value = "/delete", method = RequestMethod.POST)
     public APIResponse delete(String ids){
@@ -107,6 +115,7 @@ public class NoticeController {
      * @return APIResponse 更新结果响应
      * @throws IOException 可能抛出的 IO 异常
      */
+    @Operation(summary = "更新公告")
     @Access(level = AccessLevel.ADMIN)
     @RequestMapping(value = "/update", method = RequestMethod.POST)
     @Transactional

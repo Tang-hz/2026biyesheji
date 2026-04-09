@@ -21,7 +21,6 @@ import java.util.Objects;
 public class MySpringApplication {
 
     private static final String SALT = "abcd1234";
-    //private static final String ADMIN_OLD_USERNAME = "admin123";
     private static final String ADMIN_NEW_USERNAME = "汤弘正";
     private static final String ADMIN_NEW_PASSWORD = "Thz20031001";
 
@@ -67,6 +66,28 @@ public class MySpringApplication {
                 jdbcTemplate.execute("ALTER TABLE b_ad ADD COLUMN slogan varchar(200) NULL AFTER link");
             } catch (Exception ignored) {
                 // Column already exists or table unavailable during startup; ignore to keep app boot resilient.
+            }
+        };
+    }
+
+    @Bean
+    public CommandLineRunner migrateCartTable(JdbcTemplate jdbcTemplate) {
+        return args -> {
+            try {
+                jdbcTemplate.execute(
+                        "CREATE TABLE IF NOT EXISTS b_cart ("
+                                + "id bigint(20) NOT NULL AUTO_INCREMENT,"
+                                + "user_id bigint(20) NOT NULL,"
+                                + "thing_id bigint(20) NOT NULL,"
+                                + "item_count int(11) NOT NULL DEFAULT 1,"
+                                + "PRIMARY KEY (id),"
+                                + "UNIQUE KEY uk_cart_user_thing (user_id, thing_id),"
+                                + "KEY idx_cart_user (user_id),"
+                                + "CONSTRAINT fk_cart_user FOREIGN KEY (user_id) REFERENCES b_user (id) ON DELETE CASCADE ON UPDATE CASCADE,"
+                                + "CONSTRAINT fk_cart_thing FOREIGN KEY (thing_id) REFERENCES b_thing (id) ON DELETE CASCADE ON UPDATE CASCADE"
+                                + ") ENGINE=InnoDB DEFAULT CHARSET=utf8");
+            } catch (Exception ignored) {
+                // Table exists, FK names clash, or DB unavailable; ignore so the app can still start.
             }
         };
     }

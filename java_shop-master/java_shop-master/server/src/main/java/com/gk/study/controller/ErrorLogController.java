@@ -4,6 +4,8 @@ import com.gk.study.common.APIResponse;
 import com.gk.study.common.ResponeCode;
 import com.gk.study.entity.ErrorLog;
 import com.gk.study.service.ErrorLogService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +23,7 @@ import java.util.List;
  * 提供错误日志的查询、创建、删除、更新等功能
  * 用于记录和分析系统运行时的错误信息
  */
+@Tag(name = "错误日志控制层")
 @RestController
 @RequestMapping("/errorLog")
 public class ErrorLogController {
@@ -36,6 +39,7 @@ public class ErrorLogController {
      * 
      * @return APIResponse 包含错误日志列表的响应对象
      */
+    @Operation(summary = "错误日志列表")
     @RequestMapping(value = "/list", method = RequestMethod.GET)
     public APIResponse list(){
         List<ErrorLog> list =  service.getErrorLogList();
@@ -50,6 +54,7 @@ public class ErrorLogController {
      * @return APIResponse 创建结果响应
      * @throws IOException 可能抛出的 IO 异常
      */
+    @Operation(summary = "新增错误日志")
     @RequestMapping(value = "/create", method = RequestMethod.POST)
     @Transactional
     public APIResponse create(ErrorLog errorLog) throws IOException {
@@ -64,6 +69,7 @@ public class ErrorLogController {
      * @param ids 要删除的错误日志 ID 字符串，多个 ID 用逗号分隔
      * @return APIResponse 删除结果响应
      */
+    @Operation(summary = "批量删除错误日志")
     @RequestMapping(value = "/delete", method = RequestMethod.POST)
     public APIResponse delete(String ids){
         System.out.println("ids===" + ids);
@@ -82,6 +88,7 @@ public class ErrorLogController {
      * @return APIResponse 更新结果响应
      * @throws IOException 可能抛出的 IO 异常
      */
+    @Operation(summary = "更新错误日志")
     @RequestMapping(value = "/update", method = RequestMethod.POST)
     @Transactional
     public APIResponse update(ErrorLog errorLog) throws IOException {

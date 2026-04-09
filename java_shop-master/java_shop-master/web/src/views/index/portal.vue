@@ -107,25 +107,35 @@ export default {
   width: 100%;
   max-height: 460px;
   object-fit: cover;
-  border-radius: 8px;
+  border-radius: @radius-lg;
   cursor: pointer;
+  transition: transform @transition-base;
+
+  &:hover {
+    transform: scale(1.01);
+  }
 }
 
 .ad-slogan {
-  margin-top: 12px;
+  margin-top: 14px;
   text-align: center;
-  color: #ff4d4f;
-  font-size: 16px;
+  color: @primary-blue;
+  font-size: @font-size-lg;
   font-weight: 600;
+  font-family: @font-heading;
 }
 
 .ad-link {
-  margin-top: 8px;
+  margin-top: 10px;
   text-align: center;
-  color: #1677ff;
-  font-size: 14px;
-  text-decoration: underline;
+  color: @primary-blue;
+  font-size: @font-size-base;
   cursor: pointer;
   word-break: break-all;
+  transition: color @transition-fast;
+
+  &:hover {
+    color: @primary-blue-hover;
+  }
 }
 </style>

@@ -50,7 +50,7 @@ public class CustomExceptionHandler {
 
         //异常信息
         log.setContent(Arrays.toString(ex.getStackTrace()));
-        log.setLogTime(String.valueOf(System.currentTimeMillis()));
+        log.setLogTime(java.time.LocalDateTime.now());
 
         //保存
         service.createErrorLog(log);

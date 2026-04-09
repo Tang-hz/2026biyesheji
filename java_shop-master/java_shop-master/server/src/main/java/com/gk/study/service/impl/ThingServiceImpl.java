@@ -187,7 +187,7 @@ public class ThingServiceImpl extends ServiceImpl<ThingMapper, Thing> implements
     @Override
     public void createThing(Thing thing) {
         System.out.println(thing);
-        thing.setCreateTime(String.valueOf(System.currentTimeMillis()));
+        thing.setCreateTime(java.time.LocalDateTime.now());
 
         if (thing.getPv() == null) {
             thing.setPv("0");
@@ -219,7 +219,30 @@ public class ThingServiceImpl extends ServiceImpl<ThingMapper, Thing> implements
 
     @Override
     public Thing getThingById(String id) {
-        return mapper.selectById(id);
+        if (!StringUtils.isNotBlank(id)) {
+            return null;
+        }
+        String trimmed = id.trim();
+        try {
+            mapper.incrementPv(Long.parseLong(trimmed));
+        } catch (NumberFormatException ignored) {
+            // skip invalid id
+        }
+        return mapper.selectById(trimmed);
+    }
+
+    @Override
+    public Thing selectThingById(String id) {
+        if (!StringUtils.isNotBlank(id)) {
+            return null;
+        }
+        String trimmed = id.trim();
+        try {
+            Long.parseLong(trimmed);
+        } catch (NumberFormatException e) {
+            return null;
+        }
+        return mapper.selectById(trimmed);
     }
 
     // 心愿数加1

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gk.study.mapper.CartMapper">
+
+    <select id="getCartList" resultType="java.util.HashMap">
+        SELECT A.id            AS id,
+               A.user_id       AS userId,
+               A.thing_id      AS thingId,
+               A.item_count    AS count,
+               B.title         AS title,
+               B.cover         AS cover,
+               B.price         AS price
+        FROM b_cart A
+                 JOIN b_thing B ON A.thing_id = B.id
+        WHERE A.user_id = #{userId}
+        ORDER BY A.id DESC
+    </select>
+
+    <select id="sumItemCountByUserId" resultType="java.lang.Long">
+        SELECT COALESCE(SUM(item_count), 0)
+        FROM b_cart
+        WHERE user_id = #{userId}
+    </select>
+
+</mapper>

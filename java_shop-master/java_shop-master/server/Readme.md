@@ -7,7 +7,7 @@
 * 数据库配置
 * 日志管理
 * 权限控制
-
+* AI交互
 ### 后端部署流程
 
 1. 配置端口 位于application.yml
@@ -122,7 +122,10 @@ https://blog.csdn.net/cylcjsg/article/details/128102776?
 第二步:
 打开cmd终端窗口，控制台然后执行:
 D：
-cd D:\商场项目\java_shop-master\java_shop-master\web
+cd D:\毕业设计\java_shop-master\java_shop-master\web
 npm run dev
 
 浏览器访问即可
+
+### 接口文档访问
+http://localhost:9100/api/swagger-ui/index.html

@@ -2,10 +2,9 @@ package com.gk.study.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.Serializable;
-import java.sql.Date;
+import java.time.LocalDateTime;
 
 @Data
 @TableName("b_classification")
@@ -15,6 +14,6 @@ public class Classification implements Serializable {
     @TableField
     public String title;
     @TableField
-    public String createTime;
+    public LocalDateTime createTime;
 
 }

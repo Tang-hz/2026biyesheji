@@ -7,6 +7,8 @@ import com.gk.study.permission.Access;
 import com.gk.study.permission.AccessLevel;
 import com.gk.study.service.ThingService;
 import com.gk.study.service.ThingWishService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +21,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
+@Tag(name = "商品心愿单控制层")
 @RestController
 @RequestMapping("/thingWish")
 public class ThingWishController {
@@ -31,6 +34,7 @@ public class ThingWishController {
     @Autowired
     ThingService thingService;
 
+    @Operation(summary = "加入心愿单")
     @Access(level = AccessLevel.LOGIN)
     @RequestMapping(value = "/wish", method = RequestMethod.POST)
     @Transactional
@@ -44,6 +48,7 @@ public class ThingWishController {
         return new APIResponse(ResponeCode.SUCCESS, "添加成功");
     }
 
+    @Operation(summary = "取消心愿单")
     @Access(level = AccessLevel.LOGIN)
     @RequestMapping(value = "/unWish", method = RequestMethod.POST)
     @Transactional
@@ -52,6 +57,7 @@ public class ThingWishController {
         return new APIResponse(ResponeCode.SUCCESS, "取消收藏成功");
     }
 
+    @Operation(summary = "用户心愿单列表")
     @RequestMapping(value = "/getUserWishList", method = RequestMethod.GET)
     @Transactional
     public APIResponse getUserWishList(String userId) throws IOException {

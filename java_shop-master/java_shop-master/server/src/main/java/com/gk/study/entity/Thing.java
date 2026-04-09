@@ -8,6 +8,7 @@ import lombok.Data;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.List;
 
 @Data
@@ -22,11 +23,11 @@ public class Thing implements Serializable {
     @TableField
     public String description;
     @TableField
-    public String price;
+    public BigDecimal price;
     @TableField
     public String status;
     @TableField
-    public String createTime;
+    public java.time.LocalDateTime createTime;
     @TableField
     public String repertory;
     @TableField

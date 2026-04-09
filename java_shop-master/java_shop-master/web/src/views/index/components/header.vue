@@ -143,36 +143,43 @@ const onClose = () => {
   position: fixed;
   top: 0;
   left: 0;
-  height: 56px;
+  height: 64px;
   width: 100%;
-  background: #fff;
-  border-bottom: 1px solid #cedce4;
+  background: @white;
+  border-bottom: 1px solid @border-light;
   padding-left: 48px;
   z-index: 16;
   display: flex;
   flex-direction: row;
   align-items: center;
+  box-shadow: @shadow-xs;
 }
 
 .logo {
   margin-right: 24px;
   img {
-    width: 32px;
-    height: 32px;
+    width: 36px;
+    height: 36px;
     cursor: pointer;
+    transition: transform @transition-fast;
+    &:hover {
+      transform: scale(1.05);
+    }
   }
 }
 
 .search-entry {
   position: relative;
-  width: 400px;
+  width: 420px;
   min-width: 200px;
-  height: 32px;
-  background: #ecf3fc;
-  padding: 0 12px;
-  border-radius: 16px;
+  height: 40px;
+  background: @bg-input;
+  padding: 0 16px;
+  border-radius: @radius-full;
   font-size: 0;
   cursor: pointer;
+  border: 1px solid transparent;
+  transition: all @transition-base;
 
   img {
     max-width: 100%;
@@ -180,18 +187,43 @@ const onClose = () => {
   }
   .search-icon {
     width: 18px;
-    margin: 7px 8px 0 0;
+    margin: 11px 10px 0 0;
+    opacity: 0.6;
+    transition: opacity @transition-fast;
   }
   input {
     position: absolute;
-    top: 4px;
+    top: 8px;
     width: 85%;
     height: 24px;
     border: 0px;
     outline: none;
-    color: #000;
-    background: #ecf3fc;
+    color: @text-primary;
+    background: transparent;
     font-size: 14px;
+
+    &::placeholder {
+      color: @text-hint;
+    }
+  }
+
+  &:hover {
+    background: @bg-hover;
+    border-color: @border-light;
+
+    .search-icon {
+      opacity: 0.8;
+    }
+  }
+
+  &:focus-within {
+    background: @white;
+    border-color: @primary-blue;
+    box-shadow: 0 0 0 3px @primary-blue-subtle, @shadow-sm;
+
+    .search-icon {
+      opacity: 1;
+    }
   }
 }
 
@@ -202,6 +234,7 @@ const onClose = () => {
   flex-direction: row;
   gap: 20px;
   justify-content: flex-end;
+  align-items: center;
 
   .username {
     height: 32px;
@@ -215,6 +248,10 @@ const onClose = () => {
   }
   img {
     cursor: pointer;
+    transition: opacity @transition-fast;
+    &:hover {
+      opacity: 0.8;
+    }
   }
   .right-icon {
     position: relative;
@@ -223,20 +260,22 @@ const onClose = () => {
     cursor: pointer;
     display: inline-block;
     font-size: 0;
+
     span {
       position: absolute;
-      right: -15px;
+      right: -12px;
       top: -3px;
-      font-size: 12px;
-      color: #fff;
-      background: #4684e2;
-      border-radius: 8px;
-      padding: 0 4px;
+      font-size: 11px;
+      color: @white;
+      background: @primary-blue;
+      border-radius: @radius-full;
+      padding: 0 5px;
       height: 16px;
       line-height: 16px;
       font-weight: 600;
-      min-width: 20px;
+      min-width: 18px;
       text-align: center;
+      box-shadow: 0 1px 3px rgba(70, 132, 226, 0.4);
     }
     .msg-point {
       position: absolute;
@@ -245,29 +284,52 @@ const onClose = () => {
       min-width: 8px;
       width: 8px;
       height: 8px;
-      background: #4684e2;
+      background: @primary-blue;
       border-radius: 50%;
+      box-shadow: 0 0 0 2px @white;
     }
   }
 
   .self-img {
-    width: 32px;
-    height: 32px;
+    width: 34px;
+    height: 34px;
     border-radius: 50%;
     vertical-align: middle;
     cursor: pointer;
+    border: 2px solid @border-light;
+    transition: border-color @transition-fast, box-shadow @transition-fast;
+
+    &:hover {
+      border-color: @primary-blue;
+      box-shadow: 0 0 0 3px @primary-blue-subtle;
+    }
   }
   .btn {
-    background: #4684e2;
+    background: @primary-blue;
     font-size: 14px;
-    color: #fff;
-    border-radius: 32px;
+    color: @white;
+    border-radius: @radius-full;
     text-align: center;
-    width: 66px;
-    height: 32px;
-    line-height: 32px;
+    width: 72px;
+    height: 34px;
+    line-height: 34px;
     vertical-align: middle;
     margin-left: 32px;
+    font-weight: 500;
+    box-shadow: @shadow-button;
+    transition: all @transition-fast;
+
+    &:hover {
+      background: @primary-blue-hover;
+      box-shadow: @shadow-button-hover;
+      transform: translateY(-1px);
+    }
+
+    &:active {
+      background: @primary-blue-active;
+      transform: translateY(0);
+      box-shadow: @shadow-xs;
+    }
   }
 }
 

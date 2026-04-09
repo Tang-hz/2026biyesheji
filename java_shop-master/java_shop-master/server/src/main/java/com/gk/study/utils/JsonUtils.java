@@ -1,6 +1,5 @@
 package com.gk.study.utils;
 
-import com.baomidou.mybatisplus.core.toolkit.ArrayUtils;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.util.StringUtils;

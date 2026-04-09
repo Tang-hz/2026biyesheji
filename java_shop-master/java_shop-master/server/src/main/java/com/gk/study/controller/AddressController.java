@@ -4,6 +4,8 @@ import com.gk.study.common.APIResponse;
 import com.gk.study.common.ResponeCode;
 import com.gk.study.entity.Address;
 import com.gk.study.service.AddressService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +23,7 @@ import java.util.List;
  * 提供地址的查询、创建、删除、更新等功能
  * 支持设置默认地址，当设置某个地址为默认时会自动将其他地址设为非默认
  */
+@Tag(name = "收货地址控制层")
 @RestController
 @RequestMapping("/address")
 public class AddressController {
@@ -37,6 +40,7 @@ public class AddressController {
      * @param userId 用户 ID
      * @return APIResponse 包含地址列表的响应对象
      */
+    @Operation(summary = "用户收货地址列表")
     @RequestMapping(value = "/list", method = RequestMethod.GET)
     public APIResponse list(String userId){
         List<Address> list =  service.getAddressList(userId);
@@ -51,6 +55,7 @@ public class AddressController {
      * @return APIResponse 创建结果响应
      * @throws IOException 可能抛出的 IO 异常
      */
+    @Operation(summary = "新增收货地址")
     @RequestMapping(value = "/create", method = RequestMethod.POST)
     @Transactional
     public APIResponse create(Address address) throws IOException {
@@ -73,6 +78,7 @@ public class AddressController {
      * @param ids 要删除的地址 ID 字符串，多个 ID 用逗号分隔
      * @return APIResponse 删除结果响应
      */
+    @Operation(summary = "批量删除收货地址")
     @RequestMapping(value = "/delete", method = RequestMethod.POST)
     public APIResponse delete(String ids){
         System.out.println("ids===" + ids);
@@ -92,6 +98,7 @@ public class AddressController {
      * @return APIResponse 更新结果响应
      * @throws IOException 可能抛出的 IO 异常
      */
+    @Operation(summary = "更新收货地址")
     @RequestMapping(value = "/update", method = RequestMethod.POST)
     @Transactional
     public APIResponse update(Address address) throws IOException {

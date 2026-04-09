@@ -2,6 +2,8 @@ package com.gk.study.controller;
 
 import com.gk.study.ai.CustomerServiceAi;
 import com.gk.study.service.RagCustomerService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -9,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
 
+@Tag(name = "AI客服控制层")
 @RestController
 @RequestMapping("/ai/customer-service")
 public class AiCustomerServiceController {
@@ -31,6 +34,7 @@ public class AiCustomerServiceController {
      *
      * 端点：/api/ai/customer-service/stream?message=&amp;userId=
      */
+    @Operation(summary = "客服对话 SSE 流式（多轮记忆）")
     @GetMapping(value = "/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<String> stream(
             @RequestParam("message") String message,
@@ -51,6 +55,7 @@ public class AiCustomerServiceController {
      *
      * 端点：/api/ai/customer-service/rag/stream?message=&amp;userId=
      */
+    @Operation(summary = "RAG 客服 SSE 流式（知识库 + 多轮记忆）")
     @GetMapping(value = "/rag/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<String> ragStream(
             @RequestParam("message") String message,

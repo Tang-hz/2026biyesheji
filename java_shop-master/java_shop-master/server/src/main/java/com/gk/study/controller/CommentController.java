@@ -6,6 +6,8 @@ import com.gk.study.entity.Comment;
 import com.gk.study.permission.Access;
 import com.gk.study.permission.AccessLevel;
 import com.gk.study.service.CommentService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +25,7 @@ import java.util.List;
  * 提供评论的查询、创建、删除、更新、点赞等功能
  * 支持按商品和用户查询评论
  */
+@Tag(name = "评论管理控制层")
 @RestController
 @RequestMapping("/comment")
 public class CommentController {
@@ -38,6 +41,7 @@ public class CommentController {
      * 
      * @return APIResponse 包含评论列表的响应对象
      */
+    @Operation(summary = "评论列表（全部）")
     @RequestMapping(value = "/list", method = RequestMethod.GET)
     public APIResponse list(){
         List<Comment> list =  service.getCommentList();
@@ -53,6 +57,7 @@ public class CommentController {
      * @param order 排序方式
      * @return APIResponse 包含评论列表的响应对象
      */
+    @Operation(summary = "商品评论列表")
     @RequestMapping(value = "/listThingComments", method = RequestMethod.GET)
     public APIResponse listThingComments(String thingId, String order){
         List<Comment> list =  service.getThingCommentList(thingId, order);
@@ -66,6 +71,7 @@ public class CommentController {
      * @param userId 用户 ID
      * @return APIResponse 包含评论列表的响应对象
      */
+    @Operation(summary = "用户评论列表")
     @RequestMapping(value = "/listUserComments", method = RequestMethod.GET)
     public APIResponse listUserComments(String userId){
         List<Comment> list =  service.getUserCommentList(userId);
@@ -79,6 +85,7 @@ public class CommentController {
      * @return APIResponse 创建结果响应
      * @throws IOException 可能抛出的 IO 异常
      */
+    @Operation(summary = "发表评论")
     @RequestMapping(value = "/create", method = RequestMethod.POST)
     @Transactional
     public APIResponse create(Comment comment) throws IOException {
@@ -93,6 +100,7 @@ public class CommentController {
      * @param ids 要删除的评论 ID 字符串，多个 ID 用逗号分隔
      * @return APIResponse 删除结果响应
      */
+    @Operation(summary = "批量删除评论（管理员）")
     @Access(level = AccessLevel.ADMIN)
     @RequestMapping(value = "/delete", method = RequestMethod.POST)
     public APIResponse delete(String ids){
@@ -113,6 +121,7 @@ public class CommentController {
      * @return APIResponse 更新结果响应
      * @throws IOException 可能抛出的 IO 异常
      */
+    @Operation(summary = "更新评论（管理员）")
     @Access(level = AccessLevel.ADMIN)
     @RequestMapping(value = "/update", method = RequestMethod.POST)
     @Transactional
@@ -129,6 +138,7 @@ public class CommentController {
      * @return APIResponse 点赞结果响应
      * @throws IOException 可能抛出的 IO 异常
      */
+    @Operation(summary = "评论点赞")
     @RequestMapping(value = "/like", method = RequestMethod.POST)
     @Transactional
     public APIResponse like(String id) throws IOException {

@@ -6,6 +6,8 @@ import com.gk.study.entity.User;
 import com.gk.study.permission.Access;
 import com.gk.study.permission.AccessLevel;
 import com.gk.study.service.UserService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,12 +17,12 @@ import org.springframework.util.DigestUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 
+@Tag(name = "用户管理控制层")
 @RestController
 @RequestMapping("/user")
 public class UserController {
@@ -35,19 +37,21 @@ public class UserController {
     @Value("${File.uploadPath}")
     private String uploadPath;
 
+    @Operation(summary = "用户列表（关键词）")
     @RequestMapping(value = "/list", method = RequestMethod.GET)
     public APIResponse list(String keyword){
         List<User> list =  userService.getUserList(keyword);
         return new APIResponse(ResponeCode.SUCCESS, "查询成功", list);
     }
 
+    @Operation(summary = "用户详情")
     @RequestMapping(value = "/detail", method = RequestMethod.GET)
     public APIResponse detail(String userId){
         User user =  userService.getUserDetail(userId);
         return new APIResponse(ResponeCode.SUCCESS, "查询成功", user);
     }
 
-    // 后台用户登录
+    @Operation(summary = "管理员登录")
     @RequestMapping(value = "/login", method = RequestMethod.POST)
     public APIResponse login(User user){
         String rawPassword = user.getPassword();
@@ -71,7 +75,7 @@ public class UserController {
         }
     }
 
-    // 普通用户登录
+    @Operation(summary = "普通用户登录")
     @RequestMapping(value = "/userLogin", method = RequestMethod.POST)
     public APIResponse userLogin(User user){
         user.setPassword(DigestUtils.md5DigestAsHex((user.getPassword() + salt).getBytes()));
@@ -83,7 +87,7 @@ public class UserController {
         }
     }
 
-    // 普通用户注册
+    @Operation(summary = "普通用户注册")
     @RequestMapping(value = "/userRegister", method = RequestMethod.POST)
     @Transactional
     public APIResponse userRegister(User user) throws IOException {
@@ -114,7 +118,7 @@ public class UserController {
             user.setRole(String.valueOf(User.NormalUser));
             // 设置状态
             user.setStatus("0");
-            user.setCreateTime(String.valueOf(System.currentTimeMillis()));
+            user.setCreateTime(java.time.LocalDateTime.now());
 
             userService.createUser(user);
             return new APIResponse(ResponeCode.SUCCESS, "创建成功");
@@ -122,6 +126,7 @@ public class UserController {
         return new APIResponse(ResponeCode.FAIL, "创建失败");
     }
 
+    @Operation(summary = "新增用户（管理员）")
     @Access(level = AccessLevel.ADMIN)
     @RequestMapping(value = "/create", method = RequestMethod.POST)
     @Transactional
@@ -138,7 +143,7 @@ public class UserController {
             md5Str = DigestUtils.md5DigestAsHex((user.getUsername() + salt).getBytes());
             // 设置token
             user.setToken(md5Str);
-            user.setCreateTime(String.valueOf(System.currentTimeMillis()));
+            user.setCreateTime(java.time.LocalDateTime.now());
 
             String avatar = saveAvatar(user);
             if(!StringUtils.isEmpty(avatar)) {
@@ -150,6 +155,7 @@ public class UserController {
         return new APIResponse(ResponeCode.FAIL, "创建失败");
     }
 
+    @Operation(summary = "批量删除用户（管理员）")
     @Access(level = AccessLevel.ADMIN)
     @RequestMapping(value = "/delete", method = RequestMethod.POST)
     public APIResponse delete(String ids){
@@ -162,6 +168,7 @@ public class UserController {
         return new APIResponse(ResponeCode.SUCCESS, "删除成功");
     }
 
+    @Operation(summary = "更新用户（管理员）")
     @Access(level = AccessLevel.ADMIN)
     @RequestMapping(value = "/update", method = RequestMethod.POST)
     @Transactional
@@ -178,6 +185,7 @@ public class UserController {
     }
 
 
+    @Operation(summary = "更新当前用户资料（普通用户）")
     @Access(level = AccessLevel.LOGIN)
     @RequestMapping(value = "/updateUserInfo", method = RequestMethod.POST)
     @Transactional
@@ -199,6 +207,7 @@ public class UserController {
         }
     }
 
+    @Operation(summary = "修改用户名（普通用户，需验证密码）")
     @Access(level = AccessLevel.LOGIN)
     @RequestMapping(value = "/updateUsername", method = RequestMethod.POST)
     @Transactional
@@ -232,6 +241,7 @@ public class UserController {
         return new APIResponse(ResponeCode.SUCCESS, "修改成功", user);
     }
 
+    @Operation(summary = "修改密码（普通用户）")
     @Access(level = AccessLevel.LOGIN)
     @RequestMapping(value = "/updatePwd", method = RequestMethod.POST)
     @Transactional

@@ -22,7 +22,7 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
     @Override
     public void createComment(Comment comment) {
         System.out.println(comment);
-        comment.setCommentTime(String.valueOf(System.currentTimeMillis()));
+        comment.setCommentTime(java.time.LocalDateTime.now());
         mapper.insert(comment);
     }
 

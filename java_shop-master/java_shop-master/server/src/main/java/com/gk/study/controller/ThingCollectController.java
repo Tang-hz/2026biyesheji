@@ -7,6 +7,8 @@ import com.gk.study.permission.Access;
 import com.gk.study.permission.AccessLevel;
 import com.gk.study.service.ThingCollectService;
 import com.gk.study.service.ThingService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +21,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
+@Tag(name = "商品收藏控制层")
 @RestController
 @RequestMapping("/thingCollect")
 public class ThingCollectController {
@@ -31,6 +34,7 @@ public class ThingCollectController {
     @Autowired
     ThingService thingService;
 
+    @Operation(summary = "收藏商品")
     @Access(level = AccessLevel.LOGIN)
     @RequestMapping(value = "/collect", method = RequestMethod.POST)
     @Transactional
@@ -44,6 +48,7 @@ public class ThingCollectController {
         return new APIResponse(ResponeCode.SUCCESS, "收藏成功");
     }
 
+    @Operation(summary = "取消收藏")
     @Access(level = AccessLevel.LOGIN)
     @RequestMapping(value = "/unCollect", method = RequestMethod.POST)
     @Transactional
@@ -52,6 +57,7 @@ public class ThingCollectController {
         return new APIResponse(ResponeCode.SUCCESS, "取消收藏成功");
     }
 
+    @Operation(summary = "用户收藏列表")
     @RequestMapping(value = "/getUserCollectList", method = RequestMethod.GET)
     @Transactional
     public APIResponse getUserCollectList(String userId) throws IOException {

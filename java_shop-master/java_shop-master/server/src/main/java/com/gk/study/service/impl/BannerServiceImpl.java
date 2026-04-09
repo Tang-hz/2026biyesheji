@@ -23,7 +23,7 @@ public class BannerServiceImpl extends ServiceImpl<BannerMapper, Banner> impleme
     @Override
     public void createBanner(Banner banner) {
         System.out.println(banner);
-        banner.setCreateTime(String.valueOf(System.currentTimeMillis()));
+        banner.setCreateTime(java.time.LocalDateTime.now());
         mapper.insert(banner);
     }
 

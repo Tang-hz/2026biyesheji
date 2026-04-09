@@ -382,6 +382,7 @@ CREATE TABLE `b_order`  (
   `receiver_name` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
   `receiver_phone` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
   `remark` varchar(30) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
+  `total_price` decimal(10,2) NULL DEFAULT NULL COMMENT '订单总金额（含折扣）',
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `b_order_thing_id_4e345e2c_fk_b_thing_id`(`thing_id`) USING BTREE,
   INDEX `b_order_user_id_64854046_fk_b_user_id`(`user_id`) USING BTREE,
@@ -436,7 +437,7 @@ CREATE TABLE `b_thing`  (
   `title` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
   `cover` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
   `description` longtext CHARACTER SET utf8 COLLATE utf8_general_ci NULL,
-  `price` varchar(50) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
+  `price` decimal(10,2) NULL DEFAULT NULL,
   `status` varchar(1) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
   `repertory` int(11) NOT NULL,
   `score` int(11) NULL DEFAULT 0,
@@ -792,6 +793,8 @@ CREATE TABLE `b_user`  (
   `description` longtext CHARACTER SET utf8 COLLATE utf8_general_ci NULL,
   `create_time` varchar(30) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
   `score` int(11) NULL DEFAULT 0,
+  `member_level` int(11) NULL DEFAULT 1 COMMENT '会员等级：1=普通 2=白银 3=黄金 4=钻石',
+  `cumulative_amount` decimal(10,2) NULL DEFAULT 0 COMMENT '累计消费金额',
   `push_email` varchar(40) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
   `push_switch` tinyint(1) NULL DEFAULT 0,
   `token` varchar(32) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
@@ -807,5 +810,53 @@ INSERT INTO `b_user` VALUES (5, 'sss', '37e8f6ae0ef304cccadd6c19481b331b', '1', 
 INSERT INTO `b_user` VALUES (7, 'admin123', 'f159053ec4a0e4a0e3c66cfd7c254853', '2', '0', NULL, NULL, NULL, NULL, NULL, NULL, '1683963040980', 0, NULL, 0, 'f159053ec4a0e4a0e3c66cfd7c254853');
 INSERT INTO `b_user` VALUES (8, 'admin', '6d854ca8c1479c069dad7d5b7ccdfd28', '3', '0', NULL, NULL, NULL, NULL, NULL, NULL, '1683963080205', 0, NULL, 0, '9116392dc24b7b84483ba00b0d72b80c');
 INSERT INTO `b_user` VALUES (9, 'admin1', 'ea73c7f54285c49f6d23ef6062d71f2f', '3', '0', NULL, NULL, NULL, NULL, NULL, NULL, '1683967886490', 0, NULL, 0, 'ee9aa725dbbb485c1fe8b150d6b0f2c1');
+
+-- ----------------------------
+-- Table structure for b_cart (购物车)
+-- ----------------------------
+DROP TABLE IF EXISTS `b_cart`;
+CREATE TABLE `b_cart`  (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `user_id` bigint(20) NOT NULL,
+  `thing_id` bigint(20) NOT NULL,
+  `item_count` int(11) NOT NULL DEFAULT 1,
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE INDEX `uk_cart_user_thing`(`user_id`, `thing_id`) USING BTREE,
+  INDEX `idx_cart_user`(`user_id`) USING BTREE,
+  CONSTRAINT `fk_cart_user` FOREIGN KEY (`user_id`) REFERENCES `b_user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_cart_thing` FOREIGN KEY (`thing_id`) REFERENCES `b_thing` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Table structure for b_points_log (积分记录表)
+-- ----------------------------
+DROP TABLE IF EXISTS `b_points_log`;
+CREATE TABLE `b_points_log`  (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `user_id` bigint(20) NOT NULL,
+  `points` int(11) NOT NULL COMMENT '正数=获得，负数=消耗',
+  `type` varchar(20) NOT NULL COMMENT 'ORDER/EVAL/SIGN/REDEEM',
+  `order_id` bigint(20) NULL DEFAULT NULL,
+  `remark` varchar(255) NULL DEFAULT NULL,
+  `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`) USING BTREE,
+  INDEX `idx_points_log_user`(`user_id`) USING BTREE,
+  INDEX `idx_points_log_type`(`type`) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Table structure for b_sign_record (签到记录表)
+-- ----------------------------
+DROP TABLE IF EXISTS `b_sign_record`;
+CREATE TABLE `b_sign_record`  (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `user_id` bigint(20) NOT NULL,
+  `sign_date` date NOT NULL COMMENT '签到日期',
+  `points` int(11) NOT NULL DEFAULT 0 COMMENT '获得积分数',
+  `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE INDEX `uk_sign_user_date`(`user_id`, `sign_date`) USING BTREE,
+  INDEX `idx_sign_user`(`user_id`) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Dynamic;
 
 SET FOREIGN_KEY_CHECKS = 1;

@@ -1,7 +1,7 @@
 server.port: 9100
 server.servlet.context-path: /api
 
-BASE_LOCATION: D:\商场项目\java_shop-master\java_shop-master
+BASE_LOCATION: D:\毕业设计\java_shop-master\java_shop-master
 DB_NAME: java_shop
 
 
@@ -98,6 +98,8 @@ File:
 mybatis:
   configuration:
     map-underscore-to-camel-case: true
+    # 使用 MyBatis-Plus 的 Spring Boot 类型处理器包，自动处理 LocalDateTime 等类型
+    type-handlers-package: com.baomidou.mybatisplus.extension.handlers
 
 logging:
   level:
@@ -114,7 +116,7 @@ ai:
   # 阿里百炼（OpenAI 兼容端点）
   bailian:
     base-url: https://dashscope.aliyuncs.com/compatible-mode/v1
-    api-key: sk-ca8dc8a1bd854889996c767b7d04b190
+    api-key: ${BAILIAN_API_KEY}
     chat-model: qwen3.5-flash
     embedding-model: text-embedding-v3
     timeout-seconds: 120
@@ -143,6 +145,23 @@ rag:
   # 文本分块参数：块越大语义越完整，块越小检索越精确
   max-segment-size: 600
   max-overlap-size: 80
-  # 检索参数：返回前 topK 个片段 + 最小相似度阈值
+  # 检索参数：返回前 topK 个片段 + 最小相似度阈值min-score
   top-k: 6
   min-score: 0.5
+
+# ====================== Knife4j / SpringDoc 接口文档（须为根级，勿放在 rag 下）======================
+knife4j:
+  enable: true
+  setting:
+    enable-order: true
+    order-type: controller
+  ui:
+    theme: white
+    enable-search: true
+    enable-group: true
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html

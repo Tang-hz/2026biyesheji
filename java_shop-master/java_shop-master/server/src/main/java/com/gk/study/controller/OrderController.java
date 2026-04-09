@@ -6,6 +6,8 @@ import com.gk.study.entity.Order;
 import com.gk.study.permission.Access;
 import com.gk.study.permission.AccessLevel;
 import com.gk.study.service.OrderService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +25,7 @@ import java.util.List;
  * 提供订单的查询、创建、删除、更新、取消等功能
  * 支持按用户和订单状态查询，区分管理员和普通用户操作权限
  */
+@Tag(name = "订单管理控制层")
 @RestController
 @RequestMapping("/order")
 public class OrderController {
@@ -38,6 +41,7 @@ public class OrderController {
      * 
      * @return APIResponse 包含订单列表的响应对象
      */
+    @Operation(summary = "订单列表（全部）")
     @RequestMapping(value = "/list", method = RequestMethod.GET)
     public APIResponse list(){
         List<Order> list =  service.getOrderList();
@@ -53,6 +57,7 @@ public class OrderController {
      * @param status 订单状态（1-未支付，2-已支付，7-已取消等）
      * @return APIResponse 包含订单列表的响应对象
      */
+    @Operation(summary = "用户订单列表（按状态）")
     @RequestMapping(value = "/userOrderList", method = RequestMethod.GET)
     public APIResponse userOrderList(String userId, String status){
         List<Order> list =  service.getUserOrderList(userId, status);
@@ -66,6 +71,7 @@ public class OrderController {
      * @return APIResponse 创建结果响应
      * @throws IOException 可能抛出的 IO 异常
      */
+    @Operation(summary = "创建订单")
     @RequestMapping(value = "/create", method = RequestMethod.POST)
     @Transactional
     public APIResponse create(Order order) throws IOException {
@@ -80,6 +86,7 @@ public class OrderController {
      * @param ids 要删除的订单 ID 字符串，多个 ID 用逗号分隔
      * @return APIResponse 删除结果响应
      */
+    @Operation(summary = "批量删除订单（管理员）")
     @Access(level = AccessLevel.ADMIN)
     @RequestMapping(value = "/delete", method = RequestMethod.POST)
     public APIResponse delete(String ids){
@@ -99,6 +106,7 @@ public class OrderController {
      * @return APIResponse 更新结果响应
      * @throws IOException 可能抛出的 IO 异常
      */
+    @Operation(summary = "更新订单")
     @RequestMapping(value = "/update", method = RequestMethod.POST)
     @Transactional
     public APIResponse update(Order order) throws IOException {
@@ -114,6 +122,7 @@ public class OrderController {
      * @return APIResponse 取消结果响应
      * @throws IOException 可能抛出的 IO 异常
      */
+    @Operation(summary = "取消订单（管理员）")
     @Access(level = AccessLevel.ADMIN)
     @RequestMapping(value = "/cancelOrder", method = RequestMethod.POST)
     @Transactional
@@ -133,6 +142,7 @@ public class OrderController {
      * @return APIResponse 取消结果响应
      * @throws IOException 可能抛出的 IO 异常
      */
+    @Operation(summary = "取消用户订单（登录用户）")
     @Access(level = AccessLevel.LOGIN)
     @RequestMapping(value = "/cancelUserOrder", method = RequestMethod.POST)
     @Transactional

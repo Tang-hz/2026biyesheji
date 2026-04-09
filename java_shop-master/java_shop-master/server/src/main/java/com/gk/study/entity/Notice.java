@@ -18,6 +18,6 @@ public class Notice implements Serializable {
     @TableField
     public String content;
     @TableField
-    public String createTime;
+    public java.time.LocalDateTime createTime;
 
 }

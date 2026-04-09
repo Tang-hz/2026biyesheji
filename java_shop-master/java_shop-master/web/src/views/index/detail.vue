@@ -28,10 +28,16 @@
                   <span>库存：</span>
                   <span class="name">{{ detailData.repertory }}</span>
                 </div>
-                <button class="buy-btn" @click="handleOrder(detailData)">
-                  <img :src="AddIcon" />
-                  <span>立即购买</span>
-                </button>
+                <div class="buy-btn-row flex-view">
+                  <button type="button" class="buy-btn" @click="handleOrder(detailData)">
+                    <img :src="AddIcon" />
+                    <span>立即购买</span>
+                  </button>
+                  <button type="button" class="buy-btn" @click="addToCart">
+                    <img :src="AddIcon" />
+                    <span>加入购物车</span>
+                  </button>
+                </div>
               </div>
             </div>
             <div class="thing-counts hidden-sm">
@@ -181,15 +187,16 @@ import {
 import {listThingCommentsApi, createApi as createCommentApi, likeApi} from '/@/api/comment'
 import {wishApi} from '/@/api/thingWish'
 import {collectApi} from '/@/api/thingCollect'
+import {addCartApi} from '/@/api/cart'
 import {BASE_URL} from "/@/store/constants";
 import {useRoute, useRouter} from "vue-router/dist/vue-router";
-import {useUserStore} from "/@/store";
+import {useUserStore, useCartStore} from "/@/store";
 import {getFormatTime} from "/@/utils";
 
 const router = useRouter()
 const route = useRoute()
 const userStore = useUserStore();
-
+const cartStore = useCartStore();
 
 let thingId = ref('')
 let detailData = ref({})
@@ -249,6 +256,23 @@ const collect =()=> {
   } else {
     message.warn('请先登录')
   }
+}
+const addToCart = () => {
+  const userId = userStore.user_id
+  if (!userId) {
+    message.warn('请先登录')
+    return
+  }
+  const fd = new FormData()
+  fd.append('userId', String(userId))
+  fd.append('thingId', String(thingId.value))
+  fd.append('itemCount', '1')
+  addCartApi(fd).then(res => {
+    message.success(res.msg || '已加入购物车')
+    cartStore.refreshCount()
+  }).catch(err => {
+    message.error(err.msg || '加入失败')
+  })
 }
 const share =()=> {
   let content = '分享一个非常好玩的网站 ' + window.location.href
@@ -557,25 +581,48 @@ const sortCommentList =(sortType)=> {
   }
 }
 
+.buy-btn-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 20px;
+  align-items: center;
+}
+
 .buy-btn {
   cursor: pointer;
   display: block;
-  background: #4684e2;
-  border-radius: 4px;
+  background: @primary-blue;
+  border-radius: @radius-md;
   text-align: center;
-  color: #fff;
-  font-size: 14px;
-  height: 36px;
-  line-height: 36px;
-  width: 110px;
+  color: @white;
+  font-size: @font-size-base;
+  font-weight: 500;
+  height: 38px;
+  line-height: 38px;
+  width: 120px;
   outline: none;
   border: none;
-  margin-top: 18px;
+  margin-top: 0;
+  box-shadow: @shadow-button;
+  transition: all @transition-fast;
+
+  &:hover {
+    background: @primary-blue-hover;
+    box-shadow: @shadow-button-hover;
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    background: @primary-blue-active;
+    transform: translateY(0);
+    box-shadow: @shadow-xs;
+  }
 }
 
 .buy-btn img {
   width: 12px;
-  margin-right: 2px;
+  margin-right: 4px;
   vertical-align: middle;
 }
 
@@ -622,8 +669,8 @@ const sortCommentList =(sortType)=> {
 
 .order-view {
   position: relative;
-  color: #6c6c6c;
-  font-size: 14px;
+  color: @text-muted;
+  font-size: @font-size-base;
   line-height: 40px;
 
   .title {
@@ -633,13 +680,17 @@ const sortCommentList =(sortType)=> {
   .tab {
     margin-right: 20px;
     cursor: pointer;
-    color: #5f77a6;
-    font-size: 16px;
-    cursor: pointer;
+    color: @navy-light;
+    font-size: @font-size-lg;
+    transition: color @transition-fast;
+  }
+
+  .tab:hover {
+    color: @text-secondary;
   }
 
   .tab-select {
-    color: #152844;
+    color: @navy-dark;
     font-weight: 600;
   }
 
@@ -647,11 +698,13 @@ const sortCommentList =(sortType)=> {
     position: absolute;
     bottom: 0;
     left: 84px;
-    width: 16px;
-    height: 4px;
-    background: #4684e2;
-    -webkit-transition: left .3s;
-    transition: left .3s;
+    width: 20px;
+    height: 3px;
+    background: @primary-blue;
+    -webkit-transition: left @transition-base;
+    transition: left @transition-base;
+    border-radius: 2px;
+    box-shadow: 0 1px 4px rgba(70, 132, 226, 0.4);
   }
 }
 
@@ -776,32 +829,58 @@ const sortCommentList =(sortType)=> {
       -webkit-box-flex: 1;
       -ms-flex: 1;
       flex: 1;
-      background: #f6f9fb;
-      border-radius: 4px;
-      height: 32px;
-      line-height: 32px;
-      color: #484848;
-      padding: 5px 12px;
+      background: @bg-input;
+      border-radius: @radius-md;
+      height: 38px;
+      line-height: 38px;
+      color: @text-primary;
+      padding: 5px 14px;
       white-space: nowrap;
       outline: none;
-      border: 0px;
+      border: 1px solid @border-light;
+      transition: all @transition-fast;
+
+      &::placeholder {
+        color: @text-hint;
+      }
+
+      &:focus {
+        border-color: @primary-blue;
+        background: @white;
+        box-shadow: 0 0 0 3px @primary-blue-subtle;
+      }
     }
 
     .send-btn {
-      margin-left: 10px;
-      background: #4684e2;
-      border-radius: 4px;
+      margin-left: 12px;
+      background: @primary-blue;
+      border-radius: @radius-md;
       -webkit-box-flex: 0;
       -ms-flex: 0 0 80px;
       flex: 0 0 80px;
-      color: #fff;
-      font-size: 14px;
+      color: @white;
+      font-size: @font-size-base;
+      font-weight: 500;
       text-align: center;
-      height: 32px;
-      line-height: 32px;
+      height: 38px;
+      line-height: 38px;
       outline: none;
       border: 0px;
       cursor: pointer;
+      box-shadow: @shadow-button;
+      transition: all @transition-fast;
+
+      &:hover {
+        background: @primary-blue-hover;
+        box-shadow: @shadow-button-hover;
+        transform: translateY(-1px);
+      }
+
+      &:active {
+        background: @primary-blue-active;
+        transform: translateY(0);
+        box-shadow: @shadow-xs;
+      }
     }
   }
 

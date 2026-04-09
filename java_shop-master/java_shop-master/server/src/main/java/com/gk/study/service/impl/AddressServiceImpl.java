@@ -26,7 +26,7 @@ public class AddressServiceImpl extends ServiceImpl<AddressMapper, Address> impl
     @Override
     public void createAddress(Address address) {
         System.out.println(address);
-        address.setCreateTime(String.valueOf(System.currentTimeMillis()));
+        address.setCreateTime(java.time.LocalDateTime.now());
         mapper.insert(address);
     }
 

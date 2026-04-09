@@ -6,6 +6,7 @@ import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+
 /**
  * 配置类
  *
@@ -23,11 +24,21 @@ public class MyConfig implements WebMvcConfigurer {
                 .allowedOriginPatterns("*") //所有地址都可以访问，也可以配置具体地址
                 .allowCredentials(true)
                 .allowedMethods("*");//"GET", "HEAD", "POST", "PUT", "DELETE", "OPTIONS"
+
     }
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         // 自定义拦截器
-        registry.addInterceptor(new AccessInterceptor());
+        registry.addInterceptor(new AccessInterceptor())
+                .addPathPatterns("/**") // 拦截所有请求
+                .excludePathPatterns(    // 但是排除掉以下 Knife4j 和 Swagger 的静态资源
+                        "/doc.html",
+                        "/webjars/**",
+                        "/swagger-resources/**",
+                        "/v3/api-docs/**",
+                        "/favicon.ico",
+                        "/error"
+                );
     }
 }

@@ -23,7 +23,7 @@ public class AdServiceImpl extends ServiceImpl<AdMapper, Ad> implements AdServic
     @Override
     public void createAd(Ad ad) {
         System.out.println(ad);
-        ad.setCreateTime(String.valueOf(System.currentTimeMillis()));
+        ad.setCreateTime(java.time.LocalDateTime.now());
         mapper.insert(ad);
     }
 

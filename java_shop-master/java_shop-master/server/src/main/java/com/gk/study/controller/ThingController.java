@@ -6,6 +6,8 @@ import com.gk.study.entity.Thing;
 import com.gk.study.permission.Access;
 import com.gk.study.permission.AccessLevel;
 import com.gk.study.service.ThingService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +24,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 
+@Tag(name = "商品管理控制层")
 @RestController
 @RequestMapping("/thing")
 public class ThingController {
@@ -34,6 +37,7 @@ public class ThingController {
     @Value("${File.uploadPath}")
     private String uploadPath;
 
+    @Operation(summary = "商品列表（关键词/排序/分类/标签）")
     @RequestMapping(value = "/list", method = RequestMethod.GET)
     public APIResponse list(String keyword, String sort, String c, String tag){
         List<Thing> list =  service.getThingList(keyword, sort, c, tag);
@@ -41,6 +45,7 @@ public class ThingController {
         return new APIResponse(ResponeCode.SUCCESS, "查询成功", list);
     }
 
+    @Operation(summary = "商品详情")
     @RequestMapping(value = "/detail", method = RequestMethod.GET)
     public APIResponse detail(String id){
         Thing thing =  service.getThingById(id);
@@ -48,6 +53,7 @@ public class ThingController {
         return new APIResponse(ResponeCode.SUCCESS, "查询成功", thing);
     }
 
+    @Operation(summary = "新增商品")
     @Access(level = AccessLevel.ADMIN)
     @RequestMapping(value = "/create", method = RequestMethod.POST)
     @Transactional
@@ -61,6 +67,7 @@ public class ThingController {
         return new APIResponse(ResponeCode.SUCCESS, "创建成功");
     }
 
+    @Operation(summary = "批量删除商品")
     @Access(level = AccessLevel.ADMIN)
     @RequestMapping(value = "/delete", method = RequestMethod.POST)
     public APIResponse delete(String ids){
@@ -73,6 +80,7 @@ public class ThingController {
         return new APIResponse(ResponeCode.SUCCESS, "删除成功");
     }
 
+    @Operation(summary = "更新商品")
     @Access(level = AccessLevel.ADMIN)
     @RequestMapping(value = "/update", method = RequestMethod.POST)
     @Transactional

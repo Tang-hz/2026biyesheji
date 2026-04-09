@@ -28,6 +28,6 @@ public class NoticeUserState implements Serializable {
     private Integer deleted;
 
     @TableField("delete_time")
-    private String deleteTime;
+    private java.time.LocalDateTime deleteTime;
 }
 

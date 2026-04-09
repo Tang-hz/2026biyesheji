@@ -23,7 +23,7 @@ public class TagServiceImpl extends ServiceImpl<TagMapper, Tag> implements TagSe
     @Override
     public void createTag(Tag tag) {
         System.out.println(tag);
-        tag.setCreateTime(String.valueOf(System.currentTimeMillis()));
+        tag.setCreateTime(java.time.LocalDateTime.now());
         mapper.insert(tag);
     }
 

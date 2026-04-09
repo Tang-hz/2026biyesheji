@@ -1,0 +1,335 @@
+// ============================================
+// DESIGN TOKENS - CSS Custom Properties
+// ============================================
+
+// --- Color Palette (Refined Blue/White) ---
+@primary-blue: #4684e2;
+@primary-blue-hover: #3570d0;
+@primary-blue-active: #2a5cb8;
+@primary-blue-light: rgba(70, 132, 226, 0.08);
+@primary-blue-subtle: rgba(70, 132, 226, 0.12);
+
+@navy-dark: #152844;
+@navy-mid: #315c9e;
+@navy-light: #5f77a6;
+
+@white: #ffffff;
+@bg-page: #f8fafc;
+@bg-card: #ffffff;
+@bg-hover: #f1f5f9;
+@bg-input: #f6f9fb;
+
+@border-light: #e8eef5;
+@border-subtle: #cedce4;
+@border-focus: @primary-blue;
+
+@text-primary: #0f1111;
+@text-secondary: #484848;
+@text-muted: #6f6f6f;
+@text-hint: #a1adc5;
+
+@success: #52c41a;
+@warning: #faad14;
+@error: #ff4d4f;
+@orange-accent: #ff8a00;
+
+// --- Shadow Hierarchy (Sophisticated, Layered) ---
+@shadow-xs: 0 1px 2px rgba(21, 40, 68, 0.04);
+@shadow-sm: 0 2px 4px rgba(21, 40, 68, 0.06), 0 1px 2px rgba(21, 40, 68, 0.04);
+@shadow-md: 0 4px 12px rgba(21, 40, 68, 0.08), 0 2px 4px rgba(21, 40, 68, 0.04);
+@shadow-lg: 0 8px 24px rgba(21, 40, 68, 0.10), 0 4px 8px rgba(21, 40, 68, 0.06);
+@shadow-xl: 0 16px 48px rgba(21, 40, 68, 0.12), 0 8px 16px rgba(21, 40, 68, 0.08);
+@shadow-card: 0 2px 8px rgba(21, 40, 68, 0.06);
+@shadow-card-hover: 0 8px 24px rgba(21, 40, 68, 0.10);
+@shadow-button: 0 2px 6px rgba(70, 132, 226, 0.35);
+@shadow-button-hover: 0 4px 12px rgba(70, 132, 226, 0.45);
+
+// --- Border Radius ---
+@radius-xs: 4px;
+@radius-sm: 6px;
+@radius-md: 8px;
+@radius-lg: 12px;
+@radius-xl: 16px;
+@radius-2xl: 20px;
+@radius-full: 9999px;
+
+// --- Spacing System (8px Base) ---
+@space-1: 4px;
+@space-2: 8px;
+@space-3: 12px;
+@space-4: 16px;
+@space-5: 20px;
+@space-6: 24px;
+@space-8: 32px;
+@space-10: 40px;
+@space-12: 48px;
+@space-16: 64px;
+
+// --- Typography ---
+@font-face {
+  font-family: 'Blimone';
+  src: url('/@/assets/fonts/Blimone-ExtraBold.woff') format('woff');
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Blimone';
+  src: url('/@/assets/fonts/Blimone-Bold.woff') format('woff');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Blimone';
+  src: url('/@/assets/fonts/Blimone-Regular.woff') format('woff');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Blimone';
+  src: url('/@/assets/fonts/Blimone-ExtraLight.woff') format('woff');
+  font-weight: 200;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-display: 'Blimone', 'Avenir', Helvetica, Arial, sans-serif;
+@font-heading: 'Blimone', 'Avenir', Helvetica, Arial, sans-serif;
+@font-subhead: 'Blimone', 'Avenir', Helvetica, Arial, sans-serif;
+@font-body: 'Avenir', Helvetica, Arial, sans-serif;
+
+@font-size-xs: 11px;
+@font-size-sm: 12px;
+@font-size-base: 14px;
+@font-size-md: 15px;
+@font-size-lg: 16px;
+@font-size-xl: 18px;
+@font-size-2xl: 20px;
+@font-size-3xl: 24px;
+
+@line-height-tight: 1.25;
+@line-height-normal: 1.5;
+@line-height-relaxed: 1.75;
+
+@letter-spacing-tight: -0.02em;
+@letter-spacing-normal: 0;
+@letter-spacing-wide: 0.02em;
+@letter-spacing-wider: 0.05em;
+
+// --- Transitions ---
+@transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+@transition-base: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+@transition-slow: 400ms cubic-bezier(0.4, 0, 0.2, 1);
+@transition-spring: 350ms cubic-bezier(0.34, 1.56, 0.64, 1);
+
+// --- Z-Index Scale ---
+@z-dropdown: 100;
+@z-sticky: 200;
+@z-fixed: 300;
+@z-modal-backdrop: 400;
+@z-modal: 500;
+@z-popover: 600;
+@z-tooltip: 700;
+
+// ============================================
+// Ant Design Vue Component Overrides
+// ============================================
+
+// Table
+:deep(.ant-table) {
+  border-radius: @radius-lg;
+  overflow: hidden;
+
+  .ant-table-thead > tr > th {
+    background: @bg-page;
+    color: @navy-dark;
+    font-weight: 600;
+    border-bottom: 1px solid @border-light;
+    padding: @space-3 @space-4;
+    font-size: @font-size-sm;
+    letter-spacing: @letter-spacing-wide;
+    text-transform: uppercase;
+  }
+
+  .ant-table-tbody > tr > td {
+    padding: @space-3 @space-4;
+    border-bottom: 1px solid @border-light;
+    transition: background @transition-fast;
+  }
+
+  .ant-table-tbody > tr:hover > td {
+    background: @bg-hover;
+  }
+}
+
+// Primary Button
+:deep(.ant-btn-primary) {
+  background: @primary-blue;
+  border-color: @primary-blue;
+  border-radius: @radius-md;
+  box-shadow: @shadow-button;
+  font-weight: 500;
+  transition: all @transition-fast;
+
+  &:hover, &:focus {
+    background: @primary-blue-hover !important;
+    border-color: @primary-blue-hover !important;
+    box-shadow: @shadow-button-hover;
+  }
+
+  &:active {
+    background: @primary-blue-active !important;
+    border-color: @primary-blue-active !important;
+    box-shadow: @shadow-xs;
+  }
+}
+
+// Default Button
+:deep(.ant-btn-default) {
+  border-radius: @radius-md;
+  border-color: @border-light;
+  transition: all @transition-fast;
+
+  &:hover {
+    border-color: @primary-blue !important;
+    color: @primary-blue !important;
+  }
+}
+
+// Modal
+:deep(.ant-modal-content) {
+  border-radius: @radius-xl;
+  box-shadow: @shadow-xl;
+  overflow: hidden;
+}
+
+:deep(.ant-modal-header) {
+  background: @white;
+  border-bottom: 1px solid @border-light;
+  padding: @space-5 @space-6;
+}
+
+:deep(.ant-modal-title) {
+  font-family: @font-heading;
+  font-weight: 700;
+  font-size: @font-size-lg;
+  color: @navy-dark;
+}
+
+:deep(.ant-modal-footer) {
+  border-top: 1px solid @border-light;
+  padding: @space-4 @space-6;
+}
+
+// Input
+:deep(.ant-input) {
+  border-radius: @radius-md;
+  border-color: @border-light;
+  transition: all @transition-fast;
+
+  &:hover {
+    border-color: @border-subtle;
+  }
+
+  &:focus {
+    border-color: @primary-blue !important;
+    box-shadow: 0 0 0 3px @primary-blue-subtle !important;
+  }
+}
+
+:deep(.ant-input-affix-wrapper) {
+  border-radius: @radius-md;
+  border-color: @border-light;
+  transition: all @transition-fast;
+
+  &:hover {
+    border-color: @border-subtle;
+  }
+
+  &:focus, &.ant-input-affix-wrapper-focused {
+    border-color: @primary-blue !important;
+    box-shadow: 0 0 0 3px @primary-blue-subtle !important;
+  }
+}
+
+// Select
+:deep(.ant-select-selector) {
+  border-radius: @radius-md !important;
+  border-color: @border-light !important;
+  transition: all @transition-fast;
+
+  &:hover {
+    border-color: @border-subtle !important;
+  }
+}
+
+:deep(.ant-select-focused .ant-select-selector) {
+  border-color: @primary-blue !important;
+  box-shadow: 0 0 0 3px @primary-blue-subtle !important;
+}
+
+// Pagination
+:deep(.ant-pagination-item-active) {
+  border-color: @primary-blue;
+  background: @primary-blue-light;
+
+  a {
+    color: @primary-blue;
+  }
+
+  &:hover {
+    border-color: @primary-blue-hover;
+    background: @primary-blue-light;
+  }
+}
+
+// Card
+:deep(.ant-card) {
+  border-radius: @radius-lg;
+  border-color: @border-light;
+  box-shadow: @shadow-card;
+  transition: box-shadow @transition-base;
+
+  &:hover {
+    box-shadow: @shadow-card-hover;
+  }
+}
+
+// Menu (for admin sidebar)
+:deep(.ant-menu-light) {
+  background: transparent;
+  border: none;
+
+  .ant-menu-item {
+    border-radius: @radius-md;
+    margin: @space-1 0;
+    transition: all @transition-fast;
+
+    &:hover {
+      background: @bg-hover;
+      color: @primary-blue;
+    }
+
+    &.ant-menu-item-selected {
+      background: @primary-blue-light;
+      color: @primary-blue;
+      font-weight: 600;
+    }
+  }
+}
+
+// Tag
+:deep(.ant-tag) {
+  border-radius: @radius-full;
+  padding: @space-1 @space-3;
+  font-size: @font-size-sm;
+  border-color: @border-light;
+}
+
+// Badge
+:deep(.ant-badge-count) {
+  border-radius: @radius-full;
+  box-shadow: 0 0 0 1px @white;
+}

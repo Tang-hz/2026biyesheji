@@ -6,6 +6,7 @@ import com.gk.study.entity.Tag;
 import com.gk.study.permission.Access;
 import com.gk.study.permission.AccessLevel;
 import com.gk.study.service.TagService;
+import io.swagger.v3.oas.annotations.Operation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.io.IOException;
 import java.util.List;
 
+@io.swagger.v3.oas.annotations.tags.Tag(name = "标签管理控制层")
 @RestController
 @RequestMapping("/tag")
 public class TagController {
@@ -26,6 +28,7 @@ public class TagController {
     @Autowired
     TagService service;
 
+    @Operation(summary = "标签列表")
     @RequestMapping(value = "/list", method = RequestMethod.GET)
     public APIResponse list(){
         List<Tag> list =  service.getTagList();
@@ -33,6 +36,7 @@ public class TagController {
         return new APIResponse(ResponeCode.SUCCESS, "查询成功", list);
     }
 
+    @Operation(summary = "新增标签")
     @Access(level = AccessLevel.ADMIN)
     @RequestMapping(value = "/create", method = RequestMethod.POST)
     @Transactional
@@ -41,6 +45,7 @@ public class TagController {
         return new APIResponse(ResponeCode.SUCCESS, "创建成功");
     }
 
+    @Operation(summary = "批量删除标签")
     @Access(level = AccessLevel.ADMIN)
     @RequestMapping(value = "/delete", method = RequestMethod.POST)
     public APIResponse delete(String ids){
@@ -53,6 +58,7 @@ public class TagController {
         return new APIResponse(ResponeCode.SUCCESS, "删除成功");
     }
 
+    @Operation(summary = "更新标签")
     @Access(level = AccessLevel.ADMIN)
     @RequestMapping(value = "/update", method = RequestMethod.POST)
     @Transactional

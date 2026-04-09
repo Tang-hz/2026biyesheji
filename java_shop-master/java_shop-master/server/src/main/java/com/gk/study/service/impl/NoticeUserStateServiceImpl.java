@@ -58,11 +58,11 @@ public class NoticeUserStateServiceImpl implements NoticeUserStateService {
             state.setUserId(userId);
             state.setNoticeId(noticeId);
             state.setDeleted(1);
-            state.setDeleteTime(String.valueOf(System.currentTimeMillis()));
+            state.setDeleteTime(java.time.LocalDateTime.now());
             noticeUserStateMapper.insert(state);
         } else {
             state.setDeleted(1);
-            state.setDeleteTime(String.valueOf(System.currentTimeMillis()));
+            state.setDeleteTime(java.time.LocalDateTime.now());
             noticeUserStateMapper.updateById(state);
         }
     }

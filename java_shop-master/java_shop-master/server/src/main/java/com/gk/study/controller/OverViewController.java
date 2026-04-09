@@ -10,6 +10,8 @@ import com.gk.study.entity.VisitData;
 import com.gk.study.mapper.OrderMapper;
 import com.gk.study.mapper.OverviewMapper;
 import com.gk.study.mapper.ThingMapper;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.apache.commons.lang3.time.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,6 +31,7 @@ import java.util.*;
  * 提供系统信息、商品统计、订单统计、热门商品、流量分析等功能
  * 用于后台管理系统的首页数据展示和系统监控
  */
+@Tag(name = "数据统计概览控制层")
 @RestController
 @RequestMapping("/overview")
 public class OverViewController {
@@ -50,6 +53,7 @@ public class OverViewController {
      * 
      * @return APIResponse 包含系统详细信息的响应对象
      */
+    @Operation(summary = "服务器与 JVM 信息")
     @RequestMapping(value = "/sysInfo", method = RequestMethod.GET)
     public APIResponse sysInfo() {
 
@@ -90,6 +94,7 @@ public class OverViewController {
      * 
      * @return APIResponse 包含各类统计数据的响应对象
      */
+    @Operation(summary = "后台统计数据（商品/订单/流量等）")
     @RequestMapping(value = "/count", method = RequestMethod.GET)
     public APIResponse count() {
 

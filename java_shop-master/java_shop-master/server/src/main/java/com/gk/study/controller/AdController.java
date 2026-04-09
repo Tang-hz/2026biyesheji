@@ -6,6 +6,8 @@ import com.gk.study.entity.Ad;
 import com.gk.study.permission.Access;
 import com.gk.study.permission.AccessLevel;
 import com.gk.study.service.AdService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +18,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+
+
 
 import java.io.File;
 import java.io.IOException;
@@ -28,6 +32,8 @@ import java.util.UUID;
  * 负责处理广告相关的 HTTP 请求，包括广告的查询、创建、删除、更新等操作
  * 该控制器提供了完整的 CRUD 接口，支持图片上传功能
  */
+
+@Tag(name = "广告管理控制层")
 @RestController
 @RequestMapping("/ad")
 public class AdController {
@@ -46,6 +52,7 @@ public class AdController {
      * 
      * @return APIResponse 包含广告列表的响应对象
      */
+    @Operation(summary = "广告列表")
     @RequestMapping(value = "/list", method = RequestMethod.GET)
     public APIResponse list(){
         List<Ad> list =  service.getAdList();
@@ -61,6 +68,7 @@ public class AdController {
      * @return APIResponse 创建结果响应
      * @throws IOException 文件上传过程中可能抛出的 IO 异常
      */
+    @Operation(summary = "新增广告")
     @Access(level = AccessLevel.ADMIN)
     @RequestMapping(value = "/create", method = RequestMethod.POST)
     @Transactional
@@ -84,6 +92,7 @@ public class AdController {
      * @param ids 要删除的广告 ID 字符串，多个 ID 用逗号分隔
      * @return APIResponse 删除结果响应
      */
+    @Operation(summary = "批量删除广告")
     @Access(level = AccessLevel.ADMIN)
     @RequestMapping(value = "/delete", method = RequestMethod.POST)
     public APIResponse delete(String ids){
@@ -104,6 +113,7 @@ public class AdController {
      * @return APIResponse 更新结果响应
      * @throws IOException 文件上传过程中可能抛出的 IO 异常
      */
+    @Operation(summary = "更新广告")
     @Access(level = AccessLevel.ADMIN)
     @RequestMapping(value = "/update", method = RequestMethod.POST)
     @Transactional

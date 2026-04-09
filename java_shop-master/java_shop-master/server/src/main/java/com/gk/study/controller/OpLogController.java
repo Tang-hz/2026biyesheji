@@ -4,6 +4,8 @@ import com.gk.study.common.APIResponse;
 import com.gk.study.common.ResponeCode;
 import com.gk.study.entity.OpLog;
 import com.gk.study.service.OpLogService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +24,7 @@ import java.util.List;
  * 提供操作日志和登录日志的查询、创建、删除、更新等功能
  * 用于追踪用户操作记录和系统安全审计
  */
+@Tag(name = "操作与登录日志控制层")
 @RestController
 @RequestMapping("/opLog")
 public class OpLogController {
@@ -37,6 +40,7 @@ public class OpLogController {
      * 
      * @return APIResponse 包含操作日志列表的响应对象
      */
+    @Operation(summary = "操作日志列表")
     @RequestMapping(value = "/list", method = RequestMethod.GET)
     public APIResponse list(){
         List<OpLog> list =  service.getOpLogList();
@@ -49,6 +53,7 @@ public class OpLogController {
      * 
      * @return APIResponse 包含登录日志列表的响应对象
      */
+    @Operation(summary = "登录日志列表")
     @RequestMapping(value = "/loginLogList", method = RequestMethod.GET)
     public APIResponse loginLogList(){
         List<OpLog> list =  service.getLoginLogList();
@@ -63,6 +68,7 @@ public class OpLogController {
      * @return APIResponse 创建结果响应
      * @throws IOException 可能抛出的 IO 异常
      */
+    @Operation(summary = "新增操作日志")
     @RequestMapping(value = "/create", method = RequestMethod.POST)
     @Transactional
     public APIResponse create(OpLog opLog) throws IOException {
@@ -77,6 +83,7 @@ public class OpLogController {
      * @param ids 要删除的操作日志 ID 字符串，多个 ID 用逗号分隔
      * @return APIResponse 删除结果响应
      */
+    @Operation(summary = "批量删除操作日志")
     @RequestMapping(value = "/delete", method = RequestMethod.POST)
     public APIResponse delete(String ids){
         System.out.println("ids===" + ids);
@@ -95,6 +102,7 @@ public class OpLogController {
      * @return APIResponse 更新结果响应
      * @throws IOException 可能抛出的 IO 异常
      */
+    @Operation(summary = "更新操作日志")
     @RequestMapping(value = "/update", method = RequestMethod.POST)
     @Transactional
     public APIResponse update(OpLog opLog) throws IOException {

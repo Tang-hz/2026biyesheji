@@ -16,6 +16,6 @@ public class Tag implements Serializable {
     @TableField
     public String title;
     @TableField
-    public String createTime;
+    public java.time.LocalDateTime createTime;
 
 }

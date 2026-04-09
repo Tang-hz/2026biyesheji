@@ -5,7 +5,6 @@ import dev.langchain4j.data.message.ChatMessageDeserializer;
 import dev.langchain4j.data.message.ChatMessageSerializer;
 import dev.langchain4j.store.memory.chat.ChatMemoryStore;
 import org.springframework.data.redis.core.StringRedisTemplate;
-
 import java.util.ArrayList;
 import java.util.List;
 

@@ -19,6 +19,11 @@ public interface ThingService {
 
     Thing getThingById(String id);
 
+    /**
+     * 按主键查询商品，不增加浏览量，供 AI 工具等内部使用。
+     */
+    Thing selectThingById(String id);
+
     void addWishCount(String thingId);
 
     void addCollectCount(String thingId);

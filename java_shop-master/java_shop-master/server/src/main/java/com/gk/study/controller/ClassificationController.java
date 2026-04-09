@@ -6,6 +6,8 @@ import com.gk.study.entity.Classification;
 import com.gk.study.permission.Access;
 import com.gk.study.permission.AccessLevel;
 import com.gk.study.service.ClassificationService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +25,7 @@ import java.util.List;
  * 提供分类的查询、创建、删除、更新等功能
  * 所有修改操作需要管理员权限
  */
+@Tag(name = "商品分类控制层")
 @RestController
 @RequestMapping("/classification")
 public class ClassificationController {
@@ -38,6 +41,7 @@ public class ClassificationController {
      * 
      * @return APIResponse 包含分类列表的响应对象
      */
+    @Operation(summary = "分类列表")
     @RequestMapping(value = "/list", method = RequestMethod.GET)
     public APIResponse list(){
         List<Classification> list =  service.getClassificationList();
@@ -52,6 +56,7 @@ public class ClassificationController {
      * @return APIResponse 创建结果响应
      * @throws IOException 可能抛出的 IO 异常
      */
+    @Operation(summary = "新增分类")
     @Access(level = AccessLevel.ADMIN)
     @RequestMapping(value = "/create", method = RequestMethod.POST)
     @Transactional
@@ -67,6 +72,7 @@ public class ClassificationController {
      * @param ids 要删除的分类 ID 字符串，多个 ID 用逗号分隔
      * @return APIResponse 删除结果响应
      */
+    @Operation(summary = "批量删除分类")
     @Access(level = AccessLevel.ADMIN)
     @RequestMapping(value = "/delete", method = RequestMethod.POST)
     public APIResponse delete(String ids){
@@ -87,6 +93,7 @@ public class ClassificationController {
      * @return APIResponse 更新结果响应
      * @throws IOException 可能抛出的 IO 异常
      */
+    @Operation(summary = "更新分类")
     @Access(level = AccessLevel.ADMIN)
     @RequestMapping(value = "/update", method = RequestMethod.POST)
     @Transactional

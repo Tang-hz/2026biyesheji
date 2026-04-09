@@ -44,7 +44,7 @@ public class AiModelConfiguration {
 
     /**
      * 客服工具注册在 {@link AiOrderTool}：商品检索 {@code searchThingsByKeyword}、
-     * 订单查询 {@code getUserOrderByOrderNumber}、下单 {@code orderByThingTitle}。
+     * 订单查询 {@code getUserOrderByOrderNumber}、下单 {@code orderByThingId} / {@code orderByThingTitle}。
      */
     @Bean
     public CustomerServiceAi customerServiceAi(

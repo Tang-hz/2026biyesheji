@@ -82,6 +82,13 @@
               <span :style="{ left: contentData.tabUnderLeft + 'px' }" class="tab-underline"></span>
             </div>
           </div>
+          <div class="cart-bar flex-view" @click="goCart">
+            <div class="cart-bar-icon-wrap">
+              <img :src="CartIcon" class="cart-bar-icon" alt="购物车" />
+              <span v-if="cartStore.itemTotal > 0" class="cart-bar-badge">{{ cartBadgeText }}</span>
+            </div>
+            <span class="cart-bar-label">购物车</span>
+          </div>
         </div>
 
         <a-spin :spinning="contentData.loading" class="mall-spin">
@@ -97,12 +104,17 @@
             </div>
             <div class="info-view">
               <h3 class="thing-name">{{ item.title.substring(0, 20) }}</h3>
-              <div class="price-row">
-                <span class="a-price-symbol">¥</span>
-                <span class="a-price">{{ item.price }}</span>
-              </div>
-              <div class="thing-sales" v-if="item.pv !== undefined && item.pv !== null && item.pv !== ''">
-                销量 {{ item.pv }}
+              <div class="price-row flex-view">
+                <div class="price-row-left">
+                  <span class="a-price-symbol">¥</span>
+                  <span class="a-price">{{ item.price }}</span>
+                </div>
+                <button
+                  type="button"
+                  class="quick-add-cart"
+                  aria-label="加入购物车"
+                  @click.stop="quickAddToCart(item)"
+                >+</button>
               </div>
             </div>
           </div>
@@ -131,14 +143,22 @@
 </template>
 
 <script setup>
+import {message} from 'ant-design-vue'
 import {listApi as listClassificationList} from '/@/api/classification'
 import {listApi as listTagList} from '/@/api/tag'
 import {listApi as listThingList} from '/@/api/thing'
+import {addCartApi} from '/@/api/cart'
+import CartIcon from '/@/assets/images/cart-icon.svg'
 import {BASE_URL} from "/@/store/constants";
-import {useUserStore} from "/@/store";
+import {useUserStore, useCartStore} from "/@/store";
 
 const userStore = useUserStore()
+const cartStore = useCartStore()
 const router = useRouter();
+
+const cartBadgeText = computed(() =>
+  cartStore.itemTotal > 99 ? '99+' : String(cartStore.itemTotal)
+)
 
 const contentData = reactive({
   selectX: 0,
@@ -163,7 +183,38 @@ const contentData = reactive({
 onMounted(() => {
   initSider()
   getThingList({})
+  cartStore.refreshCount()
 })
+
+const goCart = () => {
+  if (!userStore.user_id) {
+    message.warn('请先登录')
+    router.push({ name: 'login' })
+    return
+  }
+  router.push({ name: 'cart' })
+}
+
+const quickAddToCart = (item) => {
+  const userId = userStore.user_id
+  if (!userId) {
+    message.warn('请先登录')
+    router.push({ name: 'login' })
+    return
+  }
+  const fd = new FormData()
+  fd.append('userId', String(userId))
+  fd.append('thingId', String(item.id))
+  fd.append('itemCount', '1')
+  addCartApi(fd)
+    .then((res) => {
+      message.success(res.msg || '已加入购物车')
+      cartStore.refreshCount()
+    })
+    .catch((err) => {
+      message.error(err.msg || '加入失败')
+    })
+}
 
 const initSider = () => {
   contentData.cData.push({key:'-1', title:'全部'})
@@ -250,7 +301,7 @@ const getThingList = (data) => {
 <style scoped lang="less">
 .mall-feed {
   box-sizing: border-box;
-  min-height: calc(100vh - 56px);
+  min-height: calc(100vh - 64px);
   padding: 80px 24px 24px;
 }
 
@@ -281,24 +332,32 @@ const getThingList = (data) => {
 }
 
 .mall-card {
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  padding: 14px 16px;
-  margin-bottom: 10px;
+  background: @bg-card;
+  border-radius: @radius-lg;
+  box-shadow: @shadow-card;
+  padding: @space-4;
+  margin-bottom: @space-3;
   box-sizing: border-box;
+  border: 1px solid @border-light;
+  transition: box-shadow @transition-base,
+              border-color @transition-base;
+
+  &:hover {
+    box-shadow: @shadow-card-hover;
+    border-color: @border-subtle;
+  }
 }
 
 .mall-card-title {
-  color: #4d4d4d;
+  color: @text-secondary;
   font-weight: 600;
-  font-size: 16px;
+  font-size: @font-size-lg;
   line-height: 24px;
-  margin: 0 0 10px;
+  margin: 0 0 12px;
 }
 
 .mall-card-title--tags {
-  margin-top: 18px;
+  margin-top: 20px;
 }
 
 .mall-banner-wrap {
@@ -307,13 +366,13 @@ const getThingList = (data) => {
 }
 
 .mall-banner-carousel {
-  border-radius: 16px;
+  border-radius: @radius-xl;
   overflow: hidden;
 }
 
 .banner-slide {
   height: 140px;
-  border-radius: 16px;
+  border-radius: @radius-xl;
   border: none;
   display: flex !important;
   align-items: center;
@@ -345,6 +404,7 @@ const getThingList = (data) => {
   border-radius: 20px;
   background: rgba(255, 255, 255, 0.25);
   margin-bottom: 8px;
+  font-weight: 500;
 }
 
 .banner-title {
@@ -352,6 +412,7 @@ const getThingList = (data) => {
   font-size: 22px;
   font-weight: 700;
   letter-spacing: 0.02em;
+  font-family: @font-display;
 }
 
 .banner-sub {
@@ -391,6 +452,7 @@ const getThingList = (data) => {
   background: transparent;
   cursor: pointer;
   font-family: inherit;
+  transition: transform @transition-fast;
 }
 
 .kingkong-item:last-child {
@@ -400,36 +462,49 @@ const getThingList = (data) => {
 .kingkong-icon {
   width: 48px;
   height: 48px;
-  border-radius: 16px;
-  background: linear-gradient(145deg, #ecf3fc, #dfeaf9);
-  color: #4684e2;
+  border-radius: @radius-lg;
+  background: linear-gradient(145deg, @bg-input, @primary-blue-light);
+  color: @primary-blue;
   font-size: 18px;
   font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 6px;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  margin-bottom: 8px;
+  transition: transform @transition-spring, box-shadow @transition-base;
+  box-shadow: @shadow-sm;
+}
+
+.kingkong-item:hover .kingkong-icon {
+  transform: translateY(-2px) scale(1.04);
+  box-shadow: @shadow-md;
 }
 
 .kingkong-item--active .kingkong-icon {
-  box-shadow: 0 2px 10px rgba(70, 132, 226, 0.35);
+  background: linear-gradient(145deg, @primary-blue, @primary-blue-hover);
+  color: @white;
+  box-shadow: 0 4px 14px rgba(70, 132, 226, 0.4);
   transform: scale(1.04);
 }
 
 .kingkong-label {
   font-size: 11px;
-  color: #333;
+  color: @text-secondary;
   text-align: center;
   line-height: 1.3;
   max-width: 64px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  transition: color @transition-fast;
+}
+
+.kingkong-item:hover .kingkong-label {
+  color: @primary-blue;
 }
 
 .kingkong-item--active .kingkong-label {
-  color: #4684e2;
+  color: @primary-blue;
   font-weight: 600;
 }
 
@@ -438,8 +513,11 @@ const getThingList = (data) => {
     background: transparent;
   }
   :deep(.ant-tree .ant-tree-node-content-wrapper.ant-tree-node-selected) {
-    background: rgba(70, 132, 226, 0.12);
-    color: #4684e2;
+    background: @primary-blue-subtle !important;
+    color: @primary-blue !important;
+  }
+  :deep(.ant-tree .ant-tree-node-content-wrapper:hover) {
+    background: @primary-blue-light !important;
   }
 }
 
@@ -455,34 +533,38 @@ const getThingList = (data) => {
 }
 
 .tag {
-  background: #fff;
-  border: 1px solid #a1adc6;
+  background: @white;
+  border: 1px solid @border-subtle;
   box-sizing: border-box;
-  border-radius: 16px;
+  border-radius: @radius-full;
   height: auto;
   min-height: 20px;
   line-height: 18px;
-  padding: 4px 10px;
-  margin: 8px 8px 0 0;
+  padding: 4px 12px;
+  margin: 6px 6px 0 0;
   cursor: pointer;
-  font-size: 12px;
-  color: #152833;
+  font-size: @font-size-sm;
+  color: @text-secondary;
+  transition: all @transition-fast;
 }
 
 .tag:hover {
-  background: #4684e3;
-  color: #fff;
-  border: 1px solid #4684e3;
+  background: @primary-blue;
+  color: @white;
+  border: 1px solid @primary-blue;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(70, 132, 226, 0.3);
 }
 
 .tag-select {
-  background: #4684e3;
-  color: #fff;
-  border: 1px solid #4684e3;
+  background: @primary-blue;
+  color: @white;
+  border: 1px solid @primary-blue;
+  box-shadow: 0 2px 8px rgba(70, 132, 226, 0.3);
 }
 
 .sort-card {
-  padding: 6px 16px 10px;
+  padding: 8px 16px 12px;
 }
 
 .flex-view {
@@ -498,8 +580,8 @@ const getThingList = (data) => {
 
 .order-view {
   position: relative;
-  color: #666;
-  font-size: 14px;
+  color: @text-muted;
+  font-size: @font-size-base;
   padding-bottom: 4px;
 }
 
@@ -508,13 +590,18 @@ const getThingList = (data) => {
 }
 
 .order-view .tab {
-  color: #999;
+  color: @text-hint;
   margin-right: 20px;
   cursor: pointer;
+  transition: color @transition-fast;
+}
+
+.order-view .tab:hover {
+  color: @text-secondary;
 }
 
 .order-view .tab-select {
-  color: #152844;
+  color: @navy-dark;
   font-weight: 600;
 }
 
@@ -524,9 +611,60 @@ const getThingList = (data) => {
   left: 84px;
   width: 16px;
   height: 3px;
-  background: #4684e2;
+  background: @primary-blue;
   border-radius: 2px;
-  transition: left 0.3s;
+  transition: left @transition-base;
+  box-shadow: 0 1px 4px rgba(70, 132, 226, 0.4);
+}
+
+.cart-bar {
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+  padding-top: 12px;
+  border-top: 1px solid @border-light;
+  cursor: pointer;
+  user-select: none;
+  transition: opacity @transition-fast;
+
+  &:hover {
+    opacity: 0.8;
+  }
+}
+
+.cart-bar-icon-wrap {
+  position: relative;
+  width: 28px;
+  height: 28px;
+}
+
+.cart-bar-icon {
+  width: 28px;
+  height: 28px;
+  display: block;
+}
+
+.cart-bar-badge {
+  position: absolute;
+  top: -6px;
+  right: -8px;
+  min-width: 18px;
+  height: 18px;
+  line-height: 18px;
+  padding: 0 4px;
+  font-size: 11px;
+  color: @white;
+  text-align: center;
+  background: @error;
+  border-radius: 9px;
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgba(255, 77, 79, 0.4);
+}
+
+.cart-bar-label {
+  font-size: @font-size-base;
+  color: @navy-dark;
+  font-weight: 500;
 }
 
 .mall-spin {
@@ -545,22 +683,33 @@ const getThingList = (data) => {
 
 .pc-thing-list .thing-item {
   break-inside: avoid;
-  margin-bottom: 8px;
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  margin-bottom: 10px;
+  background: @white;
+  border-radius: @radius-lg;
+  box-shadow: @shadow-card;
   overflow: hidden;
   cursor: pointer;
   display: inline-block;
   width: 100%;
   vertical-align: top;
+  border: 1px solid @border-light;
+  transition: transform @transition-base,
+              box-shadow @transition-base,
+              border-color @transition-base;
+
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: @shadow-card-hover;
+    border-color: @border-subtle;
+  }
 }
 
 .pc-thing-list .img-view {
   width: 100%;
   height: auto;
   line-height: 0;
-  background: #fafafa;
+  background: @bg-page;
+  overflow: hidden;
 }
 
 .pc-thing-list .img-view img {
@@ -570,19 +719,70 @@ const getThingList = (data) => {
   max-height: 220px;
   object-fit: cover;
   display: block;
-  border-radius: 12px 12px 0 0;
+  border-radius: @radius-lg @radius-lg 0 0;
+  transition: transform @transition-slow;
+}
+
+.pc-thing-list .thing-item:hover .img-view img {
+  transform: scale(1.03);
+}
+
+.pc-thing-list .price-row {
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.pc-thing-list .price-row-left {
+  display: flex;
+  align-items: baseline;
+  flex: 1;
+  min-width: 0;
+}
+
+.pc-thing-list .quick-add-cart {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 50%;
+  background: @primary-blue;
+  color: @white;
+  font-size: 20px;
+  font-weight: 300;
+  line-height: 1;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: @shadow-button;
+  transition: all @transition-fast;
+
+  &:hover {
+    background: @primary-blue-hover;
+    box-shadow: @shadow-button-hover;
+    transform: scale(1.1);
+  }
+
+  &:active {
+    background: @primary-blue-active;
+    transform: scale(0.95);
+    box-shadow: @shadow-xs;
+  }
 }
 
 .pc-thing-list .info-view {
-  padding: 8px 10px 10px;
+  padding: 10px 12px 12px;
   overflow: hidden;
 }
 
 .thing-name {
-  line-height: 1.35;
+  line-height: 1.4;
   margin: 0;
-  color: #0f1111;
-  font-size: 14px;
+  color: @text-primary;
+  font-size: @font-size-base;
   font-weight: 400;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -591,28 +791,22 @@ const getThingList = (data) => {
 }
 
 .price-row {
-  margin-top: 6px;
+  margin-top: 8px;
 }
 
 .a-price-symbol {
   position: relative;
   top: -0.35em;
-  font-size: 11px;
-  color: #0f1111;
-  font-weight: 400;
+  font-size: 12px;
+  color: @primary-blue;
+  font-weight: 500;
 }
 
 .a-price {
-  color: #0f1111;
-  font-size: 17px;
-  font-weight: 400;
-}
-
-.thing-sales {
-  font-size: 12px;
-  color: #999;
-  margin-top: 4px;
-  line-height: 1.2;
+  color: @primary-blue;
+  font-size: 18px;
+  font-weight: 600;
+  font-family: @font-heading;
 }
 
 .no-data {
@@ -621,8 +815,8 @@ const getThingList = (data) => {
   line-height: 160px;
   text-align: center;
   width: 100%;
-  font-size: 14px;
-  color: #999;
+  font-size: @font-size-base;
+  color: @text-hint;
 }
 
 .page-card {
@@ -635,27 +829,24 @@ const getThingList = (data) => {
   margin: 0;
 }
 
-.page-view :deep(.ant-pagination-item-active) {
-  border-color: #4684e2;
-}
-
-.page-view :deep(.ant-pagination-item-active a) {
-  color: #4684e2;
-}
-
 .mall-banner-wrap :deep(.slick-list) {
-  border-radius: 16px;
+  border-radius: @radius-xl;
 }
 
 .mall-banner-wrap :deep(.slick-dots-bottom) {
-  bottom: 10px;
+  bottom: 12px;
 }
 
 .mall-banner-wrap :deep(.slick-dots li button) {
   background: rgba(255, 255, 255, 0.5);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
 }
 
 .mall-banner-wrap :deep(.slick-dots li.slick-active button) {
-  background: #fff;
+  background: @white;
+  width: 16px;
+  border-radius: 3px;
 }
 </style>

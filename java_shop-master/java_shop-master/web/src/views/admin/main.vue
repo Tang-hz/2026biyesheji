@@ -12,7 +12,7 @@
     </a-layout-header>
     <a-layout>
       <a-layout-sider v-model="collapsed" collapsible >
-        <a-menu style="overflow:auto; overflow-x: hidden;" v-model:selectedKeys="selectedKeys" theme="dark" mode="inline" @click="handleClick">
+        <a-menu style="overflow:auto; overflow-x: hidden;" v-model:selectedKeys="selectedKeys" theme="light" mode="inline" @click="handleClick">
           <a-menu-item key="overview">
             <home-outlined/>
             <span>总览</span>
@@ -146,21 +146,32 @@ const handleLogout = () => {
 .header {
   display: flex;
   flex-direction: row;
-  align-items: center; // 垂直居中
+  align-items: center;
   padding-left: 24px;
   padding-right: 24px;
+  height: 64px;
+  background: @white;
+  border-bottom: 1px solid @border-light;
+  box-shadow: @shadow-xs;
 
   .header-logo {
-    width: 32px;
-    height: 32px;
+    width: 34px;
+    height: 34px;
     cursor: pointer;
+    transition: transform @transition-fast;
+    &:hover {
+      transform: scale(1.05);
+    }
   }
 
   .header-title {
     margin-left: 16px;
     font-size: 20px;
-    font-weight: bold;
+    font-weight: 700;
+    font-family: @font-heading;
     text-align: center;
+    color: @navy-dark;
+    letter-spacing: @letter-spacing-tight;
   }
 
   .empty {
@@ -168,7 +179,13 @@ const handleLogout = () => {
   }
 
   .header-quit {
-    margin-left: 12px;
+    margin-left: 16px;
+    color: @primary-blue;
+    cursor: pointer;
+    transition: color @transition-fast;
+    &:hover {
+      color: @primary-blue-hover;
+    }
   }
 }
 
@@ -186,26 +203,73 @@ const handleLogout = () => {
 }
 
 #components-layout-demo-custom-trigger .trigger:hover {
-  color: #1890ff;
+  color: @primary-blue;
 }
 
+// Sider styling
+:deep(.ant-layout-sider) {
+  background: @white !important;
+  border-right: 1px solid @border-light;
+  box-shadow: @shadow-xs;
+}
+
+:deep(.ant-layout-sider-trigger) {
+  background-color: @bg-page;
+  border-top: 1px solid @border-light;
+  color: @text-muted;
+}
 
 :deep(.ant-layout-content) {
   overflow-x: hidden;
+  background: @bg-page;
 }
-//
-//:deep(.ant-layout-sider) {
-//  padding: 16px 0;
-//  background-color: #f0f2f5;
-//}
-//
-//:deep(.ant-menu) {
-//  padding-top: 16px;
-//  height: 100%;
-//}
-//
-//:deep(.ant-layout-sider-trigger) {
-//  background-color: #fff;
-//  height: 0px; // 故意设置0 隐藏
-//}
+
+// Menu styling - light theme
+:deep(.ant-menu-light) {
+  background: transparent;
+  border: none;
+  padding: @space-3;
+
+  .ant-menu-item {
+    border-radius: @radius-md;
+    margin: @space-1 0;
+    transition: all @transition-fast;
+    color: @text-secondary;
+
+    &:hover {
+      background: @bg-hover;
+      color: @primary-blue;
+    }
+
+    &.ant-menu-item-selected {
+      background: @primary-blue-light;
+      color: @primary-blue;
+      font-weight: 600;
+
+      &::after {
+        display: none;
+      }
+    }
+  }
+
+  .ant-submenu-title {
+    border-radius: @radius-md;
+    margin: @space-1 0;
+    transition: all @transition-fast;
+    color: @text-secondary;
+
+    &:hover {
+      background: @bg-hover;
+      color: @primary-blue;
+    }
+  }
+
+  .ant-menu-submenu-selected {
+    .ant-submenu-title {
+      background: @primary-blue-light;
+      color: @primary-blue;
+      font-weight: 600;
+    }
+  }
+}
 </style>

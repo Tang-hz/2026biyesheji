@@ -116,8 +116,7 @@ public class AccessInterceptor implements HandlerInterceptor {
         opLog.setReMethod(request.getMethod());
         opLog.setReUrl(request.getRequestURI());
         opLog.setReUa(request.getHeader(HttpHeaders.USER_AGENT));
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
-        opLog.setReTime(formatter.format(new Date()));
+        opLog.setReTime(java.time.LocalDateTime.now());
         opLog.setAccessTime(String.valueOf(diff));
         service.createOpLog(opLog);
     }

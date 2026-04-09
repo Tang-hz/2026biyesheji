@@ -16,7 +16,7 @@ public class Comment implements Serializable {
     @TableField
     public String content;
     @TableField
-    public String commentTime;
+    public java.time.LocalDateTime commentTime;
     @TableField
     public String likeCount;
     @TableField

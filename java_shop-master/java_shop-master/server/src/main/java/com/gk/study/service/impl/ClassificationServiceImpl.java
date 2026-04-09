@@ -24,7 +24,7 @@ public class ClassificationServiceImpl extends ServiceImpl<ClassificationMapper,
     @Override
     public void createClassification(Classification classification) {
         System.out.println(classification);
-        classification.setCreateTime(String.valueOf(System.currentTimeMillis()));
+        classification.setCreateTime(java.time.LocalDateTime.now());
         mapper.insert(classification);
     }
 

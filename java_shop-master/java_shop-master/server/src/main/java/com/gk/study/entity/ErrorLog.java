@@ -22,6 +22,6 @@ public class ErrorLog implements Serializable {
     @TableField
     public String content;
     @TableField
-    public String logTime;
+    public java.time.LocalDateTime logTime;
 
 }

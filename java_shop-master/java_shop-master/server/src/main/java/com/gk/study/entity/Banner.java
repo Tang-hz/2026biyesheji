@@ -21,6 +21,6 @@ public class Banner implements Serializable {
     @TableField
     public Long thingId;
     @TableField
-    public String createTime;
+    public java.time.LocalDateTime createTime;
 
 }

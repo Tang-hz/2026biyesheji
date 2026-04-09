@@ -36,7 +36,14 @@ export default ({ command }: ConfigEnv): UserConfig => {
     plugins: createVitePlugins(isBuild),
 
     // css
-    css: {},
+    css: {
+      preprocessorOptions: {
+        less: {
+          javascriptEnabled: true,
+          additionalData: `@import "./src/assets/styles/base.less";`
+        }
+      }
+    },
 
     // server
     server: {

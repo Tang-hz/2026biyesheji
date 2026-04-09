@@ -4,13 +4,11 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 
 @Data
 @TableName("b_user")
@@ -42,13 +40,17 @@ public class User implements Serializable {
     @TableField
     public String score;
     @TableField
+    public Integer memberLevel = 1;
+    @TableField
+    public BigDecimal cumulativeAmount = BigDecimal.ZERO;
+    @TableField
     public String avatar;
     @TableField(exist = false)
     public MultipartFile avatarFile;
     @TableField
     public String token;
     @TableField
-    public String createTime;
+    public java.time.LocalDateTime createTime;
     @TableField
     public String pushEmail;
     @TableField
