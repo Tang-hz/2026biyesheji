@@ -15,6 +15,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import com.gk.study.ai.tool.AiMemberTool;
+import com.gk.study.ai.tool.AiOrderRedeemTool;
 import com.gk.study.ai.tool.AiOrderTool;
 
 import java.time.Duration;
@@ -44,18 +45,19 @@ public class AiModelConfiguration {
     }
 
     /**
-     * 客服工具注册：{@link AiOrderTool}（商品检索/订单查询/下单）+ {@link AiMemberTool}（会员/积分查询）。
+     * 客服工具注册：{@link AiOrderTool}（商品检索/订单查询/下单）+ {@link AiOrderRedeemTool}（积分抵扣下单）+ {@link AiMemberTool}（会员/积分查询）。
      */
     @Bean
     public CustomerServiceAi customerServiceAi(
             StreamingChatLanguageModel streamingChatLanguageModel,
             ChatMemoryProvider chatMemoryProvider,
             AiOrderTool aiOrderTool,
+            AiOrderRedeemTool aiOrderRedeemTool,
             AiMemberTool aiMemberTool) {
         return AiServices.builder(CustomerServiceAi.class)
                 .streamingChatLanguageModel(streamingChatLanguageModel)
                 .chatMemoryProvider(chatMemoryProvider)
-                .tools(aiOrderTool, aiMemberTool)
+                .tools(aiOrderTool, aiOrderRedeemTool, aiMemberTool)
                 .build();
     }
 
@@ -65,12 +67,13 @@ public class AiModelConfiguration {
             ChatMemoryProvider chatMemoryProvider,
             RagKnowledgeContentRetriever ragKnowledgeContentRetriever,
             AiOrderTool aiOrderTool,
+            AiOrderRedeemTool aiOrderRedeemTool,
             AiMemberTool aiMemberTool) {
         return AiServices.builder(RagAnswerAi.class)
                 .streamingChatLanguageModel(streamingChatLanguageModel)
                 .chatMemoryProvider(chatMemoryProvider)
                 .contentRetriever(ragKnowledgeContentRetriever)
-                .tools(aiOrderTool, aiMemberTool)
+                .tools(aiOrderTool, aiOrderRedeemTool, aiMemberTool)
                 .build();
     }
 

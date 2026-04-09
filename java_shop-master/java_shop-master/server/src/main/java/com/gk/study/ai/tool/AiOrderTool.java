@@ -5,6 +5,7 @@ import com.gk.study.entity.Order;
 import com.gk.study.entity.Thing;
 import com.gk.study.service.AddressService;
 import com.gk.study.service.OrderService;
+import com.gk.study.service.PointsService;
 import com.gk.study.service.ThingService;
 import dev.langchain4j.agent.tool.P;
 import dev.langchain4j.agent.tool.Tool;
@@ -24,13 +25,16 @@ public class AiOrderTool {
     private final ThingService thingService;
     private final OrderService orderService;
     private final AddressService addressService;
+    private final PointsService pointsService;
 
     public AiOrderTool(ThingService thingService,
                         OrderService orderService,
-                        AddressService addressService) {
+                        AddressService addressService,
+                        PointsService pointsService) {
         this.thingService = thingService;
         this.orderService = orderService;
         this.addressService = addressService;
+        this.pointsService = pointsService;
     }
 
     private static final int SEARCH_RESULT_LIMIT = 8;
@@ -123,7 +127,7 @@ public class AiOrderTool {
         return sb.toString();
     }
 
-    @Tool("用户已提供检索结果中的数字「商品ID」、或粘贴含 ID 的片段时要下单，调用本工具。比按标题匹配更可靠。用户只说「帮我下单」且上一轮检索仅一条时，用该条的商品ID调用本工具。")
+    @Tool("用户已提供检索结果中的数字「商品ID」、或粘贴含 ID 的片段时要下单，调用本工具。比按标题匹配更可靠。用户说「帮我下单」且上一轮检索仅一条时，用该条的商品ID调用本工具。\n重要：当用户提到「用xxx积分兑换」「用xxx积分抵扣」「兑换xxx积分」时，必须从用户话语中提取积分数量填入 redeemPoints 参数，例如用户说「用500积分兑换」则 redeemPoints=500。")
     public String orderByThingId(
             @P("商品主键 ID，纯数字；可从上一轮检索结果的「商品ID：」后复制，或从用户粘贴内容中解析。")
             String thingId,
@@ -133,6 +137,9 @@ public class AiOrderTool {
 
             @P(value = "备注信息，可选。", required = false)
             String remark,
+
+            @P(value = "积分抵扣数量，当用户提到「用xxx积分兑换」「用xxx积分抵扣」时必须提取填写；未提到则填 null 表示不使用积分抵扣。", required = false)
+            Integer redeemPoints,
 
             @ToolMemoryId
             String userId
@@ -155,10 +162,10 @@ public class AiOrderTool {
         int quantity = (count == null || count < 1) ? 1 : count;
         String finalRemark = (remark == null || remark.trim().isEmpty()) ? null : remark.trim();
 
-        return placeOrder(thing, uid, quantity, finalRemark);
+        return placeOrder(thing, uid, quantity, finalRemark, redeemPoints);
     }
 
-    @Tool("用户要按「商品标题/名称」下单时调用（用户粘贴了完整标题或未提供 ID 时）。若上一轮已检索出唯一一条，用户说「帮我下单」时也可把该条完整标题传入。有商品ID时优先用按ID下单工具。")
+    @Tool("用户要按「商品标题/名称」下单时调用（用户粘贴了完整标题或未提供 ID 时）。若上一轮已检索出唯一一条，用户说「帮我下单」时也可把该条完整标题传入。有商品ID时优先用按ID下单工具。\n重要：当用户提到「用xxx积分兑换」「用xxx积分抵扣」「兑换xxx积分」时，必须从用户话语中提取积分数量填入 redeemPoints 参数，例如用户说「用500积分兑换」则 redeemPoints=500。")
     public String orderByThingTitle(
             @P("商品标题：尽量与检索结果中「标题：」后的原文一致；可从对话上文最近一次检索工具返回值中复制，不要加 ** 等符号。")
             String thingTitle,
@@ -168,6 +175,9 @@ public class AiOrderTool {
 
             @P(value = "备注信息，可选。", required = false)
             String remark,
+
+            @P(value = "积分抵扣数量，当用户提到「用xxx积分兑换」「用xxx积分抵扣」时必须提取填写；未提到则填 null 表示不使用积分抵扣。", required = false)
+            Integer redeemPoints,
 
             @ToolMemoryId
             String userId
@@ -190,10 +200,10 @@ public class AiOrderTool {
             return "我没在商品列表里找到与「" + normalizedTitle + "」匹配的商品。请提供更准确的标题，或使用检索结果中的「商品ID」下单。";
         }
 
-        return placeOrder(thing, uid, quantity, finalRemark);
+        return placeOrder(thing, uid, quantity, finalRemark, redeemPoints);
     }
 
-    private String placeOrder(Thing thing, String uid, int quantity, String finalRemark) {
+    private String placeOrder(Thing thing, String uid, int quantity, String finalRemark, Integer redeemPoints) {
         List<Address> addresses = addressService.getAddressList(uid);
         if (addresses == null || addresses.isEmpty()) {
             return "你还没有收货地址。请先去【地址管理】新增地址后再下单。";
@@ -214,13 +224,21 @@ public class AiOrderTool {
         if (finalRemark != null) {
             order.setRemark(finalRemark);
         }
+        if (redeemPoints != null && redeemPoints > 0) {
+            order.setRedeemPoints(redeemPoints);
+        }
 
         orderService.createOrder(order);
 
         if (order.getOrderNumber() == null || order.getOrderNumber().isBlank()) {
             return "下单成功，但订单号生成失败，请稍后重试。";
         }
-        return "已为你下单《" + nullToEmpty(thing.getTitle()) + "》，订单号：" + order.getOrderNumber();
+        String result = "已为你下单《" + nullToEmpty(thing.getTitle()) + "》，订单号：" + order.getOrderNumber();
+        if (redeemPoints != null && redeemPoints > 0) {
+            int remainingPoints = pointsService.getUserPoints(Long.parseLong(uid));
+            result += "。已使用" + redeemPoints + "积分抵扣" + (redeemPoints / 100.0) + "元，剩余积分：" + remainingPoints;
+        }
+        return result;
     }
 
     private Thing findBestThingByTitle(String normalizedTitle) {

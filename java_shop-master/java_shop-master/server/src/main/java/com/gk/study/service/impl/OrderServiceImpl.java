@@ -71,6 +71,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         // 积分抵扣（如果有）
         BigDecimal redeemMoney = BigDecimal.ZERO;
         int usedPoints = (order.getRedeemPoints() != null) ? order.getRedeemPoints() : 0;
+        System.out.println("[OrderService] redeemPoints from order: " + order.getRedeemPoints() + ", usedPoints: " + usedPoints);
         if (usedPoints > 0) {
             redeemMoney = PriceUtils.pointsToMoney(usedPoints);
             finalPrice = finalPrice.subtract(redeemMoney);
@@ -96,7 +97,9 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
 
         // 抵扣积分扣减（如有）
         if (usedPoints > 0) {
-            pointsService.deductPoints(userId, usedPoints, "订单抵扣");
+            System.out.println("[OrderService] calling deductPoints: userId=" + userId + ", points=" + usedPoints);
+            int deducted = pointsService.deductPoints(userId, usedPoints, "订单抵扣");
+            System.out.println("[OrderService] deductPoints result: " + deducted);
         }
 
         // 更新用户累计消费金额并检查会员升级（按实际支付额）

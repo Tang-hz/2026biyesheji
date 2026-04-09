@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
@@ -74,7 +75,9 @@ public class OrderController {
     @Operation(summary = "创建订单")
     @RequestMapping(value = "/create", method = RequestMethod.POST)
     @Transactional
-    public APIResponse create(Order order) throws IOException {
+    public APIResponse create(Order order,
+                              @RequestParam(value = "redeemPoints", required = false) Integer redeemPoints) throws IOException {
+        order.setRedeemPoints(redeemPoints);
         service.createOrder(order);
         return new APIResponse(ResponeCode.SUCCESS, "创建成功");
     }
