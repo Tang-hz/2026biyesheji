@@ -11,6 +11,7 @@
           <div class="list-th flex-view">
             <span class="line-1">商品名称</span>
             <span class="line-2">单价</span>
+            <span class="line-3">折扣价</span>
             <span class="line-5">数量</span>
             <span class="line-6">操作</span>
           </div>
@@ -20,7 +21,8 @@
                 <img :src="item.cover" alt="" />
                 <h2>{{ item.title }}</h2>
               </div>
-              <div class="pay">¥{{ item.price }}</div>
+              <div class="pay origin">¥{{ item.price }}</div>
+              <div class="pay discounted">¥{{ item.finalPrice }}</div>
               <div class="num-box flex-view">
                 <span class="num-btn" @click="decQty(item)">−</span>
                 <span class="num-val">{{ item.count }}</span>
@@ -61,17 +63,38 @@
         </div>
         <div class="price-view">
           <div class="price-item flex-view">
-            <div class="item-name">商品总价</div>
-            <div class="price-txt">¥{{ totalAmount }}</div>
+            <div class="item-name">商品总价（原价）</div>
+            <div class="price-txt">¥{{ orderSummary.totalSubtotal || '0.00' }}</div>
           </div>
           <div class="price-item flex-view">
-            <div class="item-name">商品优惠</div>
-            <div class="price-txt">¥0</div>
+            <div class="item-name">{{ orderSummary.memberLevelName || '会员' }}折扣</div>
+            <div class="price-txt discount">-¥{{ orderSummary.totalDiscountAmount || '0.00' }}</div>
+          </div>
+          <div class="price-item flex-view">
+            <div class="item-name">积分抵扣</div>
+            <div class="price-txt redeem">
+              <span class="redeem-input">
+                <input
+                  type="number"
+                  v-model.number="redeemPointsInput"
+                  :max="orderSummary.maxRedeemPoints || 0"
+                  min="0"
+                  placeholder="0"
+                  @input="onRedeemInput"
+                />
+                <span>积分</span>
+              </span>
+              <span class="redeem-money">抵¥{{ redeemMoneyDisplay }}</span>
+            </div>
+          </div>
+          <div class="price-item flex-view">
+            <div class="item-name">本单可获积分</div>
+            <div class="price-txt">≈{{ orderSummary.totalEarnedPoints || 0 }}积分</div>
           </div>
           <div class="total-price-view flex-view">
-            <span>合计</span>
+            <span>合计（实付）</span>
             <div class="price">
-              <span class="font-big">¥{{ totalAmount }}</span>
+              <span class="font-big">¥{{ finalPayment }}</span>
             </div>
           </div>
           <div class="btns-view">
@@ -174,12 +197,20 @@ const modal = reactive({
 
 const myform = ref();
 
-const totalAmount = computed(() => {
-  let t = 0;
-  for (const item of cartRows.value) {
-    t += Number(item.price) * Number(item.count);
-  }
-  return Math.round(t * 100) / 100;
+// 积分抵扣相关
+const redeemPointsInput = ref(0);
+const orderSummary = ref<any>({});
+
+const redeemMoneyDisplay = computed(() => {
+  const points = redeemPointsInput.value || 0;
+  return (points / 100).toFixed(2);
+});
+
+const finalPayment = computed(() => {
+  const totalFinal = Number(orderSummary.value.totalFinalPrice) || 0;
+  const redeemMoney = (redeemPointsInput.value || 0) / 100;
+  const final = totalFinal - redeemMoney;
+  return Math.max(0, final).toFixed(2);
 });
 
 onMounted(() => {
@@ -201,12 +232,32 @@ const loadCart = () => {
           item.cover = BASE_URL + '/api/staticfiles/image/' + item.cover;
         }
         item.count = Number(item.count);
+        // finalPrice 由后端返回，若无则用原价
+        if (!item.finalPrice) {
+          item.finalPrice = (Number(item.price) * item.count).toFixed(2);
+        }
       });
       cartRows.value = rows;
+      // 从第一个元素取订单汇总信息
+      if (rows.length > 0 && rows[0]._orderSummary) {
+        orderSummary.value = rows[0]._orderSummary;
+      }
+      // 重置积分输入
+      redeemPointsInput.value = 0;
     })
     .catch(() => {
       cartRows.value = [];
     });
+};
+
+const onRedeemInput = () => {
+  const max = orderSummary.value.maxRedeemPoints || 0;
+  if (redeemPointsInput.value > max) {
+    redeemPointsInput.value = max;
+  }
+  if (redeemPointsInput.value < 0) {
+    redeemPointsInput.value = 0;
+  }
 };
 
 const openDetail = (item: any) => {
@@ -344,7 +395,17 @@ const handleJiesuan = async () => {
     return;
   }
   try {
+    // 积分抵扣分摊到每个商品（按折后价比例）
+    const totalFinalPrice = Number(orderSummary.value.totalFinalPrice) || 0;
+    const usedPoints = redeemPointsInput.value || 0;
+    const usedMoney = usedPoints / 100;
+
     for (const item of cartRows.value) {
+      const itemFinalPrice = Number(item.finalPrice) || 0;
+      // 按商品折后价占整单比例分摊积分抵扣
+      const itemRedeemMoney = totalFinalPrice > 0 ? (itemFinalPrice / totalFinalPrice) * usedMoney : 0;
+      const itemRedeemPoints = Math.floor(itemRedeemMoney * 100);
+
       const formData = new FormData();
       formData.append('userId', String(userId));
       formData.append('thingId', String(item.thingId));
@@ -355,12 +416,15 @@ const handleJiesuan = async () => {
       formData.append('receiverName', pageData.receiverName!);
       formData.append('receiverPhone', pageData.receiverPhone!);
       formData.append('receiverAddress', pageData.receiverAddress!);
+      if (itemRedeemPoints > 0) {
+        formData.append('redeemPoints', String(itemRedeemPoints));
+      }
       await createApi(formData);
     }
     await clearCartApi({ userId: String(userId) });
     await cartStore.refreshCount();
     message.success('请支付订单');
-    router.push({ name: 'pay', query: { amount: String(totalAmount.value) } });
+    router.push({ name: 'pay', query: { amount: finalPayment.value } });
   } catch (e: any) {
     message.error(e.msg || e.message || '下单失败');
   }
@@ -420,7 +484,16 @@ const handleJiesuan = async () => {
 
     .line-2 {
       width: 65px;
-      margin-right: 20px;
+      margin-right: 10px;
+      text-decoration: line-through;
+      color: #999;
+    }
+
+    .line-3 {
+      width: 65px;
+      margin-right: 10px;
+      color: #ff6600;
+      font-weight: 600;
     }
 
     .line-5 {
@@ -461,11 +534,20 @@ const handleJiesuan = async () => {
   }
 
   .pay {
-    color: #ff8a00;
     font-weight: 600;
     font-size: 16px;
     width: 65px;
-    margin-right: 20px;
+    margin-right: 10px;
+  }
+
+  .pay.origin {
+    color: #999;
+    text-decoration: line-through;
+  }
+
+  .pay.discounted {
+    color: #ff6600;
+    font-weight: 700;
   }
 
   .num-box {
@@ -603,6 +685,49 @@ const handleJiesuan = async () => {
     .price-txt {
       font-weight: 500;
       color: #ff8a00;
+    }
+
+    .price-txt.discount {
+      color: #52c41a;
+    }
+
+    .price-txt.redeem {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 2px;
+    }
+
+    .redeem-input {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+
+      input {
+        width: 60px;
+        height: 24px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        text-align: center;
+        font-size: 12px;
+        color: #152844;
+        padding: 0 4px;
+
+        &:focus {
+          outline: none;
+          border-color: #4684e2;
+        }
+      }
+
+      span {
+        color: #666;
+        font-size: 12px;
+      }
+    }
+
+    .redeem-money {
+      color: #52c41a;
+      font-size: 12px;
     }
   }
 

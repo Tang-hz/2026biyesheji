@@ -9,19 +9,19 @@
         <div class="cart-list-view">
           <div class="list-th flex-view">
             <span class="line-1">商品名称</span>
-            <span class="line-2">价格</span>
+            <span class="line-2">单价</span>
+            <span class="line-3">折扣价</span>
             <span class="line-5">数量</span>
-            <span class="line-6">操作</span>
           </div>
           <div class="list">
             <div class="items flex-view">
-              <div class="book flex-view">
+              <div class="book flex-view" @click="openDetail">
                 <img :src="pageData.cover">
                 <h2>{{ pageData.title }}</h2>
               </div>
-              <div class="pay">¥{{ pageData.price }}</div>
+              <div class="pay origin">¥{{ memberPrice.price }}</div>
+              <div class="pay discounted">¥{{ itemFinalPrice }}</div>
               <a-input-number v-model:value="pageData.count" :min="1" :max="10" @change="onCountChange"/>
-              <img :src="DeleteIcon" class="delete">
             </div>
           </div>
         </div>
@@ -55,21 +55,38 @@
         </div>
         <div class="price-view">
           <div class="price-item flex-view">
-            <div class="item-name">商品总价</div>
-            <div class="price-txt">¥{{ pageData.amount }}</div>
+            <div class="item-name">商品总价（原价）</div>
+            <div class="price-txt">¥{{ memberPrice.subtotal }}</div>
           </div>
           <div class="price-item flex-view">
-            <div class="item-name">商品优惠</div>
-            <div class="price-txt">¥0</div>
+            <div class="item-name">{{ memberPrice.memberLevelName }}折扣</div>
+            <div class="price-txt discount">-¥{{ memberPrice.discountAmount }}</div>
           </div>
           <div class="price-item flex-view">
-            <div class="item-name">商品折扣</div>
-            <div class="price-txt">¥0</div>
+            <div class="item-name">积分抵扣</div>
+            <div class="price-txt redeem">
+              <span class="redeem-input">
+                <input
+                  type="number"
+                  v-model.number="redeemPointsInput"
+                  :max="memberPrice.maxRedeemPoints || 0"
+                  min="0"
+                  placeholder="0"
+                  @input="onRedeemInput"
+                />
+                <span>积分</span>
+              </span>
+              <span class="redeem-money">抵¥{{ redeemMoneyDisplay }}</span>
+            </div>
+          </div>
+          <div class="price-item flex-view">
+            <div class="item-name">本单可获积分</div>
+            <div class="price-txt">≈{{ memberPrice.earnedPoints }}积分</div>
           </div>
           <div class="total-price-view flex-view">
-            <span>合计</span>
+            <span>合计（实付）</span>
             <div class="price">
-              <span class="font-big">¥{{ pageData.amount }}</span>
+              <span class="font-big">¥{{ finalPayment }}</span>
             </div>
           </div>
           <div class="btns-view">
@@ -138,18 +155,19 @@ import Footer from '/@/views/index/components/footer.vue'
 import DeleteIcon from '/@/assets/images/delete-icon.svg'
 import {createApi} from '/@/api/order'
 import {listApi as listAddressListApi, createApi as createAddressApi} from '/@/api/address'
+import {calcPriceApi} from '/@/api/member'
 import {useUserStore} from "/@/store";
+import {BASE_URL} from "/@/store/constants";
 
 const router = useRouter();
 const route = useRoute();
 const userStore = useUserStore();
 
-
 const pageData = reactive({
   id: undefined,
   title: undefined,
   cover: undefined,
-  price: undefined,
+  price: 0,
   remark: undefined,
   count: 1,
   amount: undefined,
@@ -157,6 +175,23 @@ const pageData = reactive({
   receiverPhone: undefined,
   receiverAddress: undefined
 })
+
+const memberPrice = reactive({
+  price: 0,
+  subtotal: 0,
+  discountRate: 1,
+  discountAmount: 0,
+  finalPrice: 0,
+  earnedPoints: 0,
+  memberLevel: 1,
+  memberLevelName: '普通会员',
+  userPoints: 0,
+  maxRedeemPoints: 0,
+  maxRedeemMoney: 0,
+  nextLevelThreshold: null,
+})
+
+const redeemPointsInput = ref(0)
 
 // 弹窗数据
 const modal = reactive({
@@ -176,25 +211,85 @@ const modal = reactive({
 
 const myform = ref()
 
-onMounted(() => {
+const redeemMoneyDisplay = computed(() => {
+  return ((redeemPointsInput.value || 0) / 100).toFixed(2);
+});
 
+const itemFinalPrice = computed(() => {
+  const p = Number(memberPrice.price) || 0;
+  return (p * pageData.count).toFixed(2);
+});
+
+const finalPayment = computed(() => {
+  const totalFinal = Number(memberPrice.finalPrice) || 0;
+  const redeemMoney = (redeemPointsInput.value || 0) / 100;
+  const final = totalFinal - redeemMoney;
+  return Math.max(0, final).toFixed(2);
+});
+
+onMounted(() => {
   pageData.id = route.query.id
   pageData.title = route.query.title
   pageData.cover = route.query.cover
-  pageData.price = route.query.price
+  pageData.price = Number(route.query.price) || 0
+  pageData.count = 1
   pageData.amount = pageData.price
 
+  if (pageData.cover) {
+    pageData.cover = BASE_URL + '/api/staticfiles/image/' + pageData.cover
+  }
+
   listAddressData()
+  loadMemberPrice()
 })
+
+const loadMemberPrice = () => {
+  if (!userStore.user_id || !pageData.id) return
+  calcPriceApi({
+    thingId: pageData.id,
+    count: pageData.count,
+    userId: userStore.user_id
+  }).then((res: any) => {
+    const data = res.data || {}
+    memberPrice.price = Number(data.price) || 0
+    memberPrice.subtotal = Number(data.subtotal) || 0
+    memberPrice.discountRate = Number(data.discountRate) || 1
+    memberPrice.discountAmount = Number(data.discountAmount) || 0
+    memberPrice.finalPrice = Number(data.finalPrice) || 0
+    memberPrice.earnedPoints = Number(data.earnedPoints) || 0
+    memberPrice.memberLevel = Number(data.memberLevel) || 1
+    memberPrice.memberLevelName = data.memberLevelName || '普通会员'
+    memberPrice.userPoints = Number(data.userPoints) || 0
+    memberPrice.maxRedeemPoints = Number(data.maxRedeemPoints) || 0
+    memberPrice.maxRedeemMoney = Number(data.maxRedeemMoney) || 0
+    memberPrice.nextLevelThreshold = data.nextLevelThreshold
+    redeemPointsInput.value = 0
+  }).catch(() => {})
+}
+
+const onCountChange = (value: number) => {
+  pageData.count = value
+  loadMemberPrice()
+}
+
+const onRedeemInput = () => {
+  const max = memberPrice.maxRedeemPoints || 0
+  if (redeemPointsInput.value > max) redeemPointsInput.value = max
+  if (redeemPointsInput.value < 0) redeemPointsInput.value = 0
+}
+
+const openDetail = () => {
+  const text = router.resolve({ name: 'detail', query: { id: String(pageData.id) } });
+  window.open(text.href, '_blank');
+}
 
 const handleAdd = () => {
   resetModal();
   modal.visile = true;
   modal.editFlag = false;
   modal.title = '新增';
-  // 重置
   for (const key in modal.form) {
-    modal.form[key] = undefined;
+    (modal.form as any)[key] = undefined;
   }
 };
 
@@ -208,17 +303,10 @@ const handleOk = () => {
         const formData = new FormData()
         formData.append('userId', userStore.user_id)
         formData.append('def', modal.form.default ? '1':'0')
-        if (modal.form.name) {
-          formData.append('name', modal.form.name)
-        }
-        if (modal.form.mobile) {
-          formData.append('mobile', modal.form.mobile)
-        }
-        if (modal.form.desc) {
-          formData.append('description', modal.form.desc)
-        }
+        if (modal.form.name) formData.append('name', modal.form.name)
+        if (modal.form.mobile) formData.append('mobile', modal.form.mobile)
+        if (modal.form.desc) formData.append('description', modal.form.desc)
         createAddressApi(formData).then(res => {
-          console.log(res)
           hideModal()
           pageData.receiverName = modal.form.name
           pageData.receiverAddress = modal.form.desc
@@ -227,39 +315,23 @@ const handleOk = () => {
           message.error(err.msg || '新建失败')
         })
       })
-      .catch((err) => {
-        console.log(err);
-        console.log('不能为空');
-      });
+      .catch(() => {})
 };
 
-const handleCancel = () => {
-  hideModal();
-};
+const handleCancel = () => hideModal();
 
-// 恢复表单初始状态
-const resetModal = () => {
-  myform.value?.resetFields();
-};
+const resetModal = () => myform.value?.resetFields();
 
-// 关闭弹窗
-const hideModal = () => {
-  modal.visile = false;
-};
-
-const onCountChange = (value) => {
-  pageData.amount = pageData.price * value
-}
+const hideModal = () => { modal.visile = false; };
 
 const listAddressData = () => {
   let userId = userStore.user_id
-  listAddressListApi({userId: userId}).then(res => {
-
-    if (res.data.length > 0) {
+  listAddressListApi({userId}).then(res => {
+    if (res.data?.length > 0) {
       pageData.receiverName = res.data[0].name
       pageData.receiverPhone = res.data[0].mobile
       pageData.receiverAddress = res.data[0].description
-      res.data.forEach(item => {
+      res.data.forEach((item: any) => {
         if (item.default) {
           pageData.receiverName = item.name
           pageData.receiverPhone = item.mobile
@@ -267,19 +339,13 @@ const listAddressData = () => {
         }
       })
     }
-  }).catch(err => {
-    console.log(err)
-  })
+  }).catch(err => {})
 }
 
-const handleBack = () => {
-  router.back()
-  console.log('back...')
-}
+const handleBack = () => { router.back() }
+
 const handleJiesuan = () => {
-  const formData = new FormData()
-  let userId = userStore.user_id
-  if (!userId) {
+  if (!userStore.user_id) {
     message.warn('请先登录！')
     return
   }
@@ -287,33 +353,30 @@ const handleJiesuan = () => {
     message.warn('请选择地址！')
     return
   }
-  formData.append('userId', userId)
+  const formData = new FormData()
+  formData.append('userId', userStore.user_id)
   formData.append('thingId', pageData.id)
-  formData.append('count', pageData.count)
-  if (pageData.remark) {
-    formData.append('remark', pageData.remark)
-  }
+  formData.append('count', String(pageData.count))
+  if (pageData.remark) formData.append('remark', pageData.remark)
   formData.append('receiverName', pageData.receiverName)
   formData.append('receiverPhone', pageData.receiverPhone)
   formData.append('receiverAddress', pageData.receiverAddress)
-  console.log(formData)
-  createApi(formData).then(res => {
+  if (redeemPointsInput.value > 0) {
+    formData.append('redeemPoints', String(redeemPointsInput.value))
+  }
+  createApi(formData).then(() => {
     message.success('请支付订单')
-    router.push({'name': 'pay', query: {'amount': pageData.amount}})
+    router.push({'name': 'pay', query: {'amount': finalPayment.value}})
   }).catch(err => {
-    message.error(err.msg || '失败')
+    message.error(err.msg || '下单失败')
   })
-
 }
-
 
 </script>
 
 <style scoped lang="less">
 
 .flex-view {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
 }
 
@@ -324,18 +387,12 @@ const handleJiesuan = () => {
 }
 
 .left-flex {
-  -webkit-box-flex: 17;
-  -ms-flex: 17;
   flex: 17;
   padding-right: 20px;
 }
 
 .title {
-  -webkit-box-pack: justify;
-  -ms-flex-pack: justify;
   justify-content: space-between;
-  -webkit-box-align: center;
-  -ms-flex-align: center;
   align-items: center;
 
   h3 {
@@ -359,40 +416,37 @@ const handleJiesuan = () => {
     font-size: 14px;
 
     .line-1 {
-      -webkit-box-flex: 1;
-      -ms-flex: 1;
       flex: 1;
       margin-right: 20px;
     }
 
-    .line-2, .pc-style .cart-list-view .list-th .line-3, .pc-style .cart-list-view .list-th .line-4 {
+    .line-2 {
       width: 65px;
-      margin-right: 20px;
+      margin-right: 10px;
+      text-decoration: line-through;
+      color: #999;
+    }
+
+    .line-3 {
+      width: 65px;
+      margin-right: 10px;
+      color: #ff6600;
+      font-weight: 600;
     }
 
     .line-5 {
       width: 80px;
-      margin-right: 40px;
-    }
-
-    .line-6 {
-      width: 28px;
+      margin-right: 0;
     }
   }
 }
 
 .items {
-  -webkit-box-align: center;
-  -ms-flex-align: center;
   align-items: center;
   margin-top: 20px;
 
   .book {
-    -webkit-box-flex: 1;
-    -ms-flex: 1;
     flex: 1;
-    -webkit-box-align: center;
-    -ms-flex-align: center;
     align-items: center;
     margin-right: 20px;
     cursor: pointer;
@@ -404,8 +458,6 @@ const handleJiesuan = () => {
     }
 
     h2 {
-      -webkit-box-flex: 1;
-      -ms-flex: 1;
       flex: 1;
       font-size: 14px;
       line-height: 22px;
@@ -413,50 +465,22 @@ const handleJiesuan = () => {
     }
   }
 
-  .type {
-    width: 65px;
-    margin-right: 20px;
-    color: #152844;
-    font-size: 14px;
-  }
-
   .pay {
-    color: #ff8a00;
     font-weight: 600;
     font-size: 16px;
     width: 65px;
-    margin-right: 20px;
+    margin-right: 10px;
   }
 
-  .num-box {
-    width: 80px;
-    margin-right: 43px;
-    border-radius: 4px;
-    border: 1px solid #cedce4;
-    -webkit-box-pack: justify;
-    -ms-flex-pack: justify;
-    justify-content: space-between;
-    -webkit-box-align: center;
-    -ms-flex-align: center;
-    align-items: center;
-    height: 32px;
-    padding: 0 4px;
+  .pay.origin {
+    color: #999;
+    text-decoration: line-through;
   }
 
-  .delete {
-    margin-left: 36px;
-    width: 24px;
-    cursor: pointer;
+  .pay.discounted {
+    color: #ff6600;
+    font-weight: 700;
   }
-}
-
-.mb-24 {
-  margin-bottom: 24px;
-}
-
-.show-txt {
-  color: #ff8a00;
-  font-size: 14px;
 }
 
 .remark {
@@ -465,7 +489,6 @@ const handleJiesuan = () => {
   border: 0;
   border-radius: 4px;
   padding: 6px 12px;
-  //color: #152844;
   margin-top: 16px;
   resize: none;
   height: 56px;
@@ -473,8 +496,6 @@ const handleJiesuan = () => {
 }
 
 .right-flex {
-  -webkit-box-flex: 8;
-  -ms-flex: 8;
   flex: 8;
   padding-left: 24px;
   border-left: 1px solid #cedce4;
@@ -520,11 +541,7 @@ const handleJiesuan = () => {
   margin-top: 16px;
 
   .price-item {
-    -webkit-box-pack: justify;
-    -ms-flex-pack: justify;
     justify-content: space-between;
-    -webkit-box-align: center;
-    -ms-flex-align: center;
     align-items: center;
     margin-bottom: 8px;
     font-size: 14px;
@@ -537,23 +554,62 @@ const handleJiesuan = () => {
       font-weight: 500;
       color: #ff8a00;
     }
+
+    .price-txt.discount {
+      color: #52c41a;
+    }
+
+    .price-txt.redeem {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 2px;
+    }
+
+    .redeem-input {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+
+      input {
+        width: 60px;
+        height: 24px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        text-align: center;
+        font-size: 12px;
+        color: #152844;
+        padding: 0 4px;
+
+        &:focus {
+          outline: none;
+          border-color: #4684e2;
+        }
+      }
+
+      span {
+        color: #666;
+        font-size: 12px;
+      }
+    }
+
+    .redeem-money {
+      color: #52c41a;
+      font-size: 12px;
+    }
   }
 
   .total-price-view {
     margin-top: 12px;
     border-top: 1px solid #cedce4;
-    -webkit-box-pack: justify;
-    -ms-flex-pack: justify;
     justify-content: space-between;
-    -webkit-box-align: start;
-    -ms-flex-align: start;
     align-items: flex-start;
     padding-top: 10px;
     color: #152844;
     font-weight: 500;
 
     .price {
-      color: #ff8a00;
+      color: #ff6600;
       font-size: 16px;
       height: 36px;
       line-height: 36px;
@@ -567,6 +623,7 @@ const handleJiesuan = () => {
     .buy {
       background: #fff;
       color: #4684e2;
+      border: 1px solid #4684e2;
     }
 
     .jiesuan {
@@ -583,12 +640,10 @@ const handleJiesuan = () => {
       margin-left: 16px;
       text-align: center;
       border-radius: 32px;
-      border: 1px solid #4684e2;
       font-size: 16px;
       outline: none;
     }
   }
-
 }
 
 </style>

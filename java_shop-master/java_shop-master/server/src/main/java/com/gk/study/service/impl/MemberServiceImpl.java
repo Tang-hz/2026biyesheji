@@ -75,4 +75,24 @@ public class MemberServiceImpl implements MemberService {
         user.setCumulativeAmount(cumulative.add(amount));
         userMapper.updateById(user);
     }
+
+    @Override
+    public BigDecimal getNextLevelThreshold(Long userId) {
+        User user = userMapper.selectById(userId);
+        if (user == null || user.getCumulativeAmount() == null) {
+            return MemberLevel.SILVER_THRESHOLD; // 未达标，返回第一档门槛
+        }
+        int level = user.getMemberLevel() != null ? user.getMemberLevel() : MemberLevel.NORMAL;
+        BigDecimal cumulative = user.getCumulativeAmount();
+
+        if (level >= MemberLevel.DIAMOND) {
+            return null; // 已是最高等级
+        } else if (level == MemberLevel.GOLD) {
+            return MemberLevel.DIAMOND_THRESHOLD.subtract(cumulative).max(BigDecimal.ZERO);
+        } else if (level == MemberLevel.SILVER) {
+            return MemberLevel.GOLD_THRESHOLD.subtract(cumulative).max(BigDecimal.ZERO);
+        } else {
+            return MemberLevel.SILVER_THRESHOLD.subtract(cumulative).max(BigDecimal.ZERO);
+        }
+    }
 }

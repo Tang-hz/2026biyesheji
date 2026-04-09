@@ -29,4 +29,9 @@ public interface MemberService {
      * 更新用户累计消费金额
      */
     void updateCumulativeAmount(Long userId, BigDecimal amount);
+
+    /**
+     * 获取距下一等级的门槛差额（返回null表示已是最高等级）
+     */
+    BigDecimal getNextLevelThreshold(Long userId);
 }

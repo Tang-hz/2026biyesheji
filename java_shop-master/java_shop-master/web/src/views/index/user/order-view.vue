@@ -69,11 +69,11 @@
           </div>
           <div class="right flex-view">
             <span class="text">总计</span>
-            <span class="num">¥ {{item.price * item.count}}</span>
+            <span class="num orig">¥ {{item.price * item.count}}</span>
             <span class="text">优惠</span>
-            <span class="num">¥0</span>
+            <span class="num discount">-¥{{((item.price * item.count) - (item.totalPrice || 0)).toFixed(2)}}</span>
             <span class="text">实际支付</span>
-            <span class="money">¥ {{item.price * item.count}}</span>
+            <span class="money">¥ {{item.totalPrice || (item.price * item.count)}}</span>
           </div>
         </div>
       </div>
@@ -374,13 +374,22 @@ const handleCancel =(item)=> {
 
     .num {
       color: #152844;
-      margin: 0 40px 0 8px;
+      margin: 0 8px 0 8px;
+    }
+
+    .num.orig {
+      color: #999;
+      text-decoration: line-through;
+    }
+
+    .num.discount {
+      color: #52c41a;
     }
 
     .money {
       font-weight: 600;
       font-size: 18px;
-      color: #ff7b31;
+      color: #ff6600;
       margin-left: 8px;
     }
   }

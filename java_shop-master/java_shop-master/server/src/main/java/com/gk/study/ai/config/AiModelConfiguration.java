@@ -14,6 +14,7 @@ import dev.langchain4j.service.AiServices;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import com.gk.study.ai.tool.AiMemberTool;
 import com.gk.study.ai.tool.AiOrderTool;
 
 import java.time.Duration;
@@ -43,18 +44,18 @@ public class AiModelConfiguration {
     }
 
     /**
-     * 客服工具注册在 {@link AiOrderTool}：商品检索 {@code searchThingsByKeyword}、
-     * 订单查询 {@code getUserOrderByOrderNumber}、下单 {@code orderByThingId} / {@code orderByThingTitle}。
+     * 客服工具注册：{@link AiOrderTool}（商品检索/订单查询/下单）+ {@link AiMemberTool}（会员/积分查询）。
      */
     @Bean
     public CustomerServiceAi customerServiceAi(
             StreamingChatLanguageModel streamingChatLanguageModel,
             ChatMemoryProvider chatMemoryProvider,
-            AiOrderTool aiOrderTool) {
+            AiOrderTool aiOrderTool,
+            AiMemberTool aiMemberTool) {
         return AiServices.builder(CustomerServiceAi.class)
                 .streamingChatLanguageModel(streamingChatLanguageModel)
                 .chatMemoryProvider(chatMemoryProvider)
-                .tools(aiOrderTool)
+                .tools(aiOrderTool, aiMemberTool)
                 .build();
     }
 
@@ -63,12 +64,13 @@ public class AiModelConfiguration {
             StreamingChatLanguageModel streamingChatLanguageModel,
             ChatMemoryProvider chatMemoryProvider,
             RagKnowledgeContentRetriever ragKnowledgeContentRetriever,
-            AiOrderTool aiOrderTool) {
+            AiOrderTool aiOrderTool,
+            AiMemberTool aiMemberTool) {
         return AiServices.builder(RagAnswerAi.class)
                 .streamingChatLanguageModel(streamingChatLanguageModel)
                 .chatMemoryProvider(chatMemoryProvider)
                 .contentRetriever(ragKnowledgeContentRetriever)
-                .tools(aiOrderTool)
+                .tools(aiOrderTool, aiMemberTool)
                 .build();
     }
 

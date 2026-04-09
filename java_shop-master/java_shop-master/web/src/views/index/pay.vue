@@ -5,6 +5,7 @@
     <Header/>
     <div class="pay-content">
       <div class="title">订单提交成功</div>
+      <div class="price">实付金额：<span class="num">¥{{ amount }}</span></div>
       <div class="pay-choose-view" style="">
         <button class="pay-btn pay-btn-active" @click="handlePay()">查看订单</button>
       </div>

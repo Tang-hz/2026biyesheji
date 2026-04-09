@@ -68,6 +68,17 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         BigDecimal finalPrice = subtotal.multiply(discountRate)
                 .setScale(2, RoundingMode.HALF_UP);
 
+        // 积分抵扣（如果有）
+        BigDecimal redeemMoney = BigDecimal.ZERO;
+        int usedPoints = (order.getRedeemPoints() != null) ? order.getRedeemPoints() : 0;
+        if (usedPoints > 0) {
+            redeemMoney = PriceUtils.pointsToMoney(usedPoints);
+            finalPrice = finalPrice.subtract(redeemMoney);
+            if (finalPrice.compareTo(BigDecimal.ZERO) < 0) {
+                finalPrice = BigDecimal.ZERO;
+            }
+        }
+
         // 设置订单信息
         order.setOrderTime(java.time.LocalDateTime.now());
         order.setOrderNumber(String.valueOf(System.currentTimeMillis()));
@@ -76,15 +87,20 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
 
         mapper.insert(order);
 
-        // 订单完成后：增加积分（每消费1元得1积分，使用原始小计计算）
-        int earnedPoints = PointsRule.calcOrderPoints(subtotal.intValue());
+        // 订单完成后：增加积分（按折后价计算，每消费1元得1积分）
+        int earnedPoints = finalPrice.intValue();
         if (earnedPoints > 0) {
             pointsService.earnPoints(userId, earnedPoints, PointsRule.TYPE_ORDER,
                     order.getId(), "购物获得积分");
         }
 
-        // 更新用户累计消费金额并检查会员升级
-        memberService.checkAndUpgrade(userId, subtotal);
+        // 抵扣积分扣减（如有）
+        if (usedPoints > 0) {
+            pointsService.deductPoints(userId, usedPoints, "订单抵扣");
+        }
+
+        // 更新用户累计消费金额并检查会员升级（按实际支付额）
+        memberService.checkAndUpgrade(userId, finalPrice);
     }
 
     @Override

@@ -48,4 +48,7 @@ public class Order implements Serializable {
     @TableField(exist = false)
     public String price; // 商品价格
 
+    @TableField(exist = false)
+    public Integer redeemPoints; // 积分抵扣数量（可选）
+
 }
