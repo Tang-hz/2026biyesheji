@@ -1,6 +1,7 @@
 package com.gk.study.config;
 
 import com.gk.study.interceptor.AccessInterceptor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
@@ -18,6 +19,10 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
 public class MyConfig implements WebMvcConfigurer {
+
+    @Autowired
+    AccessInterceptor accessInterceptor;
+
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")//项目中的所有接口都支持跨域
@@ -30,7 +35,7 @@ public class MyConfig implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         // 自定义拦截器
-        registry.addInterceptor(new AccessInterceptor())
+        registry.addInterceptor(accessInterceptor)
                 .addPathPatterns("/**") // 拦截所有请求
                 .excludePathPatterns(    // 但是排除掉以下 Knife4j 和 Swagger 的静态资源
                         "/doc.html",

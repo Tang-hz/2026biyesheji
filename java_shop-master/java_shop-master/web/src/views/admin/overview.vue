@@ -153,7 +153,7 @@ const initCharts = () => {
       trigger: 'axis'
     },
     legend: {
-      data: ['IP', 'visit'],
+      data: ['UV(独立访客)', 'PV(访问量)'],
       top: '90%',
       left: 'center'
     },
@@ -194,13 +194,13 @@ const initCharts = () => {
     },
     series: [
       {
-        name: 'IP',
+        name: 'UV(独立访客)',
         type: 'line',
         stack: 'Total',
         data: uvData
       },
       {
-        name: 'visit',
+        name: 'PV(访问量)',
         type: 'line',
         stack: 'Total',
         data: pvData

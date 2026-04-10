@@ -12,8 +12,8 @@ public class OpLog implements Serializable {
     public Long id;
     @TableField
     public String reIp;
-    @TableField
-    public java.time.LocalDateTime reTime;
+    @TableField("re_time")
+    public String reTime;
     @TableField
     public String reUa;
     @TableField

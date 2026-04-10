@@ -21,7 +21,7 @@
         from b_op_log
         <where>
         <if test="day != null">
-            re_time like CONCAT('%',#{day},'%')
+            REPLACE(re_time, 'T', ' ') LIKE CONCAT('%', #{day}, '%')
         </if>
         </where>
         group by re_ip

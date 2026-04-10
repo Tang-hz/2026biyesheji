@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.time.LocalDateTime;
 
 /**
  * 该拦截器有两个用途：1.拦截request记录log 2.接口验权
@@ -116,7 +117,8 @@ public class AccessInterceptor implements HandlerInterceptor {
         opLog.setReMethod(request.getMethod());
         opLog.setReUrl(request.getRequestURI());
         opLog.setReUa(request.getHeader(HttpHeaders.USER_AGENT));
-        opLog.setReTime(java.time.LocalDateTime.now());
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        opLog.setReTime(sdf.format(new Date()));
         opLog.setAccessTime(String.valueOf(diff));
         service.createOpLog(opLog);
     }
