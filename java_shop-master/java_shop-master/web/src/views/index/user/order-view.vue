@@ -19,15 +19,13 @@
             <span class="time">{{getFormatTime(item.orderTime, true)}}</span>
           </div>
           <div class="right">
-            <a-popconfirm
-              v-if="item.status==='1'"
-              title="确定取消订单？"
-              ok-text="是"
-              cancel-text="否"
-              @confirm="handleCancel(item)"
-            >
-              <a-button type="primary" size="small" style="margin-right: 24px;">取消</a-button>
-            </a-popconfirm>
+            <a-button
+              v-if="item.status==='1' || item.status==='2'"
+              type="primary"
+              size="small"
+              style="margin-right: 24px;"
+              @click="handleCancel(item)"
+            >取消</a-button>
             <span class="text">订单状态</span>
             <span class="state">{{item.status==='1'? '待支付': item.status === '2'? '已支付':'已取消'}}</span>
           </div>
@@ -82,7 +80,7 @@
 </template>
 
 <script setup>
-import {message} from "ant-design-vue";
+import {message, Modal} from "ant-design-vue";
 import {onBeforeUnmount, onMounted, ref} from 'vue';
 import {getFormatTime} from '/@/utils/'
 import {userOrderListApi} from '/@/api/order'
@@ -102,9 +100,9 @@ let orderRefreshTimer = undefined
 onMounted(() => {
   getOrderList()
   // 最简单的轮询：用户进入订单页后自动刷新最新订单
-  orderRefreshTimer = window.setInterval(() => {
-    getOrderList()
-  }, 5000)
+  // orderRefreshTimer = window.setInterval(() => {
+  //   getOrderList()
+  // }, 5000)
 })
 
 onBeforeUnmount(() => {
@@ -151,8 +149,9 @@ const handleCancel =(item)=> {
   cancelUserOrderApi({
     id: item.id
   }).then(res => {
-    message.success('取消成功')
-    getOrderList()
+    message.success('订单已取消')
+    // 从本地列表中移除该订单
+    orderData.value = orderData.value.filter(o => o.id !== item.id)
   }).catch(err => {
     message.error(err.msg || '取消失败')
   })

@@ -140,7 +140,7 @@ public class OrderController {
     /**
      * 取消用户订单（用户功能）
      * 登录用户可以取消自己的订单
-     * 
+     *
      * @param id 订单 ID
      * @return APIResponse 取消结果响应
      * @throws IOException 可能抛出的 IO 异常
@@ -150,11 +150,8 @@ public class OrderController {
     @RequestMapping(value = "/cancelUserOrder", method = RequestMethod.POST)
     @Transactional
     public APIResponse cancelUserOrder(Long id) throws IOException {
-        Order order = new Order();
-        order.setId(id);
-        order.setStatus("7"); // 7=取消
-        service.updateOrder(order);
-        return new APIResponse(ResponeCode.SUCCESS, "取消成功");
+        service.deleteOrder(id.toString());
+        return new APIResponse(ResponeCode.SUCCESS, "删除成功");
     }
 
 }

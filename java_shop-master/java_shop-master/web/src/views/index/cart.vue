@@ -241,6 +241,9 @@ const loadCart = () => {
       // 从第一个元素取订单汇总信息
       if (rows.length > 0 && rows[0]._orderSummary) {
         orderSummary.value = rows[0]._orderSummary;
+      } else {
+        // 购物车为空时重置订单汇总
+        orderSummary.value = {};
       }
       // 重置积分输入
       redeemPointsInput.value = 0;
@@ -265,6 +268,29 @@ const openDetail = (item: any) => {
   window.open(text.href, '_blank');
 };
 
+const recalcOrderSummary = () => {
+  const discountRate = orderSummary.value.discountRate || 1;
+  let totalSubtotal = 0;
+  let totalFinalPrice = 0;
+  let totalEarnedPoints = 0;
+  cartRows.value.forEach((row: any) => {
+    const subtotal = Number(row.price) * row.count;
+    totalSubtotal += subtotal;
+    // 使用会员折扣率计算折后价
+    const finalPrice = subtotal * discountRate;
+    row.finalPrice = finalPrice.toFixed(2);
+    totalFinalPrice += finalPrice;
+    totalEarnedPoints += Math.floor(finalPrice);
+  });
+  orderSummary.value = {
+    ...orderSummary.value,
+    totalSubtotal: totalSubtotal.toFixed(2),
+    totalFinalPrice: totalFinalPrice.toFixed(2),
+    totalDiscountAmount: (totalSubtotal - totalFinalPrice).toFixed(2),
+    totalEarnedPoints,
+  };
+};
+
 const decQty = (item: any) => {
   const c = Number(item.count);
   if (c <= 1) {
@@ -277,6 +303,7 @@ const decQty = (item: any) => {
   updateCartCountApi(fd)
     .then(() => {
       item.count = c - 1;
+      recalcOrderSummary();
       cartStore.refreshCount();
     })
     .catch((err: any) => {
@@ -296,6 +323,7 @@ const incQty = (item: any) => {
   updateCartCountApi(fd)
     .then(() => {
       item.count = c + 1;
+      recalcOrderSummary();
       cartStore.refreshCount();
     })
     .catch((err: any) => {
