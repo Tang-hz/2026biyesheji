@@ -1,45 +1,128 @@
 <template>
-  <div class="container">
-
-    <div class="tel-regist-page pc-style">
-      <div class="regist-title">
-        <span>注册新账号</span>
-        <span @click="router.push({name:'login'})" class="toWxLogin">我要登录</span>
+  <div class="login-container">
+    <!-- 左侧品牌展示区 -->
+    <div class="left-section">
+      <!-- Logo -->
+      <div class="logo-area">
+        <img :src="LogoIcon" alt="logo" class="logo-image">
+        <span class="logo-text">E购商城</span>
       </div>
 
-      <div class="regist-padding">
-        <div class="common-input">
-          <img :src="MailIcon" class="left-icon">
-          <div class="input-view">
-            <input placeholder="请输入用户名" v-model="tData.loginForm.username" type="text" class="input">
-            <p class="err-view">
-            </p>
-          </div>
-        </div>
+      <!-- 动画角色 -->
+      <div class="characters-area">
+        <AnimatedCharacters
+          :isTyping="isTyping"
+          :showPassword="showPassword || showConfirmPassword"
+          :passwordLength="passwordLength + confirmPasswordLength"
+        />
       </div>
-      <div class="regist-padding">
-        <div class="common-input">
-          <img :src="PwdIcon" class="left-icon">
-          <div class="input-view">
-            <input placeholder="请输入密码" v-model="tData.loginForm.password" type="password" class="input">
-            <p class="err-view">
-            </p>
-          </div>
+    </div>
+
+    <!-- 右侧注册表单区 -->
+    <div class="right-section">
+      <div class="login-form-container">
+        <!-- 移动端 Logo -->
+        <div class="mobile-logo">
+          <img :src="LogoIcon" alt="logo" class="logo-image">
+          <span class="logo-text">E购商城</span>
         </div>
-      </div>
-      <div class="regist-padding">
-        <div class="common-input">
-          <img :src="PwdIcon" class="left-icon">
-          <div class="input-view">
-            <input placeholder="请再次输入密码" v-model="tData.loginForm.repassword" type="password" class="input">
-            <p class="err-view">
-            </p>
-          </div>
+
+        <!-- 标题 -->
+        <div class="form-header">
+          <h1 class="title">创建新账号</h1>
+          <p class="subtitle">请填写以下信息完成注册</p>
         </div>
-      </div>
-      <div class="tel-login">
-        <div class="next-btn-view">
-          <button class="next-btn" @click="handleRegister">注册</button>
+
+        <!-- 注册表单 -->
+        <a-form
+          ref="formRef"
+          layout="vertical"
+          :model="formData"
+          :rules="rules"
+          @finish="handleRegister"
+        >
+          <a-form-item label="用户名" name="username">
+            <a-input
+              v-model:value="formData.username"
+              size="large"
+              placeholder="请输入用户名"
+              @focus="isTyping = true"
+              @blur="isTyping = false"
+            >
+              <template #prefix>
+                <UserOutlined class="input-icon" />
+              </template>
+            </a-input>
+          </a-form-item>
+
+          <a-form-item label="密码" name="password">
+            <a-input
+              v-model:value="formData.password"
+              size="large"
+              :type="showPassword ? 'text' : 'password'"
+              placeholder="请输入密码"
+              @focus="isTyping = true"
+              @blur="isTyping = false"
+            >
+              <template #prefix>
+                <LockOutlined class="input-icon" />
+              </template>
+              <template #suffix>
+                <EyeOutlined
+                  v-if="!showPassword"
+                  class="eye-icon"
+                  @click="showPassword = true"
+                />
+                <EyeInvisibleOutlined
+                  v-else
+                  class="eye-icon"
+                  @click="showPassword = false"
+                />
+              </template>
+            </a-input>
+          </a-form-item>
+
+          <a-form-item label="确认密码" name="repassword">
+            <a-input
+              v-model:value="formData.repassword"
+              size="large"
+              :type="showConfirmPassword ? 'text' : 'password'"
+              placeholder="请再次输入密码"
+              @focus="isTyping = true"
+              @blur="isTyping = false"
+            >
+              <template #prefix>
+                <LockOutlined class="input-icon" />
+              </template>
+              <template #suffix>
+                <EyeOutlined
+                  v-if="!showConfirmPassword"
+                  class="eye-icon"
+                  @click="showConfirmPassword = true"
+                />
+                <EyeInvisibleOutlined
+                  v-else
+                  class="eye-icon"
+                  @click="showConfirmPassword = false"
+                />
+              </template>
+            </a-input>
+          </a-form-item>
+
+          <a-form-item>
+            <InteractiveHoverButton
+              text="注册"
+              :disabled="registerLoading"
+              class="login-btn"
+              @click="handleRegister"
+            />
+          </a-form-item>
+        </a-form>
+
+        <!-- 登录链接 -->
+        <div class="signup-section">
+          <span class="signup-text">已有账户？</span>
+          <a @click="handleGoLogin" class="signup-link">立即登录</a>
         </div>
       </div>
     </div>
@@ -47,164 +130,241 @@
 </template>
 
 <script setup lang="ts">
-import {userRegisterApi} from '/@/api/user'
-import {message} from "ant-design-vue";
-import MailIcon from '/@/assets/images/mail-icon.svg';
-import PwdIcon from '/@/assets/images/pwd-icon.svg';
+import { ref, computed, reactive } from 'vue'
+import { useRouter } from 'vue-router'
+import { message } from 'ant-design-vue'
+import { UserOutlined, LockOutlined, EyeOutlined, EyeInvisibleOutlined } from '@ant-design/icons-vue'
+import { userRegisterApi } from '/@/api/user'
+import AnimatedCharacters from '/@/components/ui/AnimatedCharacters.vue'
+import InteractiveHoverButton from '/@/components/ui/InteractiveHoverButton.vue'
+import LogoIcon from '/@/assets/images/k-logo.png'
 
-const router = useRouter();
+const router = useRouter()
 
-const tData = reactive({
-  loginForm: {
-    username: '',
-    password: '',
-    repassword: ''
-  }
+const formRef = ref()
+const registerLoading = ref(false)
+const isTyping = ref(false)
+const showPassword = ref(false)
+const showConfirmPassword = ref(false)
+
+const formData = reactive({
+  username: '',
+  password: '',
+  repassword: ''
 })
 
-const handleRegister = () => {
-  console.log('login')
-  if(tData.loginForm.username === ''
-    || tData.loginForm.password === ''
-    || tData.loginForm.repassword === ''){
-    message.warn('不能为空！')
-    return;
-  }
-
-  userRegisterApi({
-    username: tData.loginForm.username,
-    password: tData.loginForm.password,
-    rePassword: tData.loginForm.repassword
-  }).then(res => {
-    message.success('注册成功！')
-    router.push({name: 'login'})
-  }).catch(err => {
-    message.error(err.msg || '注册失败')
-  })
+const rules = {
+  username: [
+    { required: true, message: '请输入用户名', trigger: 'blur' }
+  ],
+  password: [
+    { required: true, message: '请输入密码', trigger: 'blur' }
+  ],
+  repassword: [
+    { required: true, message: '请再次输入密码', trigger: 'blur' }
+  ]
 }
 
+const passwordLength = computed(() => formData.password.length)
+const confirmPasswordLength = computed(() => formData.repassword.length)
 
+const handleRegister = async () => {
+  if (formData.password !== formData.repassword) {
+    message.warn('两次输入的密码不一致')
+    return
+  }
+
+  try {
+    await formRef.value?.validate()
+    registerLoading.value = true
+
+    await userRegisterApi({
+      username: formData.username,
+      password: formData.password,
+      rePassword: formData.repassword
+    })
+
+    message.success('注册成功！')
+    router.push({ name: 'login' })
+  } catch (err: any) {
+    if (err.errorFields) {
+      return
+    }
+    message.error(err.msg || '注册失败')
+  } finally {
+    registerLoading.value = false
+  }
+}
+
+const handleGoLogin = () => {
+  router.push({ name: 'login' })
+}
 </script>
 
 <style scoped lang="less">
-div {
-  display: block;
+.login-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 100vh;
+  font-family: "PingFang SC", "Microsoft YaHei", "Helvetica Neue", sans-serif;
 }
 
-*, :after, :before, img {
-  border-style: none;
-}
-
-*, :after, :before {
-  border-width: 0;
-  border-color: #dae1e7;
-}
-
-.container {
-  max-width: 100%;
-  //background: #142131;
-  background-image: url('../images/admin-login-bg.jpg');
-  background-size: cover;
-  object-fit: cover;
-  height: 100vh;
-  overflow: hidden;
-  display:flex;
-  justify-content: center;
-  align-items:center;
-}
-
-.pc-style {
+/* 左侧品牌区 */
+.left-section {
   position: relative;
-  width: 400px;
-  height: 464px;
-  background: #fff;
-  -webkit-box-shadow: 2px 2px 6px #aaa;
-  box-shadow: 2px 2px 6px #aaa;
-  border-radius: 4px;
-}
-
-.tel-regist-page {
+  background: #ffffff;
+  padding: 48px;
+  color: #333;
   overflow: hidden;
-
-  .regist-title {
-    font-size: 14px;
-    color: #1e1e1e;
-    font-weight: 500;
-    height: 24px;
-    line-height: 24px;
-    margin: 40px 0;
-    padding: 0 28px;
-
-    .toWxLogin {
-      color: #3d5b96;
-      float: right;
-      cursor: pointer;
-    }
-  }
-
-  .regist-padding {
-    padding: 0 28px;
-    margin-bottom: 8px;
-  }
 }
 
-.common-input {
-  display: -webkit-box;
-  display: -ms-flexbox;
+.logo-area {
+  position: absolute;
+  top: 48px;
+  left: 48px;
   display: flex;
-  -webkit-box-align: start;
-  -ms-flex-align: start;
-  align-items: flex-start;
+  align-items: center;
+  gap: 12px;
+  z-index: 10;
 
-  .left-icon {
-    margin-right: 12px;
-    width: 24px;
+  .logo-image {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
   }
 
-  .input-view {
-    -webkit-box-flex: 1;
-    -ms-flex: 1;
-    flex: 1;
-
-    .input {
-      font-weight: 500;
-      font-size: 14px;
-      color: #1e1e1e;
-      height: 26px;
-      line-height: 26px;
-      padding: 0;
-      display: block;
-      width: 100%;
-      letter-spacing: 1.5px;
-      outline: none; // 去掉边框线
-    }
-
-    .err-view {
-      margin-top: 4px;
-      height: 16px;
-      line-height: 16px;
-      font-size: 12px;
-      color: #f62a2a;
-    }
+  .logo-text {
+    font-size: 20px;
+    font-weight: 600;
+    color: #333;
   }
 }
 
-.tel-login {
-  padding: 0 28px;
-}
-
-.next-btn {
-  background: #3d5b96;
-  border-radius: 4px;
-  color: #fff;
-  font-size: 14px;
-  font-weight: 500;
-  height: 40px;
-  line-height: 40px;
-  text-align: center;
+.characters-area {
+  display: flex;
+  justify-content: center;
+  align-items: center;
   width: 100%;
-  outline: none;
-  cursor: pointer;
+  height: 100%;
 }
 
+/* 右侧注册表单区 */
+.right-section {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fafafa;
+  padding: 48px;
+}
+
+.login-form-container {
+  width: 100%;
+  max-width: 420px;
+}
+
+.mobile-logo {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 48px;
+
+  .logo-image {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+  }
+
+  .logo-text {
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+  }
+}
+
+.form-header {
+  text-align: center;
+  margin-bottom: 40px;
+
+  .title {
+    font-size: 28px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 0 0 8px 0;
+  }
+
+  .subtitle {
+    font-size: 14px;
+    color: #666;
+    margin: 0;
+  }
+}
+
+.input-icon {
+  color: #999;
+}
+
+.eye-icon {
+  cursor: pointer;
+  color: #999;
+  transition: color 0.2s;
+
+  &:hover {
+    color: #666;
+  }
+}
+
+.login-btn {
+  width: 100%;
+  height: 48px;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.signup-section {
+  text-align: center;
+  margin-top: 32px;
+  font-size: 14px;
+  color: #666;
+
+  .signup-text {
+    margin-right: 4px;
+  }
+
+  .signup-link {
+    color: #1890ff;
+    cursor: pointer;
+    text-decoration: none;
+    font-weight: 500;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+/* 响应式 */
+@media (max-width: 1024px) {
+  .login-container {
+    grid-template-columns: 1fr;
+  }
+
+  .left-section {
+    display: none;
+  }
+
+  .mobile-logo {
+    display: flex;
+  }
+}
+
+@media (max-width: 480px) {
+  .right-section {
+    padding: 24px;
+  }
+
+  .form-header .title {
+    font-size: 24px;
+  }
+}
 </style>

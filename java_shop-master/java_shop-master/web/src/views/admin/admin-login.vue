@@ -2,7 +2,7 @@
   <div id="userLayout">
     <div class="user-layout-header">
       <img class="logo" :src="logoImage" alt="">
-      <span>商城后台管理系统</span>
+      <span>E购商城后台管理系统</span>
     </div>
     <div class="main-container">
       <div class="main">
