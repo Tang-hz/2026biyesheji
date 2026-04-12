@@ -4,6 +4,7 @@
     <div
       ref="purpleRef"
       class="character purple-character"
+      :class="{ shaking: isShaking }"
       :style="{
         transform: purpleTransform,
         height: isTyping || isHidingPassword ? '440px' : '400px'
@@ -64,6 +65,7 @@
     <div
       ref="blackRef"
       class="character black-character"
+      :class="{ shaking: isShaking }"
       :style="{ transform: blackTransform }"
     >
       <!-- 眼睛 -->
@@ -121,6 +123,7 @@
     <div
       ref="orangeRef"
       class="character orange-character"
+      :class="{ shaking: isShaking }"
       :style="{ transform: orangeTransform }"
     >
       <!-- 眼睛（只有瞳孔） -->
@@ -154,6 +157,7 @@
     <div
       ref="yellowRef"
       class="character yellow-character"
+      :class="{ shaking: isShaking }"
       :style="{ transform: yellowTransform }"
     >
       <!-- 眼睛（只有瞳孔） -->
@@ -185,13 +189,13 @@
       <div
         class="mouth"
         :style="{
-          width: '20px',
-          height: '4px',
-          backgroundColor: '#2D2D2D',
-          borderRadius: '2px',
+          width: props.hasError ? '20px' : '20px',
+          height: props.hasError ? '20px' : '4px',
+          backgroundColor: props.hasError ? '#2D2D2D' : '#2D2D2D',
+          borderRadius: props.hasError ? '50%' : '2px',
           position: 'absolute',
           left: yellowMouthLeft,
-          top: yellowMouthTop
+          top: props.hasError ? '82px' : yellowMouthTop
         }"
       ></div>
     </div>
@@ -205,12 +209,14 @@ interface Props {
   isTyping?: boolean
   showPassword?: boolean
   passwordLength?: number
+  hasError?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
   isTyping: false,
   showPassword: false,
-  passwordLength: 0
+  passwordLength: 0,
+  hasError: false
 })
 
 // Refs
@@ -233,6 +239,9 @@ const isPurplePeeking = ref(false)
 
 // Looking at each other
 const isLookingAtEachOther = ref(false)
+
+// Error shaking state
+const isShaking = ref(false)
 
 // Compute positions
 const calculatePosition = (refEl: HTMLElement | null) => {
@@ -259,6 +268,15 @@ const orangePupil = ref({ x: 0, y: 0 })
 const yellowPupil = ref({ x: 0, y: 0 })
 
 const updatePupils = () => {
+  // When error, pupils go to center (surprised expression)
+  if (props.hasError) {
+    purplePupil.value = { x: 0, y: 0 }
+    blackPupil.value = { x: 0, y: 0 }
+    orangePupil.value = { x: 0, y: 0 }
+    yellowPupil.value = { x: 0, y: 0 }
+    return
+  }
+
   if (purpleRef.value) {
     const rect = purpleRef.value.getBoundingClientRect()
     const eyeCenterX = rect.left + rect.width / 2 + 70
@@ -335,7 +353,8 @@ const purpleTransform = computed(() => {
   if (props.isTyping || isHidingPassword.value) {
     return `skewX(${(pos.bodySkew || 0) - 12}deg) translateX(40px)`
   }
-  return `skewX(${pos.bodySkew || 0}deg)`
+  const base = `skewX(${pos.bodySkew || 0}deg)`
+  return props.hasError ? `${base} translateX(-8px)` : base
 })
 
 const blackTransform = computed(() => {
@@ -480,6 +499,16 @@ watch(() => props.isTyping, (newVal) => {
   }
 })
 
+// Watch for error to trigger shake animation
+watch(() => props.hasError, (newVal) => {
+  if (newVal) {
+    isShaking.value = true
+    setTimeout(() => {
+      isShaking.value = false
+    }, 600)
+  }
+})
+
 // Watch for password visibility to trigger peek
 watch([() => props.passwordLength, () => props.showPassword], () => {
   if (props.passwordLength > 0 && props.showPassword) {
@@ -502,6 +531,12 @@ onUnmounted(() => {
 </script>
 
 <style scoped lang="less">
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-8px); }
+  20%, 40%, 60%, 80% { transform: translateX(8px); }
+}
+
 .animated-characters {
   position: relative;
   width: 550px;
@@ -529,6 +564,10 @@ onUnmounted(() => {
 
   .pupil-only {
     flex-shrink: 0;
+  }
+
+  &.shaking {
+    animation: shake 0.6s ease-in-out;
   }
 }
 

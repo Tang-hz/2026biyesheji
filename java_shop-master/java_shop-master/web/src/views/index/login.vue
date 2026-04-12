@@ -14,6 +14,7 @@
           :isTyping="isTyping"
           :showPassword="showPassword"
           :passwordLength="passwordLength"
+          :hasError="loginError"
         />
       </div>
     </div>
@@ -46,7 +47,7 @@
               v-model:value="formData.username"
               size="large"
               placeholder="请输入用户名"
-              @focus="isTyping = true"
+              @focus="isTyping = true; loginError = false"
               @blur="isTyping = false"
             >
               <template #prefix>
@@ -61,7 +62,7 @@
               size="large"
               :type="showPassword ? 'text' : 'password'"
               placeholder="请输入密码"
-              @focus="isTyping = true"
+              @focus="isTyping = true; loginError = false"
               @blur="isTyping = false"
             >
               <template #prefix>
@@ -69,14 +70,14 @@
               </template>
               <template #suffix>
                 <EyeOutlined
-                  v-if="!showPassword"
+                  v-if="showPassword"
                   class="eye-icon"
-                  @click="showPassword = true"
+                  @click="showPassword = false"
                 />
                 <EyeInvisibleOutlined
                   v-else
                   class="eye-icon"
-                  @click="showPassword = false"
+                  @click="showPassword = true"
                 />
               </template>
             </a-input>
@@ -124,6 +125,7 @@ const formRef = ref()
 const loginLoading = ref(false)
 const isTyping = ref(false)
 const showPassword = ref(false)
+const loginError = ref(false)
 
 const formData = reactive({
   username: '',
@@ -159,6 +161,7 @@ const handleLogin = async () => {
       return
     }
     message.warn(err.msg || '登录失败')
+    loginError.value = true
   } finally {
     loginLoading.value = false
   }
