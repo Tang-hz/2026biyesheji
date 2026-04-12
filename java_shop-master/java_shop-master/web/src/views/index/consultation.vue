@@ -53,7 +53,10 @@
               :class="item.role === 'user' ? 'chat-row-user' : 'chat-row-ai'"
             >
               <div class="avatar" :class="item.role === 'user' ? 'avatar-user' : 'avatar-ai'">
-                {{ item.role === 'user' ? '你' : 'AI' }}
+                <span v-if="item.role === 'user'">你</span>
+                <span v-else-if="item.status === 'thinking'">🤔</span>
+                <span v-else-if="item.status === 'speaking'">💬</span>
+                <span v-else>🎧</span>
               </div>
               <div class="bubble">
                 <div class="text">{{ item.text }}</div>
@@ -90,11 +93,13 @@ import { userCollectListApi } from '/@/api/thingCollect';
 import { userWishListApi } from '/@/api/thingWish';
 
 type ChatRole = 'user' | 'ai';
+type ChatStatus = 'thinking' | 'speaking' | 'done';
 type ChatMessage = {
   id: number;
   role: ChatRole;
   text: string;
   createTime: string;
+  status?: ChatStatus;
 };
 
 const router = useRouter();
@@ -137,6 +142,7 @@ const chatMessages = ref<ChatMessage[]>([
     role: 'ai',
     text: '您好！我是 E购 AI 客服。您有什么问题可以直接告诉我。',
     createTime: new Date().toLocaleTimeString().slice(0, 5),
+    status: 'done',
   },
 ]);
 
@@ -191,6 +197,7 @@ const handleSend = () => {
     role: 'ai',
     text: '',
     createTime: formatTime(new Date()),
+    status: 'thinking',
   });
   scrollToBottom();
 
@@ -203,14 +210,20 @@ const handleSend = () => {
   es.onmessage = (evt) => {
     const chunk = evt.data ?? '';
     const msg = chatMessages.value.find((m) => m.id === aiMsgId);
-    if (msg) msg.text += chunk;
+    if (msg) {
+      if (msg.status === 'thinking') msg.status = 'speaking';
+      msg.text += chunk;
+    }
     scrollToBottom();
   };
   es.onerror = () => {
     es.close();
     const msg = chatMessages.value.find((m) => m.id === aiMsgId);
-    if (msg && !msg.text) {
-      msg.text = '连接失败或已中断，请稍后重试。';
+    if (msg) {
+      msg.status = 'done';
+      if (!msg.text) {
+        msg.text = '连接失败或已中断，请稍后重试。';
+      }
     }
     scrollToBottom();
   };
@@ -378,6 +391,16 @@ const handleSend = () => {
 
 .avatar-ai {
   background: #a1adc6;
+  animation: breathe 2s ease-in-out infinite;
+}
+
+@keyframes breathe {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(161, 173, 198, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(161, 173, 198, 0);
+  }
 }
 
 .bubble {
