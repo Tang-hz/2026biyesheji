@@ -538,6 +538,14 @@ const handleJiesuan = async () => {
 .items {
   align-items: center;
   margin-top: 20px;
+  padding: 12px 8px;
+  border-radius: @radius-md;
+  transition: background @transition-fast, box-shadow @transition-base;
+
+  &:hover {
+    background: @bg-hover;
+    box-shadow: @shadow-sm;
+  }
 
   .book {
     flex: 1;
@@ -621,9 +629,10 @@ const handleJiesuan = async () => {
     width: 24px;
     cursor: pointer;
     opacity: 0.6;
-    transition: opacity @transition-fast;
+    transition: transform @transition-fast, opacity @transition-fast;
 
     &:hover {
+      transform: scale(1.2);
       opacity: 1;
     }
   }
@@ -699,6 +708,10 @@ const handleJiesuan = async () => {
 .price-view {
   overflow: hidden;
   margin-top: 16px;
+  background: @bg-page;
+  border-radius: @radius-lg;
+  padding: 16px;
+  border: 1px solid @border-light;
 
   .price-item {
     justify-content: space-between;

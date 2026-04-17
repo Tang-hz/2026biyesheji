@@ -437,11 +437,19 @@ const sortCommentList =(sortType)=> {
     -ms-flex: 0 0 235px;
     flex: 0 0 235px;
     margin: 0 40px 0 0;
+    overflow: hidden;
+    border-radius: @radius-lg;
 
     img {
       width: 200px;
       height: 186px;
       display: block;
+      transition: transform @transition-slow;
+      cursor: zoom-in;
+    }
+
+    &:hover img {
+      transform: scale(1.08);
     }
   }
 
@@ -610,7 +618,7 @@ const sortCommentList =(sortType)=> {
   &:hover {
     background: @primary-blue-hover;
     box-shadow: @shadow-button-hover;
-    transform: translateY(-1px);
+    transform: translateY(-2px);
   }
 
   &:active {
@@ -701,8 +709,8 @@ const sortCommentList =(sortType)=> {
     width: 20px;
     height: 3px;
     background: @primary-blue;
-    -webkit-transition: left @transition-base;
-    transition: left @transition-base;
+    -webkit-transition: left @transition-base, width @transition-base;
+    transition: left @transition-base, width @transition-base;
     border-radius: 2px;
     box-shadow: 0 1px 4px rgba(70, 132, 226, 0.4);
   }

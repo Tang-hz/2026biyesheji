@@ -27,7 +27,7 @@
 
       <div class="mall-main">
         <div class="mall-card mall-banner-wrap">
-          <a-carousel autoplay :dots="true" class="mall-banner-carousel">
+          <a-carousel autoplay :dots="true" :pauseOnHover="true" class="mall-banner-carousel">
             <div class="banner-slide banner-slide-a">
               <div class="banner-inner">
                 <span class="banner-tag">选好物，来E购</span>
@@ -114,7 +114,7 @@
                   class="quick-add-cart"
                   aria-label="加入购物车"
                   @click.stop="quickAddToCart(item)"
-                >+</button>
+                >加入购物车</button>
               </div>
             </div>
           </div>
@@ -441,18 +441,18 @@ const getThingList = (data) => {
 
 .kingkong-item {
   flex: 0 0 auto;
-  width: 64px;
+  width: 72px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  margin-right: 12px;
+  margin-right: 16px;
   padding: 4px 2px;
   border: none;
   background: transparent;
   cursor: pointer;
   font-family: inherit;
-  transition: transform @transition-fast;
+  transition: transform @transition-spring;
 }
 
 .kingkong-item:last-child {
@@ -460,43 +460,54 @@ const getThingList = (data) => {
 }
 
 .kingkong-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: @radius-lg;
+  width: 56px;
+  height: 56px;
+  border-radius: @radius-xl;
   background: linear-gradient(145deg, @bg-input, @primary-blue-light);
   color: @primary-blue;
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 8px;
-  transition: transform @transition-spring, box-shadow @transition-base;
+  margin-bottom: 10px;
+  transition: transform @transition-spring, box-shadow @transition-base, background @transition-fast;
   box-shadow: @shadow-sm;
 }
 
 .kingkong-item:hover .kingkong-icon {
-  transform: translateY(-2px) scale(1.04);
-  box-shadow: @shadow-md;
+  transform: translateY(-4px) scale(1.08);
+  box-shadow: @shadow-lg;
+  background: linear-gradient(145deg, @primary-blue-light, @bg-input);
 }
 
 .kingkong-item--active .kingkong-icon {
   background: linear-gradient(145deg, @primary-blue, @primary-blue-hover);
   color: @white;
-  box-shadow: 0 4px 14px rgba(70, 132, 226, 0.4);
-  transform: scale(1.04);
+  box-shadow: 0 6px 20px rgba(70, 132, 226, 0.4);
+  transform: scale(1.08);
 }
 
 .kingkong-label {
-  font-size: 11px;
+  font-size: @font-size-sm;
   color: @text-secondary;
   text-align: center;
   line-height: 1.3;
-  max-width: 64px;
+  max-width: 72px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  transition: color @transition-fast;
+  transition: color @transition-fast, font-weight @transition-fast;
+}
+
+.kingkong-item:hover .kingkong-label {
+  color: @primary-blue;
+  font-weight: 500;
+}
+
+.kingkong-item--active .kingkong-label {
+  color: @primary-blue;
+  font-weight: 600;
 }
 
 .kingkong-item:hover .kingkong-label {
@@ -534,30 +545,30 @@ const getThingList = (data) => {
 
 .tag {
   background: @white;
-  border: 1px solid @border-subtle;
+  border: 1px solid @primary-blue;
   box-sizing: border-box;
-  border-radius: @radius-full;
-  height: auto;
-  min-height: 20px;
-  line-height: 18px;
-  padding: 4px 12px;
-  margin: 6px 6px 0 0;
+  border-radius: 14px;
+  height: 28px;
+  line-height: 26px;
+  padding: 0 14px;
+  margin: 6px 8px 0 0;
   cursor: pointer;
   font-size: @font-size-sm;
-  color: @text-secondary;
+  color: @primary-blue;
+  font-weight: 500;
   transition: all @transition-fast;
-}
 
-.tag:hover {
-  background: @primary-blue;
-  color: @white;
-  border: 1px solid @primary-blue;
-  transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(70, 132, 226, 0.3);
+  &:hover {
+    background: linear-gradient(135deg, @primary-blue, @primary-blue-hover);
+    color: @white;
+    border-color: @primary-blue;
+    box-shadow: 0 2px 8px rgba(70, 132, 226, 0.3);
+    transform: translateY(-1px);
+  }
 }
 
 .tag-select {
-  background: @primary-blue;
+  background: linear-gradient(135deg, @primary-blue, @primary-blue-hover);
   color: @white;
   border: 1px solid @primary-blue;
   box-shadow: 0 2px 8px rgba(70, 132, 226, 0.3);
@@ -683,24 +694,22 @@ const getThingList = (data) => {
 
 .pc-thing-list .thing-item {
   break-inside: avoid;
-  margin-bottom: 10px;
+  margin-bottom: 16px;
   background: @white;
-  border-radius: @radius-lg;
-  box-shadow: @shadow-card;
+  border-radius: @radius-xl;
+  box-shadow: 0 4px 20px rgba(70, 132, 226, 0.08);
   overflow: hidden;
   cursor: pointer;
   display: inline-block;
   width: 100%;
   vertical-align: top;
-  border: 1px solid @border-light;
+  border: none;
   transition: transform @transition-base,
-              box-shadow @transition-base,
-              border-color @transition-base;
+              box-shadow @transition-base;
 
   &:hover {
-    transform: translateY(-3px);
-    box-shadow: @shadow-card-hover;
-    border-color: @border-subtle;
+    transform: translateY(-6px);
+    box-shadow: 0 12px 32px rgba(70, 132, 226, 0.15);
   }
 }
 
@@ -715,16 +724,16 @@ const getThingList = (data) => {
 .pc-thing-list .img-view img {
   width: 100%;
   height: auto;
-  min-height: 120px;
-  max-height: 220px;
+  min-height: 180px;
+  max-height: 260px;
   object-fit: cover;
   display: block;
-  border-radius: @radius-lg @radius-lg 0 0;
+  border-radius: @radius-xl @radius-xl 0 0;
   transition: transform @transition-slow;
 }
 
 .pc-thing-list .thing-item:hover .img-view img {
-  transform: scale(1.03);
+  transform: scale(1.05);
 }
 
 .pc-thing-list .price-row {
@@ -743,32 +752,30 @@ const getThingList = (data) => {
 
 .pc-thing-list .quick-add-cart {
   flex-shrink: 0;
-  width: 28px;
-  height: 28px;
-  border: none;
-  border-radius: 50%;
-  background: @primary-blue;
-  color: @white;
-  font-size: 20px;
-  font-weight: 300;
-  line-height: 1;
-  padding: 0;
+  height: 26px;
+  padding: 0 12px;
+  border: 1px solid @primary-blue;
+  border-radius: @radius-full;
+  background: transparent;
+  color: @primary-blue;
+  font-size: @font-size-sm;
+  font-weight: 500;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: @shadow-button;
   transition: all @transition-fast;
 
   &:hover {
-    background: @primary-blue-hover;
-    box-shadow: @shadow-button-hover;
-    transform: scale(1.1);
+    background: @primary-blue;
+    color: @white;
+    box-shadow: 0 2px 8px rgba(70, 132, 226, 0.3);
+    transform: translateY(-1px);
   }
 
   &:active {
     background: @primary-blue-active;
-    transform: scale(0.95);
+    transform: translateY(0);
     box-shadow: @shadow-xs;
   }
 }
@@ -842,11 +849,13 @@ const getThingList = (data) => {
   width: 6px;
   height: 6px;
   border-radius: 50%;
+  transition: all @transition-fast;
 }
 
 .mall-banner-wrap :deep(.slick-dots li.slick-active button) {
   background: @white;
   width: 16px;
   border-radius: 3px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 </style>

@@ -509,6 +509,16 @@ const handleJiesuan = () => {
 
 .address-view {
   margin: 12px 0 24px;
+  background: @white;
+  border-radius: @radius-lg;
+  padding: 16px;
+  border: 1px solid @border-light;
+  transition: border-color @transition-fast, box-shadow @transition-fast;
+
+  &:hover {
+    border-color: @primary-blue;
+    box-shadow: @shadow-sm;
+  }
 
   .info {
     color: #909090;
@@ -539,6 +549,10 @@ const handleJiesuan = () => {
 .price-view {
   overflow: hidden;
   margin-top: 16px;
+  background: @bg-page;
+  border-radius: @radius-lg;
+  padding: 16px;
+  border: 1px solid @border-light;
 
   .price-item {
     justify-content: space-between;

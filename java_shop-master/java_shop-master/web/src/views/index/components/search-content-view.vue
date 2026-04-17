@@ -164,18 +164,37 @@ const getThingList = (data) => {
   margin-top: 26px;
   margin-bottom: 36px;
   cursor: pointer;
+  background: @white;
+  border-radius: @radius-lg;
+  border: 1px solid @border-light;
+  transition: transform @transition-base,
+              box-shadow @transition-base,
+              border-color @transition-base;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: @shadow-card-hover;
+    border-color: @border-subtle;
+  }
 
   .img-view {
     //text-align: center;
     height: 200px;
     width: 255px;
+    overflow: hidden;
 
     img {
       height: 200px;
       width: 186px;
       margin: 0 auto;
       background-size: contain;
+      object-fit: cover;
+      transition: transform @transition-slow;
     }
+  }
+
+  &:hover .img-view img {
+    transform: scale(1.05);
   }
 
   .info-view {
@@ -186,27 +205,28 @@ const getThingList = (data) => {
     .thing-name {
       line-height: 32px;
       margin-top: 12px;
-      color: #0F1111 !important;
-      font-size: 15px !important;
+      color: @text-primary !important;
+      font-size: @font-size-base !important;
       font-weight: 400 !important;
       font-style: normal !important;
       text-transform: none !important;
       text-decoration: none !important;
     }
 
-    .price {
-      color: #ff7b31;
-      font-size: 20px;
-      line-height: 20px;
-      margin-top: 4px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+    .a-price-symbol {
+      color: @primary-blue;
+      font-weight: 500;
+    }
+
+    .a-price {
+      color: @primary-blue;
+      font-size: 18px;
+      font-weight: 600;
     }
 
     .translators {
-      color: #6f6f6f;
-      font-size: 12px;
+      color: @text-muted;
+      font-size: @font-size-sm;
       line-height: 14px;
       margin-top: 4px;
       overflow: hidden;
@@ -219,11 +239,14 @@ const getThingList = (data) => {
 .a-price-symbol {
   top: -0.5em;
   font-size: 12px;
+  color: @primary-blue;
+  font-weight: 500;
 }
 
 .a-price {
-  color: #0F1111;
+  color: @primary-blue;
   font-size: 21px;
+  font-weight: 600;
 }
 
 </style>

@@ -73,17 +73,19 @@ const formatDate = (time, format = 'YY-MM-DD hh:mm:ss') => {
   position: relative;
   margin: 120px auto 0;
   width: 500px;
-  background: #fff;
+  background: @white;
   overflow: hidden;
+  border-radius: @radius-xl;
+  box-shadow: @shadow-card;
+  padding: 60px 20px;
 
   .title {
-    color: #152844;
-    font-weight: 500;
-    font-size: 24px;
-    line-height: 22px;
-    height: 22px;
+    color: @navy-dark;
+    font-weight: 600;
+    font-size: @font-size-3xl;
+    line-height: 32px;
     text-align: center;
-    margin-bottom: 11px;
+    margin-bottom: 16px;
   }
 
   .time-margin {
@@ -111,15 +113,18 @@ const formatDate = (time, format = 'YY-MM-DD hh:mm:ss') => {
   }
 
   .price {
-    color: #ff8a00;
+    color: @text-secondary;
     font-weight: 500;
-    font-size: 16px;
+    font-size: @font-size-xl;
     height: 36px;
     line-height: 36px;
     text-align: center;
+    margin-bottom: 32px;
 
     .num {
-      font-size: 28px;
+      color: @primary-blue;
+      font-weight: 600;
+      font-size: @font-size-2xl;
     }
   }
 
@@ -173,18 +178,33 @@ const formatDate = (time, format = 'YY-MM-DD hh:mm:ss') => {
 
     .pay-btn {
       cursor: pointer;
-      background: #c3c9d5;
-      border-radius: 32px;
-      width: 104px;
-      height: 32px;
-      line-height: 32px;
+      background: @primary-blue;
+      border-radius: @radius-full;
+      width: 140px;
+      height: 44px;
+      line-height: 44px;
       border: none;
       outline: none;
-      font-size: 14px;
-      color: #fff;
+      font-size: @font-size-base;
+      font-weight: 500;
+      color: @white;
       text-align: center;
       display: block;
       margin: 0 auto;
+      box-shadow: @shadow-button;
+      transition: all @transition-fast;
+
+      &:hover {
+        background: @primary-blue-hover;
+        box-shadow: @shadow-button-hover;
+        transform: translateY(-2px);
+      }
+
+      &:active {
+        background: @primary-blue-active;
+        transform: translateY(0);
+        box-shadow: @shadow-xs;
+      }
     }
 
     .pay-btn-active {

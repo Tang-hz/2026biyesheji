@@ -287,6 +287,7 @@ const onClose = () => {
       background: @primary-blue;
       border-radius: 50%;
       box-shadow: 0 0 0 2px @white;
+      animation: badgePop 300ms @transition-spring;
     }
   }
 
@@ -398,6 +399,12 @@ const onClose = () => {
     line-height: 22px;
   }
 
+}
+
+@keyframes badgePop {
+  0% { transform: scale(0.5); }
+  70% { transform: scale(1.1); }
+  100% { transform: scale(1); }
 }
 
 </style>
