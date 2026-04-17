@@ -203,13 +203,6 @@ npm install
 
 ---
 
-## 🎯 在线体验
-
-- 演示地址：http://shop.gitapp.cn
-- 管理员账号：`admin123` / `admin123`
-
----
-
 ## 📜 许可证
 
 MIT License — 欢迎 Star ⭐ 和 Fork！
