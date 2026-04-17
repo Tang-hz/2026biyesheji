@@ -9,7 +9,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.util.DigestUtils;
-
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 

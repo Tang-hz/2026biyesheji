@@ -6,6 +6,5 @@ enum URL {
 }
 
 const calcPriceApi = async (params: any) => get<any>({ url: URL.calcPrice, params: params, data: {}, headers: {} });
-const getMemberInfoApi = async (params: any) => get<any>({ url: URL.info, params: params, data: {}, headers: {} });
 
-export { calcPriceApi, getMemberInfoApi };
+export { calcPriceApi };

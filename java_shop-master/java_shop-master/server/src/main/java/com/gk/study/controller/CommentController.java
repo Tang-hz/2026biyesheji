@@ -57,7 +57,7 @@ public class CommentController {
      * @param order 排序方式
      * @return APIResponse 包含评论列表的响应对象
      */
-    @Operation(summary = "商品评论列表")
+    @Operation(summary = "商品评论列表 ")
     @RequestMapping(value = "/listThingComments", method = RequestMethod.GET)
     public APIResponse listThingComments(String thingId, String order){
         List<Comment> list =  service.getThingCommentList(thingId, order);

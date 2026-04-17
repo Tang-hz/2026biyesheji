@@ -3,6 +3,7 @@ package com.gk.study.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.gk.study.common.CacheKeyUtils;
 import com.gk.study.entity.Tag;
 import com.gk.study.entity.Thing;
 import com.gk.study.entity.ThingTag;
@@ -11,6 +12,9 @@ import com.gk.study.mapper.ThingMapper;
 import com.gk.study.mapper.ThingTagMapper;
 import com.gk.study.service.ThingService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -34,6 +38,7 @@ public class ThingServiceImpl extends ServiceImpl<ThingMapper, Thing> implements
     TagMapper tagMapper;
 
     @Override
+    @Cacheable(value = "thing:list", key = "'list:' + T(com.gk.study.common.CacheKeyUtils).buildKey(#keyword, #sort, #c, #tag)")
     public List<Thing> getThingList(String keyword, String sort, String c, String tag) {
         QueryWrapper<Thing> queryWrapper = new QueryWrapper<>();
 
@@ -185,6 +190,9 @@ public class ThingServiceImpl extends ServiceImpl<ThingMapper, Thing> implements
     }
 
     @Override
+    @Caching(evict = {
+        @CacheEvict(value = "thing:list", allEntries = true)
+    })
     public void createThing(Thing thing) {
         System.out.println(thing);
         thing.setCreateTime(java.time.LocalDateTime.now());
@@ -201,14 +209,22 @@ public class ThingServiceImpl extends ServiceImpl<ThingMapper, Thing> implements
         mapper.insert(thing);
         // 更新tag
         setThingTags(thing);
-    }
+}
 
     @Override
+    @Caching(evict = {
+        @CacheEvict(value = "thing:list", allEntries = true),
+        @CacheEvict(value = "thing:detail", key = "#id")
+    })
     public void deleteThing(String id) {
         mapper.deleteById(id);
     }
 
     @Override
+    @Caching(evict = {
+        @CacheEvict(value = "thing:list", allEntries = true),
+        @CacheEvict(value = "thing:detail", key = "#thing.id")
+    })
     public void updateThing(Thing thing) {
 
         // 更新tag
@@ -219,6 +235,7 @@ public class ThingServiceImpl extends ServiceImpl<ThingMapper, Thing> implements
 
     @Override
     public Thing getThingById(String id) {
+        // 注意：getThingById 每次都更新 PV，不适合缓存
         if (!StringUtils.isNotBlank(id)) {
             return null;
         }

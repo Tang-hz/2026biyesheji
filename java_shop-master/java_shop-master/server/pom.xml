@@ -26,6 +26,12 @@
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
 
+        <!-- Spring Cache for Redis caching -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-cache</artifactId>
+        </dependency>
+
         <!-- Reactor/WebFlux types (Flux) + SSE streaming support on Spring MVC -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
