@@ -7,7 +7,7 @@
         <!-- 左侧：用户信息/快捷入口 -->
         <div class="user-card">
           <div class="user-top">
-            <div class="user-avatar">{{ avatarText }}</div>
+            <img :src="userStore.avatar || AvatarIcon" class="user-avatar-img">
             <div class="user-meta">
               <div class="user-name">{{ userName }}</div>
               <div class="user-active">活跃 {{ activeDays }} 天</div>
@@ -53,7 +53,7 @@
               :class="item.role === 'user' ? 'chat-row-user' : 'chat-row-ai'"
             >
               <div class="avatar" :class="item.role === 'user' ? 'avatar-user' : 'avatar-ai'">
-                <span v-if="item.role === 'user'">你</span>
+                <img v-if="item.role === 'user'" :src="userStore.avatar || AvatarIcon" class="avatar-img">
                 <span v-else-if="item.status === 'thinking'">🤔</span>
                 <span v-else-if="item.status === 'speaking'">💬</span>
                 <span v-else>🎧</span>
@@ -91,6 +91,8 @@ import { useRouter } from 'vue-router';
 import { BASE_URL } from '/@/store/constants';
 import { userCollectListApi } from '/@/api/thingCollect';
 import { userWishListApi } from '/@/api/thingWish';
+import { detailApi } from '/@/api/user';
+import AvatarIcon from '/@/assets/images/avatar.jpg';
 
 type ChatRole = 'user' | 'ai';
 type ChatStatus = 'thinking' | 'speaking' | 'done';
@@ -168,6 +170,13 @@ onMounted(() => {
   avatarText.value = (userName.value || 'tls').slice(0, 1);
   refreshCounts();
   scrollToBottom();
+  if (userStore.user_id) {
+    detailApi({userId: userStore.user_id}).then(res => {
+      if (res.data && res.data.avatar) {
+        userStore.setAvatar(BASE_URL + '/api/staticfiles/avatar/' + res.data.avatar)
+      }
+    })
+  }
 });
 
 watch(
@@ -272,6 +281,13 @@ const handleSend = () => {
   justify-content: center;
   font-weight: 700;
   font-size: 18px;
+}
+
+.user-avatar-img {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  object-fit: cover;
 }
 
 .user-meta {
@@ -383,6 +399,16 @@ const handleSend = () => {
   margin: 0 10px;
   color: #fff;
   flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatar-img {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  object-fit: cover;
 }
 
 .avatar-user {

@@ -88,6 +88,8 @@ const beforeUpload =(file)=> {
   const copyFile = new File([file], fileName)
   console.log(copyFile)
   tData.form.avatarFile = copyFile
+  // 生成预览
+  tData.form.avatar = URL.createObjectURL(file)
   return false
 }
 
@@ -98,6 +100,7 @@ const getUserInfo =()=> {
     tData.form = res.data
     if (tData.form.avatar) {
       tData.form.avatar = BASE_URL + '/api/staticfiles/avatar/' + tData.form.avatar
+      userStore.setAvatar(tData.form.avatar)
     }
     loading.value = false
   }).catch(err => {
@@ -127,6 +130,10 @@ const submit =()=> {
   updateUserInfoApi(formData).then(res => {
     message.success('保存成功')
     getUserInfo()
+    // 同步更新 store 中的头像
+    if (tData.form.avatar) {
+      userStore.setAvatar(tData.form.avatar)
+    }
   }).catch(err => {
     console.log(err)
   })

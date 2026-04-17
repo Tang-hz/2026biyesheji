@@ -1,7 +1,7 @@
 <template>
   <div class="mine-infos-view">
     <div class="info-box flex-view">
-      <img :src="AvatarImg" class="avatar-img">
+      <img :src="userStore.avatar || AvatarImg" class="avatar-img">
       <div class="name-box">
         <h2 class="nick">{{ userStore.user_name }}</h2>
         <div class="age">
@@ -77,6 +77,7 @@
 
 <script setup lang="ts">
 import AvatarImg from '/@/assets/images/avatar.jpg'
+import {BASE_URL} from "/@/store/constants";
 import MyOrderImg from '/@/assets/images/order-icon.svg'
 import CommentIconImg from '/@/assets/images/order-thing-icon.svg'
 import AddressIconImage from '/@/assets/images/order-address-icon.svg'
@@ -88,6 +89,7 @@ import MessageIconImage from '/@/assets/images/setting-msg-icon.svg'
 
 import {userCollectListApi} from '/@/api/thingCollect'
 import {userWishListApi} from '/@/api/thingWish'
+import {detailApi} from '/@/api/user'
 import {useUserStore} from '/@/store';
 const userStore = useUserStore();
 const router = useRouter();
@@ -99,6 +101,13 @@ let wishCount = ref(0)
 onMounted(()=>{
   getCollectThingList()
   getWishThingList()
+  if (userStore.user_id) {
+    detailApi({userId: userStore.user_id}).then(res => {
+      if (res.data && res.data.avatar) {
+        userStore.setAvatar(BASE_URL + '/api/staticfiles/avatar/' + res.data.avatar)
+      }
+    })
+  }
 })
 
 const clickMenu =(name)=> {

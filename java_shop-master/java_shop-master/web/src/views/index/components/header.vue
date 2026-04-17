@@ -11,7 +11,7 @@
       <template v-if="userStore.user_token">
         <a-dropdown>
           <a class="ant-dropdown-link" @click="e => e.preventDefault()">
-            <img :src="AvatarIcon" class="self-img" >
+            <img :src="userStore.avatar || AvatarIcon" class="self-img" >
           </a>
           <template #overlay>
             <a-menu>
@@ -80,6 +80,8 @@
 
 <script setup lang="ts">
 import {listApi} from '/@/api/notice'
+import {detailApi} from '/@/api/user'
+import {BASE_URL} from "/@/store/constants";
 import {useUserStore} from "/@/store";
 import logoImage from '/@/assets/images/k-logo.png';
 import SearchIcon from '/@/assets/images/search-icon.svg';
@@ -99,6 +101,13 @@ let msgData = ref([] as any)
 
 onMounted(()=>{
   getMessageList()
+  if (userStore.user_id) {
+    detailApi({userId: userStore.user_id}).then(res => {
+      if (res.data && res.data.avatar) {
+        userStore.setAvatar(BASE_URL + '/api/staticfiles/avatar/' + res.data.avatar)
+      }
+    })
+  }
 })
 
 const getMessageList = ()=> {

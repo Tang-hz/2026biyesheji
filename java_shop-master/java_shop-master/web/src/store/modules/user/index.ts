@@ -9,6 +9,7 @@ export const useUserStore = defineStore('user', {
     user_id: undefined,
     user_name: undefined,
     user_token: undefined,
+    avatar: undefined,
 
     admin_user_id: undefined,
     admin_user_name: undefined,
@@ -81,6 +82,12 @@ export const useUserStore = defineStore('user', {
         state.admin_user_id = undefined
         state.admin_user_name = undefined
         state.admin_user_token = undefined
+      })
+    },
+    // 设置头像
+    setAvatar(avatar) {
+      this.$patch((state)=>{
+        state.avatar = avatar
       })
     },
   },

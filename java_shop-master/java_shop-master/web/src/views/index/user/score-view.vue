@@ -160,7 +160,7 @@ const getTypeName = (type) => {
 }
 
 .score-card {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #4684e2;
   border-radius: 12px;
   padding: 20px;
   color: #fff;
