@@ -1,6 +1,5 @@
 package com.gk.study.controller;
 
-import com.gk.study.ai.CustomerServiceAi;
 import com.gk.study.service.RagCustomerService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -20,12 +19,9 @@ public class AiCustomerServiceController {
     // 主动截断 SSE，前端表现为“连接断了”。
     // 由于你的需求是避免超时截断，所以不再启用此类空闲截断逻辑。
 
-    private final CustomerServiceAi customerServiceAi;
     private final RagCustomerService ragCustomerService;
 
-    public AiCustomerServiceController(CustomerServiceAi customerServiceAi,
-                                       RagCustomerService ragCustomerService) {
-        this.customerServiceAi = customerServiceAi;
+    public AiCustomerServiceController(RagCustomerService ragCustomerService) {
         this.ragCustomerService = ragCustomerService;
     }
 
@@ -46,7 +42,7 @@ public class AiCustomerServiceController {
         String memoryId = resolveMemoryId(userId);
 
         return withSseTimeout(
-                customerServiceAi.chat(memoryId, userMessage),
+                ragCustomerService.chatWithRag(userMessage, memoryId),
                 "\n（本次响应超时，请稍后重试或简化问题。）");
     }
 

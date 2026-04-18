@@ -1,6 +1,5 @@
 package com.gk.study.ai.config;
 
-import com.gk.study.ai.CustomerServiceAi;
 import com.gk.study.ai.RagAnswerAi;
 import com.gk.study.ai.rag.RagKnowledgeContentRetriever;
 import dev.langchain4j.memory.chat.ChatMemoryProvider;
@@ -22,7 +21,7 @@ import java.time.Duration;
 
 /**
  * 统一装配：按 {@link AiProperties#getProvider()} 选择阿里百炼（OpenAI 兼容），
- * 供非 RAG {@code /stream} 与 RAG {@code /rag/stream} 共用，行为与拆分配置类时一致。
+ * 统一使用 RAG + 工具的 {@link RagAnswerAi} 服务。
  */
 @Configuration
 @EnableConfigurationProperties(AiProperties.class)
@@ -42,23 +41,6 @@ public class AiModelConfiguration {
             return buildBailianEmbedding(ai.getBailian());
         }
         return buildOllamaEmbedding(ai.getOllama());
-    }
-
-    /**
-     * 客服工具注册：{@link AiOrderTool}（商品检索/订单查询/下单）+ {@link AiOrderRedeemTool}（积分抵扣下单）+ {@link AiMemberTool}（会员/积分查询）。
-     */
-    @Bean
-    public CustomerServiceAi customerServiceAi(
-            StreamingChatLanguageModel streamingChatLanguageModel,
-            ChatMemoryProvider chatMemoryProvider,
-            AiOrderTool aiOrderTool,
-            AiOrderRedeemTool aiOrderRedeemTool,
-            AiMemberTool aiMemberTool) {
-        return AiServices.builder(CustomerServiceAi.class)
-                .streamingChatLanguageModel(streamingChatLanguageModel)
-                .chatMemoryProvider(chatMemoryProvider)
-                .tools(aiOrderTool, aiOrderRedeemTool, aiMemberTool)
-                .build();
     }
 
     @Bean
