@@ -52,9 +52,6 @@ public class Order implements Serializable {
     @TableField(exist = false)
     public Integer redeemPoints; // 积分抵扣数量（可选）
 
-    @TableField(exist = false)
-    public List<ThingItem> items;  // 批量商品列表（批量下单时使用）
-
     // 订单商品项（用于批量创建订单）
     @Data
     public static class ThingItem implements Serializable {

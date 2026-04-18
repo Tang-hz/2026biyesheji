@@ -6,10 +6,12 @@ import com.gk.study.common.APIResponse;
 import com.gk.study.common.ResponeCode;
 import com.gk.study.entity.Order;
 import com.gk.study.entity.Thing;
+import com.gk.study.entity.User;
 import com.gk.study.entity.VisitData;
 import com.gk.study.mapper.OrderMapper;
 import com.gk.study.mapper.OverviewMapper;
 import com.gk.study.mapper.ThingMapper;
+import com.gk.study.mapper.UserMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.apache.commons.lang3.time.DateUtils;
@@ -24,6 +26,7 @@ import java.lang.management.ManagementFactory;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * 系统概览统计控制器
@@ -44,6 +47,9 @@ public class OverViewController {
 
     @Autowired
     OverviewMapper overviewMapper;
+
+    @Autowired
+    UserMapper userMapper;
 
     private final static Logger logger = LoggerFactory.getLogger(OverViewController.class);
 
@@ -205,6 +211,220 @@ public class OverViewController {
         }
         Collections.reverse(dateList);
         return dateList;
+    }
+
+    /**
+     * 用户增长趋势
+     */
+    @Operation(summary = "用户增长趋势")
+    @RequestMapping(value = "/userGrowth", method = RequestMethod.GET)
+    public APIResponse userGrowth(String type) {
+        List<Map<String, Object>> result = new ArrayList<>();
+        List<String> dates = getDateRange(type);
+        for (String day : dates) {
+            QueryWrapper<User> qw = new QueryWrapper<>();
+            qw.likeRight("create_time", day);
+            long count = userMapper.selectCount(qw);
+            Map<String, Object> m = new HashMap<>();
+            m.put("date", day);
+            m.put("count", count);
+            result.add(m);
+        }
+        return new APIResponse(ResponeCode.SUCCESS, "查询成功", result);
+    }
+
+    /**
+     * 会员等级分布
+     */
+    @Operation(summary = "会员等级分布")
+    @RequestMapping(value = "/memberDistribution", method = RequestMethod.GET)
+    public APIResponse memberDistribution() {
+        List<Map<String, Object>> result = new ArrayList<>();
+        String[] levels = {"1", "2", "3", "4"};
+        String[] names = {"普通会员", "白银会员", "黄金会员", "钻石会员"};
+        for (int i = 0; i < levels.length; i++) {
+            QueryWrapper<User> qw = new QueryWrapper<>();
+            qw.eq("member_level", levels[i]);
+            long count = userMapper.selectCount(qw);
+            Map<String, Object> m = new HashMap<>();
+            m.put("level", names[i]);
+            m.put("count", count);
+            result.add(m);
+        }
+        return new APIResponse(ResponeCode.SUCCESS, "查询成功", result);
+    }
+
+    /**
+     * 销售额趋势
+     */
+    @Operation(summary = "销售额趋势")
+    @RequestMapping(value = "/salesTrend", method = RequestMethod.GET)
+    public APIResponse salesTrend(String type) {
+        List<Map<String, Object>> result = new ArrayList<>();
+        List<String> dates = getDateRange(type);
+        for (String day : dates) {
+            QueryWrapper<Order> qw = new QueryWrapper<>();
+            qw.likeRight("order_time", day);
+            qw.eq("status", "2");
+            List<Order> orders = orderMapper.selectList(qw);
+            double total = orders.stream()
+                    .mapToDouble(o -> o.getTotalPrice() != null ? o.getTotalPrice().doubleValue() : 0)
+                    .sum();
+            Map<String, Object> m = new HashMap<>();
+            m.put("date", day);
+            m.put("amount", total);
+            result.add(m);
+        }
+        return new APIResponse(ResponeCode.SUCCESS, "查询成功", result);
+    }
+
+    /**
+     * 客单价分布
+     */
+    @Operation(summary = "客单价分布")
+    @RequestMapping(value = "/avgOrderValue", method = RequestMethod.GET)
+    public APIResponse avgOrderValue() {
+        List<Map<String, Object>> result = new ArrayList<>();
+        String[] ranges = {"0-50", "50-100", "100-200", "200-500", "500+"};
+        int[] lows = {0, 50, 100, 200, 500};
+        int[] highs = {50, 100, 200, 500, Integer.MAX_VALUE};
+
+        QueryWrapper<Order> qw = new QueryWrapper<>();
+        qw.eq("status", "2");
+        List<Order> orders = orderMapper.selectList(qw);
+
+        for (int i = 0; i < ranges.length; i++) {
+            final int low = lows[i];
+            final int high = highs[i];
+            long count;
+            if (high == Integer.MAX_VALUE) {
+                count = orders.stream()
+                        .filter(o -> o.getTotalPrice() != null &&
+                                o.getTotalPrice().doubleValue() >= low)
+                        .count();
+            } else {
+                count = orders.stream()
+                        .filter(o -> o.getTotalPrice() != null &&
+                                o.getTotalPrice().doubleValue() >= low &&
+                                o.getTotalPrice().doubleValue() < high)
+                        .count();
+            }
+            Map<String, Object> m = new HashMap<>();
+            m.put("range", ranges[i]);
+            m.put("count", count);
+            result.add(m);
+        }
+        return new APIResponse(ResponeCode.SUCCESS, "查询成功", result);
+    }
+
+    /**
+     * 订单状态分布
+     */
+    @Operation(summary = "订单状态分布")
+    @RequestMapping(value = "/orderStatus", method = RequestMethod.GET)
+    public APIResponse orderStatus() {
+        List<Map<String, Object>> result = new ArrayList<>();
+        String[] statuses = {"0", "1", "2", "7"};
+        String[] names = {"待处理", "未支付", "已支付", "已取消"};
+
+        for (int i = 0; i < statuses.length; i++) {
+            QueryWrapper<Order> qw = new QueryWrapper<>();
+            qw.eq("status", statuses[i]);
+            long count = orderMapper.selectCount(qw);
+            Map<String, Object> m = new HashMap<>();
+            m.put("status", names[i]);
+            m.put("count", count);
+            result.add(m);
+        }
+        return new APIResponse(ResponeCode.SUCCESS, "查询成功", result);
+    }
+
+    /**
+     * 订单量趋势
+     */
+    @Operation(summary = "订单量趋势")
+    @RequestMapping(value = "/orderTrend", method = RequestMethod.GET)
+    public APIResponse orderTrend(String type) {
+        List<Map<String, Object>> result = new ArrayList<>();
+        List<String> dates = getDateRange(type);
+        for (String day : dates) {
+            QueryWrapper<Order> qw = new QueryWrapper<>();
+            qw.likeRight("order_time", day);
+            long count = orderMapper.selectCount(qw);
+            Map<String, Object> m = new HashMap<>();
+            m.put("date", day);
+            m.put("count", count);
+            result.add(m);
+        }
+        return new APIResponse(ResponeCode.SUCCESS, "查询成功", result);
+    }
+
+    /**
+     * 商品评分分布
+     */
+    @Operation(summary = "商品评分分布")
+    @RequestMapping(value = "/thingScore", method = RequestMethod.GET)
+    public APIResponse thingScore() {
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (int score = 0; score <= 5; score++) {
+            QueryWrapper<Thing> qw = new QueryWrapper<>();
+            qw.eq("score", score);
+            long count = thingMapper.selectCount(qw);
+            Map<String, Object> m = new HashMap<>();
+            m.put("score", score + "分");
+            m.put("count", count);
+            result.add(m);
+        }
+        return new APIResponse(ResponeCode.SUCCESS, "查询成功", result);
+    }
+
+    /**
+     * 商品热度 TOP10
+     */
+    @Operation(summary = "商品热度TOP10")
+    @RequestMapping(value = "/thingHot", method = RequestMethod.GET)
+    public APIResponse thingHot() {
+        QueryWrapper<Thing> qw = new QueryWrapper<>();
+        qw.orderByDesc("pv");
+        qw.last("LIMIT 10");
+        List<Thing> things = thingMapper.selectList(qw);
+        List<Map<String, Object>> result = things.stream().map(t -> {
+            Map<String, Object> m = new HashMap<>();
+            m.put("title", t.getTitle());
+            m.put("pv", t.getPv() != null ? t.getPv() : 0);
+            return m;
+        }).collect(Collectors.toList());
+        return new APIResponse(ResponeCode.SUCCESS, "查询成功", result);
+    }
+
+    /**
+     * 根据 type 获取日期范围
+     * type: day=最近7天, week=最近4周, month=最近6个月
+     */
+    private List<String> getDateRange(String type) {
+        List<String> dates = new ArrayList<>();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        if ("week".equals(type)) {
+            for (int i = 3; i >= 0; i--) {
+                Calendar cal = Calendar.getInstance();
+                cal.add(Calendar.WEEK_OF_YEAR, -i);
+                cal.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY);
+                dates.add(sdf.format(cal.getTime()));
+            }
+        } else if ("month".equals(type)) {
+            for (int i = 5; i >= 0; i--) {
+                Calendar cal = Calendar.getInstance();
+                cal.add(Calendar.MONTH, -i);
+                cal.set(Calendar.DAY_OF_MONTH, 1);
+                dates.add(sdf.format(cal.getTime()));
+            }
+        } else {
+            for (int i = 6; i >= 0; i--) {
+                Date date = DateUtils.addDays(new Date(), -i);
+                dates.add(sdf.format(date));
+            }
+        }
+        return dates;
     }
 
 }

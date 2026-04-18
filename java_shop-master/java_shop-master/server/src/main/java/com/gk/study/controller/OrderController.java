@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.io.IOException;
 import java.util.List;
 
@@ -72,13 +74,21 @@ public class OrderController {
      * @return APIResponse 创建结果响应
      * @throws IOException 可能抛出的 IO 异常
      */
-    @Operation(summary = "创建订单")
+    @Operation(summary = "创建订单（支持单商品和批量）")
     @RequestMapping(value = "/create", method = RequestMethod.POST)
     @Transactional
     public APIResponse create(Order order,
-                              @RequestParam(value = "redeemPoints", required = false) Integer redeemPoints) throws IOException {
+                              @RequestParam(value = "redeemPoints", required = false) Integer redeemPoints,
+                              @RequestParam(value = "items", required = false) String itemsJson) throws IOException {
         order.setRedeemPoints(redeemPoints);
-        service.createOrder(order);
+        List<Order.ThingItem> items = null;
+        // 如果传入 itemsJson，说明是批量下单
+        if (itemsJson != null && !itemsJson.isEmpty()) {
+            ObjectMapper mapper = new ObjectMapper();
+            items = mapper.readValue(itemsJson,
+                mapper.getTypeFactory().constructCollectionType(List.class, Order.ThingItem.class));
+        }
+        service.createOrder(order, items);
         return new APIResponse(ResponeCode.SUCCESS, "创建成功");
     }
 

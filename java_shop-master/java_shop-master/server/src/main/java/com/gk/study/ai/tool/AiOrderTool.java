@@ -228,7 +228,7 @@ public class AiOrderTool {
             order.setRedeemPoints(redeemPoints);
         }
 
-        orderService.createOrder(order);
+        orderService.createOrder(order, null);
 
         if (order.getOrderNumber() == null || order.getOrderNumber().isBlank()) {
             return "下单成功，但订单号生成失败，请稍后重试。";

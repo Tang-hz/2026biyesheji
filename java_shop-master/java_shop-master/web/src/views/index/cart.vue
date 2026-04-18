@@ -423,32 +423,26 @@ const handleJiesuan = async () => {
     return;
   }
   try {
-    // 积分抵扣分摊到每个商品（按折后价比例）
-    const totalFinalPrice = Number(orderSummary.value.totalFinalPrice) || 0;
-    const usedPoints = redeemPointsInput.value || 0;
-    const usedMoney = usedPoints / 100;
+    const formData = new FormData();
+    formData.append('userId', String(userId));
 
-    for (const item of cartRows.value) {
-      const itemFinalPrice = Number(item.finalPrice) || 0;
-      // 按商品折后价占整单比例分摊积分抵扣
-      const itemRedeemMoney = totalFinalPrice > 0 ? (itemFinalPrice / totalFinalPrice) * usedMoney : 0;
-      const itemRedeemPoints = Math.floor(itemRedeemMoney * 100);
+    // 批量商品列表
+    const items = cartRows.value.map(item => ({
+      thingId: String(item.thingId),
+      count: String(item.count),
+      remark: pageData.remark || ''
+    }));
+    formData.append('items', JSON.stringify(items));
 
-      const formData = new FormData();
-      formData.append('userId', String(userId));
-      formData.append('thingId', String(item.thingId));
-      formData.append('count', String(item.count));
-      if (pageData.remark) {
-        formData.append('remark', pageData.remark);
-      }
-      formData.append('receiverName', pageData.receiverName!);
-      formData.append('receiverPhone', pageData.receiverPhone!);
-      formData.append('receiverAddress', pageData.receiverAddress!);
-      if (itemRedeemPoints > 0) {
-        formData.append('redeemPoints', String(itemRedeemPoints));
-      }
-      await createApi(formData);
+    formData.append('receiverName', pageData.receiverName!);
+    formData.append('receiverPhone', pageData.receiverPhone!);
+    formData.append('receiverAddress', pageData.receiverAddress!);
+
+    if (redeemPointsInput.value > 0) {
+      formData.append('redeemPoints', String(redeemPointsInput.value));
     }
+
+    await createApi(formData);
     await clearCartApi({ userId: String(userId) });
     await cartStore.refreshCount();
     message.success('请支付订单');
