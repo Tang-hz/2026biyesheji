@@ -8,6 +8,7 @@ import lombok.Data;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.util.List;
 
 @Data
 @TableName("b_order")
@@ -51,4 +52,14 @@ public class Order implements Serializable {
     @TableField(exist = false)
     public Integer redeemPoints; // 积分抵扣数量（可选）
 
+    @TableField(exist = false)
+    public List<ThingItem> items;  // 批量商品列表（批量下单时使用）
+
+    // 订单商品项（用于批量创建订单）
+    @Data
+    public static class ThingItem implements Serializable {
+        public String thingId;    // 商品ID
+        public String count;     // 购买数量
+        public String remark;    // 商品备注
+    }
 }
