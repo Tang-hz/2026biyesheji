@@ -213,7 +213,7 @@ const handleSend = () => {
   const uid = userStore.user_id ? String(userStore.user_id) : 'guest';
   const url =
     (BASE_URL ? BASE_URL.replace(/\/$/, '') : '') +
-    `/api/ai/customer-service/rag/stream?message=${encodeURIComponent(text)}&userId=${encodeURIComponent(uid)}`;
+    `/api/ai/react/stream?message=${encodeURIComponent(text)}&userId=${encodeURIComponent(uid)}`;
 
   const es = new EventSource(url);
   es.onmessage = (evt) => {

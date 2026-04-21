@@ -1,6 +1,6 @@
 package com.gk.study.controller;
 
-import com.gk.study.ai.react.ReActStreamingAgent;
+import com.gk.study.ai.AiReactService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.MediaType;
@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
 
 /**
- * ReAct AI 客服端点：内部 ReAct 循环 + 流式 SSE 输出。
+ * ReAct AI 客服端点：声明式 @AiService，LangChain4j 框架自动跑 ReAct 循环 + SSE 流式输出。
  *
  * GET /api/ai/react/stream?message=问题&userId=用户ID
  */
@@ -20,13 +20,13 @@ import reactor.core.publisher.Flux;
 @RequestMapping("/ai/react")
 public class AiReactController {
 
-    private final ReActStreamingAgent reActStreamingAgent;
+    private final AiReactService aiReactService;
 
-    public AiReactController(ReActStreamingAgent reActStreamingAgent) {
-        this.reActStreamingAgent = reActStreamingAgent;
+    public AiReactController(AiReactService aiReactService) {
+        this.aiReactService = aiReactService;
     }
 
-    @Operation(summary = "ReAct客服对话（SSE流式，内部ReAct循环）")
+    @Operation(summary = "ReAct客服对话（SSE流式，@AiService声明式，框架自动ReAct循环）")
     @GetMapping(value = "/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<String> stream(
             @RequestParam("message") String message,
@@ -38,7 +38,7 @@ public class AiReactController {
         }
 
         String memoryId = resolveMemoryId(userId);
-        return reActStreamingAgent.chat(userMessage, memoryId);
+        return aiReactService.chat(memoryId, userMessage);
     }
 
     private String resolveMemoryId(String userId) {

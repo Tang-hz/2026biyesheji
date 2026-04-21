@@ -1,6 +1,6 @@
 package com.gk.study.ai.config;
 
-import com.gk.study.ai.RagAnswerAi;
+import com.gk.study.ai.AiReactService;
 import com.gk.study.ai.rag.RagKnowledgeContentRetriever;
 import dev.langchain4j.memory.chat.ChatMemoryProvider;
 import dev.langchain4j.model.chat.StreamingChatLanguageModel;
@@ -53,22 +53,20 @@ public class AiModelConfiguration {
     }
 
     @Bean
-    public RagAnswerAi ragAnswerAi(
+    public AiReactService aiReactService(
             StreamingChatLanguageModel streamingChatLanguageModel,
             ChatMemoryProvider chatMemoryProvider,
             RagKnowledgeContentRetriever ragKnowledgeContentRetriever,
             AiOrderTool aiOrderTool,
             AiOrderRedeemTool aiOrderRedeemTool,
             AiMemberTool aiMemberTool) {
-        return AiServices.builder(RagAnswerAi.class)
+        return AiServices.builder(AiReactService.class)
                 .streamingChatLanguageModel(streamingChatLanguageModel)
                 .chatMemoryProvider(chatMemoryProvider)
                 .contentRetriever(ragKnowledgeContentRetriever)
                 .tools(aiOrderTool, aiOrderRedeemTool, aiMemberTool)
                 .build();
     }
-
-        // NOTE: ReActStreamingAgent is auto-scanned via @Component in its class
 
     private static boolean isBailian(AiProperties ai) {
         return "bailian".equalsIgnoreCase(ai.getProvider());
