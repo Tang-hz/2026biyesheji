@@ -4,9 +4,12 @@ import com.gk.study.ai.RagAnswerAi;
 import com.gk.study.ai.rag.RagKnowledgeContentRetriever;
 import dev.langchain4j.memory.chat.ChatMemoryProvider;
 import dev.langchain4j.model.chat.StreamingChatLanguageModel;
+import dev.langchain4j.model.chat.ChatLanguageModel;
 import dev.langchain4j.model.embedding.EmbeddingModel;
 import dev.langchain4j.model.ollama.OllamaEmbeddingModel;
+import dev.langchain4j.model.ollama.OllamaChatModel;
 import dev.langchain4j.model.ollama.OllamaStreamingChatModel;
+import dev.langchain4j.model.openai.OpenAiChatModel;
 import dev.langchain4j.model.openai.OpenAiEmbeddingModel;
 import dev.langchain4j.model.openai.OpenAiStreamingChatModel;
 import dev.langchain4j.service.AiServices;
@@ -33,6 +36,14 @@ public class AiModelConfiguration {
             return buildBailianChat(ai.getBailian());
         }
         return buildOllamaChat(ai.getOllama());
+    }
+
+    @Bean
+    public ChatLanguageModel chatLanguageModel(AiProperties ai) {
+        if (isBailian(ai)) {
+            return buildBailianChatModel(ai.getBailian());
+        }
+        return buildOllamaChatModel(ai.getOllama());
     }
 
     @Bean
@@ -72,6 +83,33 @@ public class AiModelConfiguration {
         }
         if (o.getTimeoutSeconds() != null) {
             builder.timeout(Duration.ofSeconds(o.getTimeoutSeconds()));
+        }
+        return builder.build();
+    }
+
+    private static ChatLanguageModel buildOllamaChatModel(AiProperties.Ollama o) {
+        var builder = OllamaChatModel.builder()
+                .baseUrl(o.getBaseUrl())
+                .modelName(o.getChatModel());
+        if (o.getTemperature() != null) {
+            builder.temperature(o.getTemperature());
+        }
+        if (o.getTimeoutSeconds() != null) {
+            builder.timeout(Duration.ofSeconds(o.getTimeoutSeconds()));
+        }
+        return builder.build();
+    }
+
+    private static ChatLanguageModel buildBailianChatModel(AiProperties.Bailian b) {
+        var builder = OpenAiChatModel.builder()
+                .baseUrl(b.getBaseUrl())
+                .apiKey(b.getApiKey())
+                .modelName(b.getChatModel());
+        if (b.getTemperature() != null) {
+            builder.temperature(b.getTemperature());
+        }
+        if (b.getTimeoutSeconds() != null) {
+            builder.timeout(Duration.ofSeconds(b.getTimeoutSeconds()));
         }
         return builder.build();
     }
