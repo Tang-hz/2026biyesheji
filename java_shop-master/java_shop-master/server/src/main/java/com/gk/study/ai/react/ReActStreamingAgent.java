@@ -1,5 +1,7 @@
 package com.gk.study.ai.react;
 
+import com.gk.study.ai.rag.RagKnowledgeContentRetriever;
+import dev.langchain4j.rag.query.Query;
 import com.gk.study.ai.tool.AiMemberTool;
 import com.gk.study.ai.tool.AiOrderRedeemTool;
 import com.gk.study.ai.tool.AiOrderTool;
@@ -14,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.stream.Collectors;
 import java.util.function.Function;
 
 /**
@@ -39,6 +42,7 @@ public class ReActStreamingAgent {
 
     public ReActStreamingAgent(
             ChatLanguageModel chatModel,
+            RagKnowledgeContentRetriever ragKnowledgeContentRetriever,
             AiOrderTool aiOrderTool,
             AiOrderRedeemTool aiOrderRedeemTool,
             AiMemberTool aiMemberTool) {
@@ -48,6 +52,18 @@ public class ReActStreamingAgent {
 
         // Build tool registry
         this.toolRegistry = new HashMap<>();
+
+        // Knowledge base search tool (RAG)
+        register("searchKnowledgeBase",
+            (args) -> {
+                String queryText = argStr(args, "query", "");
+                if (queryText.isBlank()) return "请提供搜索关键词";
+                var contents = ragKnowledgeContentRetriever.retrieve(Query.from(queryText));
+                if (contents.isEmpty()) return "知识库中没有找到相关内容";
+                return contents.stream()
+                    .map(c -> c.textSegment().text())
+                    .collect(java.util.stream.Collectors.joining("\n---\n"));
+            });
 
         // AiOrderTool
         register("searchThingsByKeyword",
@@ -180,7 +196,7 @@ public class ReActStreamingAgent {
     }
 
     private boolean needsUserId(String toolName) {
-        return !toolName.equals("searchThingsByKeyword");
+        return !toolName.equals("searchThingsByKeyword") && !toolName.equals("searchKnowledgeBase");
     }
 
     private String buildPrompt(String systemPrompt, List<String> history) {
