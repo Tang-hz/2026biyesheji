@@ -3,17 +3,11 @@ package com.gk.study.ai.react;
 import com.gk.study.ai.tool.AiMemberTool;
 import com.gk.study.ai.tool.AiOrderRedeemTool;
 import com.gk.study.ai.tool.AiOrderTool;
-import com.gk.study.service.MemberService;
-import com.gk.study.service.PointsService;
-import com.gk.study.service.ThingService;
-import com.gk.study.service.OrderService;
-import com.gk.study.service.AddressService;
 import dev.langchain4j.model.chat.ChatLanguageModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
