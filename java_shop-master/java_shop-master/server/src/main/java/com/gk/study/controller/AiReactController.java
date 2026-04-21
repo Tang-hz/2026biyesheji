@@ -2,6 +2,7 @@ package com.gk.study.controller;
 
 import com.gk.study.ai.react.ReActAgent;
 import com.gk.study.common.APIResponse;
+import com.gk.study.common.ResponeCode;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -38,13 +39,13 @@ public class AiReactController {
 
         String userMessage = (message == null) ? "" : message.trim();
         if (userMessage.isEmpty()) {
-            return APIResponse.error("请输入问题");
+            return new APIResponse<>(ResponeCode.FAIL, "请输入问题");
         }
 
         String memoryId = resolveMemoryId(userId);
         String response = reActAgent.chat(userMessage, memoryId);
 
-        return APIResponse.success(response);
+        return new APIResponse<>(ResponeCode.SUCCESS, "success", response);
     }
 
     private String resolveMemoryId(String userId) {
