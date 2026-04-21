@@ -7,9 +7,7 @@ import dev.langchain4j.model.chat.StreamingChatLanguageModel;
 import dev.langchain4j.model.chat.ChatLanguageModel;
 import dev.langchain4j.model.embedding.EmbeddingModel;
 import dev.langchain4j.model.ollama.OllamaEmbeddingModel;
-import dev.langchain4j.model.ollama.OllamaChatModel;
 import dev.langchain4j.model.ollama.OllamaStreamingChatModel;
-import dev.langchain4j.model.openai.OpenAiChatModel;
 import dev.langchain4j.model.openai.OpenAiEmbeddingModel;
 import dev.langchain4j.model.openai.OpenAiStreamingChatModel;
 import dev.langchain4j.service.AiServices;
@@ -33,17 +31,17 @@ public class AiModelConfiguration {
     @Bean
     public StreamingChatLanguageModel streamingChatLanguageModel(AiProperties ai) {
         if (isBailian(ai)) {
-            return buildBailianChat(ai.getBailian());
+            return buildBailianStreamingChat(ai.getBailian());
         }
-        return buildOllamaChat(ai.getOllama());
+        return buildOllamaStreamingChat(ai.getOllama());
     }
 
     @Bean
     public ChatLanguageModel chatLanguageModel(AiProperties ai) {
         if (isBailian(ai)) {
-            return buildBailianChatModel(ai.getBailian());
+            return buildBailianNonStreamingChat(ai.getBailian());
         }
-        return buildOllamaChatModel(ai.getOllama());
+        return buildOllamaNonStreamingChat(ai.getOllama());
     }
 
     @Bean
@@ -74,67 +72,60 @@ public class AiModelConfiguration {
         return "bailian".equalsIgnoreCase(ai.getProvider());
     }
 
-    private static StreamingChatLanguageModel buildOllamaChat(AiProperties.Ollama o) {
+    // ========== Ollama Streaming (RagAnswerAi 用) ==========
+
+    private static StreamingChatLanguageModel buildOllamaStreamingChat(AiProperties.Ollama o) {
         var builder = OllamaStreamingChatModel.builder()
                 .baseUrl(o.getBaseUrl())
                 .modelName(o.getChatModel());
-        if (o.getTemperature() != null) {
-            builder.temperature(o.getTemperature());
-        }
-        if (o.getTimeoutSeconds() != null) {
-            builder.timeout(Duration.ofSeconds(o.getTimeoutSeconds()));
-        }
+        if (o.getTemperature() != null) builder.temperature(o.getTemperature());
+        if (o.getTimeoutSeconds() != null) builder.timeout(Duration.ofSeconds(o.getTimeoutSeconds()));
         return builder.build();
     }
 
-    private static ChatLanguageModel buildOllamaChatModel(AiProperties.Ollama o) {
-        var builder = OllamaChatModel.builder()
+    // ========== Ollama Non-Streaming (ReActAgent 用) ==========
+
+    private static ChatLanguageModel buildOllamaNonStreamingChat(AiProperties.Ollama o) {
+        // 使用 OllamaChatModel 的 builder
+        var builder = dev.langchain4j.model.ollama.OllamaChatModel.builder()
                 .baseUrl(o.getBaseUrl())
                 .modelName(o.getChatModel());
-        if (o.getTemperature() != null) {
-            builder.temperature(o.getTemperature());
-        }
-        if (o.getTimeoutSeconds() != null) {
-            builder.timeout(Duration.ofSeconds(o.getTimeoutSeconds()));
-        }
+        if (o.getTemperature() != null) builder.temperature(o.getTemperature());
+        if (o.getTimeoutSeconds() != null) builder.timeout(Duration.ofSeconds(o.getTimeoutSeconds()));
         return builder.build();
     }
 
-    private static ChatLanguageModel buildBailianChatModel(AiProperties.Bailian b) {
-        var builder = OpenAiChatModel.builder()
+    // ========== Bailian Streaming (RagAnswerAi 用) ==========
+
+    private static StreamingChatLanguageModel buildBailianStreamingChat(AiProperties.Bailian b) {
+        var builder = OpenAiStreamingChatModel.builder()
                 .baseUrl(b.getBaseUrl())
                 .apiKey(b.getApiKey())
                 .modelName(b.getChatModel());
-        if (b.getTemperature() != null) {
-            builder.temperature(b.getTemperature());
-        }
-        if (b.getTimeoutSeconds() != null) {
-            builder.timeout(Duration.ofSeconds(b.getTimeoutSeconds()));
-        }
+        if (b.getTemperature() != null) builder.temperature(b.getTemperature());
+        if (b.getTimeoutSeconds() != null) builder.timeout(Duration.ofSeconds(b.getTimeoutSeconds()));
         return builder.build();
     }
+
+    // ========== Bailian Non-Streaming (ReActAgent 用) ==========
+
+    private static ChatLanguageModel buildBailianNonStreamingChat(AiProperties.Bailian b) {
+        var builder = dev.langchain4j.model.openai.OpenAiChatModel.builder()
+                .baseUrl(b.getBaseUrl())
+                .apiKey(b.getApiKey())
+                .modelName(b.getChatModel());
+        if (b.getTemperature() != null) builder.temperature(b.getTemperature());
+        if (b.getTimeoutSeconds() != null) builder.timeout(Duration.ofSeconds(b.getTimeoutSeconds()));
+        return builder.build();
+    }
+
+    // ========== Embedding ==========
 
     private static EmbeddingModel buildOllamaEmbedding(AiProperties.Ollama o) {
         var builder = OllamaEmbeddingModel.builder()
                 .baseUrl(o.getBaseUrl())
                 .modelName(o.getEmbeddingModel());
-        if (o.getTimeoutSeconds() != null) {
-            builder.timeout(Duration.ofSeconds(o.getTimeoutSeconds()));
-        }
-        return builder.build();
-    }
-
-    private static StreamingChatLanguageModel buildBailianChat(AiProperties.Bailian b) {
-        var builder = OpenAiStreamingChatModel.builder()
-                .baseUrl(b.getBaseUrl())
-                .apiKey(b.getApiKey())
-                .modelName(b.getChatModel());
-        if (b.getTemperature() != null) {
-            builder.temperature(b.getTemperature());
-        }
-        if (b.getTimeoutSeconds() != null) {
-            builder.timeout(Duration.ofSeconds(b.getTimeoutSeconds()));
-        }
+        if (o.getTimeoutSeconds() != null) builder.timeout(Duration.ofSeconds(o.getTimeoutSeconds()));
         return builder.build();
     }
 
@@ -143,9 +134,7 @@ public class AiModelConfiguration {
                 .baseUrl(b.getBaseUrl())
                 .apiKey(b.getApiKey())
                 .modelName(b.getEmbeddingModel());
-        if (b.getTimeoutSeconds() != null) {
-            builder.timeout(Duration.ofSeconds(b.getTimeoutSeconds()));
-        }
+        if (b.getTimeoutSeconds() != null) builder.timeout(Duration.ofSeconds(b.getTimeoutSeconds()));
         return builder.build();
     }
 }
