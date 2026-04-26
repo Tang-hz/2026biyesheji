@@ -101,20 +101,8 @@ marked.setOptions({
   gfm: true,
 });
 
-// 检测消息是否为 JSON 表格格式
-const isTableMessage = (text: string): boolean => {
-  const trimmed = text.trim();
-  if (!trimmed.startsWith('{')) return false;
-  try {
-    const parsed = JSON.parse(trimmed);
-    return parsed && parsed.type === 'table' && Array.isArray(parsed.columns) && Array.isArray(parsed.rows);
-  } catch {
-    return false;
-  }
-};
-
 // 解析 JSON 表格消息
-const parseTableMessage = (text: string): { title?: string; columns: string[]; rows: string[][] } | null => {
+const parseJsonTable = (text: string): { title?: string; columns: string[]; rows: string[][] } | null => {
   try {
     const parsed = JSON.parse(text.trim());
     if (parsed && parsed.type === 'table') {
@@ -128,6 +116,45 @@ const parseTableMessage = (text: string): { title?: string; columns: string[]; r
   return null;
 };
 
+// 解析 markdown 表格，返回 { columns, rows }
+const parseMarkdownTable = (text: string): { title?: string; columns: string[]; rows: string[][] } | null => {
+  try {
+    const lines = text.trim().split('\n').filter((line) => line.trim() !== '');
+    if (lines.length < 2) return null;
+
+    // 过滤出表格行（以 | 开头和结尾）
+    const tableLines = lines.filter((line) => {
+      const t = line.trim();
+      return t.startsWith('|') && t.endsWith('|');
+    });
+
+    if (tableLines.length < 2) return null;
+
+    // 解析单元格
+    const parseRow = (line: string): string[] => {
+      return line
+        .trim()
+        .split('|')
+        .slice(1, -1) // 去掉首尾空元素
+        .map((cell) => cell.trim());
+    };
+
+    // 第一行是表头，第二行是分隔线（----），之后是数据行
+    const headerLine = tableLines[0];
+    const columns = parseRow(headerLine);
+
+    // 找到分隔线所在索引，跳过它
+    const separatorIdx = tableLines.findIndex((line) => /^[\s|:-]+$/.test(line.trim()));
+    const dataLines = separatorIdx >= 0 ? tableLines.slice(separatorIdx + 1) : tableLines.slice(1);
+
+    const rows = dataLines.map(parseRow);
+
+    return { columns, rows };
+  } catch {
+    return null;
+  }
+};
+
 // 保留原有 marked 渲染，供 renderMessage 内部调用
 const renderMarkdown = (text: string): string => {
   if (!text) return '';
@@ -138,14 +165,20 @@ const renderMarkdown = (text: string): string => {
 const renderMessage = (text: string, role: 'user' | 'ai'): string => {
   if (!text) return '';
 
-  // AI 消息优先检测 JSON 表格格式
-  const tableData = parseTableMessage(text);
-  if (tableData) {
-    return renderTable(tableData);
-  }
-
-  // 其他 AI 消息走原有 markdown 渲染
+  // AI 消息：优先检测 JSON 表格
   if (role === 'ai') {
+    const jsonData = parseJsonTable(text);
+    if (jsonData) {
+      return renderTable(jsonData);
+    }
+
+    // 检测 markdown 表格并转换
+    const mdTableData = parseMarkdownTable(text);
+    if (mdTableData) {
+      return renderTable(mdTableData);
+    }
+
+    // 其他走原有 markdown 渲染
     return renderMarkdown(text);
   }
 
