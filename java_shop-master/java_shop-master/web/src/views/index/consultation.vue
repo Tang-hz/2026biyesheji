@@ -84,7 +84,6 @@
 
 <script setup lang="ts">
 import { nextTick, onMounted, ref, watch } from 'vue';
-import { marked } from 'marked';
 import Header from '/@/views/index/components/header.vue';
 import Footer from '/@/views/index/components/footer.vue';
 import { useUserStore } from '/@/store';
@@ -95,127 +94,41 @@ import { userWishListApi } from '/@/api/thingWish';
 import { detailApi } from '/@/api/user';
 import AvatarIcon from '/@/assets/images/avatar.jpg';
 
-// 配置marked
-marked.setOptions({
-  breaks: true,
-  gfm: true,
-});
+// ========== JSON 块解析 ==========
 
-// 解析 JSON 表格消息
-const parseJsonTable = (text: string): { title?: string; columns: string[]; rows: string[][] } | null => {
-  try {
-    const parsed = JSON.parse(text.trim());
-    if (parsed && parsed.type === 'table') {
-      return {
-        title: parsed.title || '',
-        columns: parsed.columns || [],
-        rows: parsed.rows || [],
-      };
+// JSON 块缓冲：当检测到 JSON_START 时，进入 buffer 模式直到 JSON_END
+const jsonBuffer = ref('');
+
+// 检测 JSON 块边界，返回 { text, jsonBlock }
+const detectJsonBlock = (chunk: string): { text: string; jsonBlock: string | null } => {
+  if (jsonBuffer.value) {
+    jsonBuffer.value += chunk;
+    const jsonEndIdx = jsonBuffer.value.indexOf('___JSON_END___');
+    if (jsonEndIdx !== -1) {
+      const jsonContent = jsonBuffer.value.substring(0, jsonEndIdx);
+      jsonBuffer.value = '';
+      return { text: '', jsonBlock: jsonContent };
     }
-  } catch {}
-  return null;
-};
-
-// 解析 markdown 表格，返回 { columns, rows }
-const parseMarkdownTable = (text: string): { title?: string; columns: string[]; rows: string[][] } | null => {
-  try {
-    const lines = text.trim().split('\n').filter((line) => line.trim() !== '');
-    if (lines.length < 2) return null;
-
-    // 过滤出表格行（以 | 开头和结尾）
-    const tableLines = lines.filter((line) => {
-      const t = line.trim();
-      return t.startsWith('|') && t.endsWith('|');
-    });
-
-    if (tableLines.length < 2) return null;
-
-    // 解析单元格
-    const parseRow = (line: string): string[] => {
-      return line
-        .trim()
-        .split('|')
-        .slice(1, -1) // 去掉首尾空元素
-        .map((cell) => cell.trim());
-    };
-
-    // 第一行是表头，第二行是分隔线（----），之后是数据行
-    const headerLine = tableLines[0];
-    const columns = parseRow(headerLine);
-
-    // 找到分隔线所在索引，跳过它
-    const separatorIdx = tableLines.findIndex((line) => /^[\s|:-]+$/.test(line.trim()));
-    const dataLines = separatorIdx >= 0 ? tableLines.slice(separatorIdx + 1) : tableLines.slice(1);
-
-    const rows = dataLines.map(parseRow);
-
-    return { columns, rows };
-  } catch {
-    return null;
-  }
-};
-
-// 保留原有 marked 渲染，供 renderMessage 内部调用
-const renderMarkdown = (text: string): string => {
-  if (!text) return '';
-  return marked.parse(text) as string;
-};
-
-// 渲染消息文本
-const renderMessage = (text: string, role: 'user' | 'ai'): string => {
-  if (!text) return '';
-
-  // AI 消息：优先检测 JSON 表格
-  if (role === 'ai') {
-    const jsonData = parseJsonTable(text);
-    if (jsonData) {
-      return renderTable(jsonData);
-    }
-
-    // 检测 markdown 表格并转换
-    const mdTableData = parseMarkdownTable(text);
-    if (mdTableData) {
-      return renderTable(mdTableData);
-    }
-
-    // 其他走原有 markdown 渲染
-    return renderMarkdown(text);
+    return { text: '', jsonBlock: null };
   }
 
-  // 用户消息直接返回
-  return text;
-};
+  const jsonStartIdx = chunk.indexOf('___JSON_START___');
+  if (jsonStartIdx !== -1) {
+    const beforeJson = chunk.substring(0, jsonStartIdx);
+    const afterStart = chunk.substring(jsonStartIdx + '___JSON_START___'.length);
+    const jsonEndIdx = afterStart.indexOf('___JSON_END___');
+    if (jsonEndIdx !== -1) {
+      const jsonContent = afterStart.substring(0, jsonEndIdx);
+      const afterJson = afterStart.substring(jsonEndIdx + '___JSON_END___'.length);
+      if (afterJson) jsonBuffer.value = afterJson;
+      return { text: beforeJson, jsonBlock: jsonContent };
+    } else {
+      jsonBuffer.value = afterStart;
+      return { text: beforeJson, jsonBlock: null };
+    }
+  }
 
-// 渲染 JSON 表格为 HTML
-const renderTable = (data: { title?: string; columns: string[]; rows: string[][] }): string => {
-  const { title, columns, rows } = data;
-
-  // 生成表头
-  const headerCells = (columns ?? [])
-    .map((col) => `<th style="background:#e8eff7;color:#152844;font-size:14px;padding:8px 12px;border:1px solid #ddd;text-align:left;font-weight:600;">${escapeHtml(col)}</th>`)
-    .join('');
-
-  // 生成数据行
-  const bodyRows = (rows ?? [])
-    .map(
-      (row, rowIndex) =>
-        `<tr style="background:${rowIndex % 2 === 0 ? '#fff' : '#fafafa'};">` +
-        row.map((cell) => `<td style="padding:8px 12px;border:1px solid #ddd;color:#152844;font-size:14px;">${escapeHtml(cell)}</td>`).join('') +
-        '</tr>',
-    )
-    .join('');
-
-  const titleHtml = title ? `<div style="font-weight:600;color:#152844;font-size:14px;margin-bottom:8px;">${escapeHtml(title)}</div>` : '';
-
-  return `
-    <div style="margin:8px 0;overflow-x:auto;">
-      ${titleHtml}
-      <table style="border-collapse:collapse;width:100%;font-size:14px;table-layout:auto;">
-        <thead><tr>${headerCells}</tr></thead>
-        <tbody>${bodyRows}</tbody>
-      </table>
-    </div>
-  `;
+  return { text: chunk, jsonBlock: null };
 };
 
 // HTML 实体转义
@@ -227,6 +140,36 @@ const escapeHtml = (str: string): string => {
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#039;');
 };
+
+// 解析 JSON 表格为 HTML
+const parseTableJson = (jsonStr: string): string => {
+  try {
+    const data = JSON.parse(jsonStr);
+    if (data.type !== 'table') return '';
+    const { title, columns, rows } = data;
+    const titleHtml = title ? `<div class="ai-table-title">${escapeHtml(title)}</div>` : '';
+    const headerCells = (columns ?? []).map(col => `<th>${escapeHtml(col)}</th>`).join('');
+    const bodyRows = (rows ?? []).map((row) => {
+      const cells = row.map(cell => `<td>${escapeHtml(cell)}</td>`).join('');
+      return `<tr>${cells}</tr>`;
+    }).join('');
+    return `<div class="ai-table">${titleHtml}<table><thead><tr>${headerCells}</tr></thead><tbody>${bodyRows}</tbody></table></div>`;
+  } catch {
+    return '';
+  }
+};
+
+// 渲染消息文本
+const renderMessage = (text: string, role: 'user' | 'ai'): string => {
+  if (!text) return '';
+  if (role === 'user') {
+    return escapeHtml(text);
+  }
+  // AI 消息直接输出（JSON 块已在 SSE 处理时转为 HTML 表格）
+  return text;
+};
+
+// ========== 组件逻辑 ==========
 
 type ChatRole = 'user' | 'ai';
 type ChatStatus = 'thinking' | 'speaking' | 'done';
@@ -244,7 +187,6 @@ const userStore = useUserStore();
 const historyRef = ref<HTMLDivElement | null>(null);
 const inputText = ref('');
 
-// 左侧用户卡片数据：当前先做 UI 结构，统计值从业务接口接入后再替换。
 const userName = ref<string>(userStore.user_name || 'tls');
 const avatarText = ref<string>((userName.value || 'tls').slice(0, 1));
 const activeDays = ref<number>(123);
@@ -285,7 +227,6 @@ const chatMessages = ref<ChatMessage[]>([
 const formatTime = (d: Date) => d.toLocaleTimeString().slice(0, 5);
 
 const go = (name: string) => {
-  // 用户中心页面在 root.ts 的子路由里，直接按 name 跳转即可。
   router.push({ name });
 };
 
@@ -333,7 +274,6 @@ const handleSend = () => {
   inputText.value = '';
   scrollToBottom();
 
-  // SSE：RAG + LangChain4j 多轮记忆（userId 与后端会话隔离；未登录用 guest）
   const aiMsgId = Date.now() + 1;
   chatMessages.value.push({
     id: aiMsgId,
@@ -352,10 +292,16 @@ const handleSend = () => {
   const es = new EventSource(url);
   es.onmessage = (evt) => {
     const chunk = evt.data ?? '';
+    const { text: textChunk, jsonBlock } = detectJsonBlock(chunk);
     const msg = chatMessages.value.find((m) => m.id === aiMsgId);
     if (msg) {
       if (msg.status === 'thinking') msg.status = 'speaking';
-      msg.text += chunk;
+      if (textChunk) {
+        msg.text += textChunk;
+      }
+      if (jsonBlock) {
+        msg.text += parseTableJson(jsonBlock);
+      }
     }
     scrollToBottom();
   };
@@ -384,16 +330,16 @@ const handleSend = () => {
   flex-direction: row;
   gap: 0;
   background: #fff;
-  border: 1px solid #cedce4; // 保留最外层边框
-  border-top: 2px solid #4684e2; // 上框蓝色
-  border-bottom: 2px solid #4684e2; // 下框蓝色
+  border: 1px solid #cedce4;
+  border-top: 2px solid #4684e2;
+  border-bottom: 2px solid #4684e2;
   border-radius: 2px;
   padding: 0 0;
 }
 
 .user-card {
   width: 290px;
-  background: transparent; // 外层由 consultation-box 统一控制边框
+  background: transparent;
   padding: 0;
   border-right: 1px solid #cedce4;
 }
@@ -496,10 +442,10 @@ const handleSend = () => {
 
 .consultation-panel {
   flex: 1;
-  background: transparent; // 外层由 consultation-box 统一控制边框
+  background: transparent;
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 140px); // 留出 header/footer 的空间
+  height: calc(100vh - 140px);
   min-height: 520px;
 }
 
@@ -583,44 +529,78 @@ const handleSend = () => {
   white-space: pre-wrap;
   word-break: break-word;
 
-  table {
-    border-collapse: collapse;
-    width: 100%;
-    margin: 10px 0;
+  :deep(.ai-table) {
+    margin: 12px 0;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    border: 1px solid #e8ecf0;
   }
-  th, td {
-    border: 1px solid #ddd;
-    padding: 8px 12px;
-    text-align: left;
-  }
-  th {
-    background: #e8eff7;
+  :deep(.ai-table-title) {
+    background: linear-gradient(135deg, #4684e2 0%, #5a9aed 100%);
+    color: #fff;
     font-weight: 600;
+    padding: 10px 16px;
+    font-size: 14px;
+    border-radius: 8px 8px 0 0;
   }
-  tr:nth-child(even) {
-    background: #fafafa;
+  :deep(.ai-table table) {
+    width: 100%;
+    border-collapse: collapse;
   }
-  tr:hover {
-    background: #f0f7ff;
+  :deep(.ai-table th) {
+    background: #f0f5ff;
+    color: #152844;
+    font-weight: 600;
+    padding: 10px 16px;
+    text-align: left;
+    border-bottom: 1px solid #e8ecf0;
   }
-  ul, ol {
+  :deep(.ai-table td) {
+    padding: 10px 16px;
+    border-bottom: 1px solid #f0f0f0;
+    color: #333;
+  }
+  :deep(.ai-table tr:last-child td) {
+    border-bottom: none;
+  }
+  :deep(.ai-table tr:hover td) {
+    background: #f8faff;
+  }
+  :deep(.ai-table tr:nth-child(even) td) {
+    background: #fafcff;
+  }
+  :deep(ul), :deep(ol) {
     margin: 8px 0;
     padding-left: 20px;
   }
-  li {
+  :deep(li) {
     margin: 4px 0;
   }
-  code {
+  :deep(code) {
     background: #f0f0f0;
     padding: 2px 6px;
     border-radius: 4px;
     font-family: monospace;
+    font-size: 13px;
   }
-  pre {
+  :deep(pre) {
     background: #f5f5f5;
-    padding: 10px;
-    border-radius: 6px;
+    padding: 12px 16px;
+    border-radius: 8px;
     overflow-x: auto;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.06);
+  }
+  :deep(pre) :deep(code) {
+    background: none;
+    padding: 0;
+  }
+  :deep(blockquote) {
+    border-left: 3px solid #4684e2;
+    margin: 10px 0;
+    padding: 8px 16px;
+    background: #f8fafc;
+    border-radius: 0 8px 8px 0;
   }
 }
 
@@ -653,4 +633,3 @@ const handleSend = () => {
   font-size: 14px;
 }
 </style>
-
