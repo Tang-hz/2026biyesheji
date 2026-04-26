@@ -59,7 +59,7 @@
                 <span v-else>🎧</span>
               </div>
               <div class="bubble">
-                <div class="text">{{ item.text }}</div>
+                <div class="text" v-html="renderMessage(item.text, item.role)"></div>
                 <div class="time">{{ item.createTime }}</div>
               </div>
             </div>
@@ -84,6 +84,7 @@
 
 <script setup lang="ts">
 import { nextTick, onMounted, ref, watch } from 'vue';
+import { marked } from 'marked';
 import Header from '/@/views/index/components/header.vue';
 import Footer from '/@/views/index/components/footer.vue';
 import { useUserStore } from '/@/store';
@@ -93,6 +94,105 @@ import { userCollectListApi } from '/@/api/thingCollect';
 import { userWishListApi } from '/@/api/thingWish';
 import { detailApi } from '/@/api/user';
 import AvatarIcon from '/@/assets/images/avatar.jpg';
+
+// 配置marked
+marked.setOptions({
+  breaks: true,
+  gfm: true,
+});
+
+// 检测消息是否为 JSON 表格格式
+const isTableMessage = (text: string): boolean => {
+  const trimmed = text.trim();
+  if (!trimmed.startsWith('{')) return false;
+  try {
+    const parsed = JSON.parse(trimmed);
+    return parsed && parsed.type === 'table' && Array.isArray(parsed.columns) && Array.isArray(parsed.rows);
+  } catch {
+    return false;
+  }
+};
+
+// 解析 JSON 表格消息
+const parseTableMessage = (text: string): { title?: string; columns: string[]; rows: string[][] } | null => {
+  try {
+    const parsed = JSON.parse(text.trim());
+    if (parsed && parsed.type === 'table') {
+      return {
+        title: parsed.title || '',
+        columns: parsed.columns || [],
+        rows: parsed.rows || [],
+      };
+    }
+  } catch {}
+  return null;
+};
+
+// 保留原有 marked 渲染，供 renderMessage 内部调用
+const renderMarkdown = (text: string): string => {
+  if (!text) return '';
+  return marked.parse(text) as string;
+};
+
+// 渲染消息文本
+const renderMessage = (text: string, role: 'user' | 'ai'): string => {
+  if (!text) return '';
+
+  // AI 消息优先检测 JSON 表格格式
+  if (role === 'ai' && isTableMessage(text)) {
+    return renderTable(parseTableMessage(text)!);
+  }
+
+  // 其他 AI 消息走原有 markdown 渲染
+  if (role === 'ai') {
+    return renderMarkdown(text);
+  }
+
+  // 用户消息直接返回
+  return text;
+};
+
+// 渲染 JSON 表格为 HTML
+const renderTable = (data: { title?: string; columns: string[]; rows: string[][] }): string => {
+  const { title, columns, rows } = data;
+
+  // 生成表头
+  const headerCells = columns
+    .map((col) => `<th style="background:#e8eff7;color:#152844;font-size:14px;padding:8px 12px;border:1px solid #ddd;text-align:left;font-weight:600;">${escapeHtml(col)}</th>`)
+    .join('');
+
+  // 生成数据行
+  const bodyRows = rows
+    .map(
+      (row, rowIndex) =>
+        `<tr style="background:${rowIndex % 2 === 0 ? '#fff' : '#fafafa'};">` +
+        row.map((cell) => `<td style="padding:8px 12px;border:1px solid #ddd;color:#152844;font-size:14px;">${escapeHtml(cell)}</td>`).join('') +
+        '</tr>',
+    )
+    .join('');
+
+  const titleHtml = title ? `<div style="font-weight:600;color:#152844;font-size:14px;margin-bottom:8px;">${escapeHtml(title)}</div>` : '';
+
+  return `
+    <div style="margin:8px 0;overflow-x:auto;">
+      ${titleHtml}
+      <table style="border-collapse:collapse;width:100%;font-size:14px;table-layout:auto;">
+        <thead><tr>${headerCells}</tr></thead>
+        <tbody>${bodyRows}</tbody>
+      </table>
+    </div>
+  `;
+};
+
+// HTML 实体转义
+const escapeHtml = (str: string): string => {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+};
 
 type ChatRole = 'user' | 'ai';
 type ChatStatus = 'thinking' | 'speaking' | 'done';
@@ -448,6 +548,46 @@ const handleSend = () => {
   line-height: 20px;
   white-space: pre-wrap;
   word-break: break-word;
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 10px 0;
+  }
+  th, td {
+    border: 1px solid #ddd;
+    padding: 8px 12px;
+    text-align: left;
+  }
+  th {
+    background: #e8eff7;
+    font-weight: 600;
+  }
+  tr:nth-child(even) {
+    background: #fafafa;
+  }
+  tr:hover {
+    background: #f0f7ff;
+  }
+  ul, ol {
+    margin: 8px 0;
+    padding-left: 20px;
+  }
+  li {
+    margin: 4px 0;
+  }
+  code {
+    background: #f0f0f0;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: monospace;
+  }
+  pre {
+    background: #f5f5f5;
+    padding: 10px;
+    border-radius: 6px;
+    overflow-x: auto;
+  }
 }
 
 .time {
