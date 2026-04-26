@@ -139,8 +139,9 @@ const renderMessage = (text: string, role: 'user' | 'ai'): string => {
   if (!text) return '';
 
   // AI 消息优先检测 JSON 表格格式
-  if (role === 'ai' && isTableMessage(text)) {
-    return renderTable(parseTableMessage(text)!);
+  const tableData = parseTableMessage(text);
+  if (tableData) {
+    return renderTable(tableData);
   }
 
   // 其他 AI 消息走原有 markdown 渲染
@@ -157,12 +158,12 @@ const renderTable = (data: { title?: string; columns: string[]; rows: string[][]
   const { title, columns, rows } = data;
 
   // 生成表头
-  const headerCells = columns
+  const headerCells = (columns ?? [])
     .map((col) => `<th style="background:#e8eff7;color:#152844;font-size:14px;padding:8px 12px;border:1px solid #ddd;text-align:left;font-weight:600;">${escapeHtml(col)}</th>`)
     .join('');
 
   // 生成数据行
-  const bodyRows = rows
+  const bodyRows = (rows ?? [])
     .map(
       (row, rowIndex) =>
         `<tr style="background:${rowIndex % 2 === 0 ? '#fff' : '#fafafa'};">` +
