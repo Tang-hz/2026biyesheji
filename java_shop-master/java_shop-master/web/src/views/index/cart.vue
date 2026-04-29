@@ -1,114 +1,155 @@
 <template>
-  <div>
+  <div class="cart-page-wrapper">
     <Header />
-    <section class="cart-page flex-view">
-      <div class="left-flex">
-        <div class="title flex-view">
-          <h3>购物车</h3>
-        </div>
-        <div v-if="!cartRows.length" class="empty-hint">购物车暂无商品，去首页逛逛吧</div>
-        <div v-else class="cart-list-view">
-          <div class="list-th flex-view">
-            <span class="line-1">商品名称</span>
-            <span class="line-2">单价</span>
-            <span class="line-3">折扣价</span>
-            <span class="line-5">数量</span>
-            <span class="line-6">操作</span>
-          </div>
-          <div class="list">
-            <div v-for="item in cartRows" :key="item.id" class="items flex-view">
-              <div class="book flex-view" @click="openDetail(item)">
-                <img :src="item.cover" alt="" />
-                <h2>{{ item.title }}</h2>
-              </div>
-              <div class="pay origin">¥{{ item.price }}</div>
-              <div class="pay discounted">¥{{ item.finalPrice }}</div>
-              <div class="num-box flex-view">
-                <span class="num-btn" @click="decQty(item)">−</span>
-                <span class="num-val">{{ item.count }}</span>
-                <span class="num-btn" @click="incQty(item)">+</span>
-              </div>
-              <img :src="DeleteIcon" class="delete" alt="删除" @click="removeLine(item)" />
-            </div>
-          </div>
-        </div>
-        <div class="title flex-view">
-          <h3>备注</h3>
-        </div>
-        <textarea
-          v-model="pageData.remark"
-          placeholder="输入备注信息，100字以内"
-          class="remark"
-        ></textarea>
-      </div>
-      <div class="right-flex">
-        <div class="title flex-view">
-          <h3>收货地址</h3>
-        </div>
-        <div class="address-view">
-          <div class="info">
-            <span>收件人：</span>
-            <span class="name">{{ pageData.receiverName }}</span>
-            <span class="tel">{{ pageData.receiverPhone }}</span>
-          </div>
-          <div v-if="pageData.receiverAddress" class="address">{{ pageData.receiverAddress }}</div>
-          <div v-else class="info">
-            <span>目前暂无地址信息，请</span>
-            <span class="info-blue" @click="handleAdd">新建地址</span>
-          </div>
-        </div>
-        <div class="title flex-view">
-          <h3>结算</h3>
-          <span class="click-txt">价格</span>
-        </div>
-        <div class="price-view">
-          <div class="price-item flex-view">
-            <div class="item-name">商品总价（原价）</div>
-            <div class="price-txt">¥{{ orderSummary.totalSubtotal || '0.00' }}</div>
-          </div>
-          <div class="price-item flex-view">
-            <div class="item-name">{{ orderSummary.memberLevelName || '会员' }}折扣</div>
-            <div class="price-txt discount">-¥{{ orderSummary.totalDiscountAmount || '0.00' }}</div>
-          </div>
-          <div class="price-item flex-view">
-            <div class="item-name">积分抵扣</div>
-            <div class="price-txt redeem">
-              <span class="redeem-input">
-                <input
-                  type="number"
-                  v-model.number="redeemPointsInput"
-                  :max="orderSummary.maxRedeemPoints || 0"
-                  min="0"
-                  placeholder="0"
-                  @input="onRedeemInput"
-                />
-                <span>积分</span>
-              </span>
-              <span class="redeem-money">抵¥{{ redeemMoneyDisplay }}</span>
-            </div>
-          </div>
-          <div class="price-item flex-view">
-            <div class="item-name">本单可获积分</div>
-            <div class="price-txt">≈{{ orderSummary.totalEarnedPoints || 0 }}积分</div>
-          </div>
-          <div class="total-price-view flex-view">
-            <span>合计（实付）</span>
-            <div class="price">
-              <span class="font-big">¥{{ finalPayment }}</span>
-            </div>
-          </div>
-          <div class="btns-view">
-            <button type="button" class="btn buy" @click="handleBack">返回</button>
-            <button type="button" class="btn pay jiesuan" @click="handleJiesuan">提交订单</button>
-          </div>
-        </div>
-      </div>
-    </section>
 
+    <div class="cart-content">
+      <!-- 页面标题 -->
+      <div class="page-header">
+        <h1 class="page-title">我的购物车</h1>
+        <span class="item-count" v-if="cartRows.length">{{ cartRows.length }} 件商品</span>
+      </div>
+
+      <!-- 购物车为空 -->
+      <div v-if="!cartRows.length" class="empty-cart">
+        <div class="empty-icon">🛒</div>
+        <h2 class="empty-title">购物车是空的</h2>
+        <p class="empty-text">去首页逛逛，发现更多好物</p>
+        <button class="btn-primary" @click="$router.push({ name: 'index' })">
+          逛逛首页
+        </button>
+      </div>
+
+      <!-- 购物车列表 -->
+      <div v-else class="cart-main">
+        <!-- 左侧：商品列表 -->
+        <div class="cart-items-section">
+          <div class="section-header">
+            <span class="header-label">商品信息</span>
+            <span class="header-unit">单价</span>
+            <span class="header-unit">折扣价</span>
+            <span class="header-unit">数量</span>
+            <span class="header-action">操作</span>
+          </div>
+
+          <div class="items-list">
+            <div
+              v-for="item in cartRows"
+              :key="item.id"
+              class="cart-item"
+            >
+              <div class="item-product" @click="openDetail(item)">
+                <div class="product-image">
+                  <img :src="item.cover" :alt="item.title" />
+                </div>
+                <div class="product-info">
+                  <h3 class="product-name">{{ item.title }}</h3>
+                </div>
+              </div>
+
+              <div class="item-price origin">¥{{ item.price }}</div>
+              <div class="item-price discounted">¥{{ item.finalPrice }}</div>
+
+              <div class="item-quantity">
+                <div class="quantity-control">
+                  <span class="qty-btn" @click="decQty(item)">−</span>
+                  <span class="qty-value">{{ item.count }}</span>
+                  <span class="qty-btn" @click="incQty(item)">+</span>
+                </div>
+              </div>
+
+              <div class="item-actions">
+                <button class="delete-btn" @click="removeLine(item)" title="删除">
+                  <span>🗑</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 备注 -->
+          <div class="remark-section">
+            <label class="remark-label">订单备注</label>
+            <textarea
+              v-model="pageData.remark"
+              placeholder="输入备注信息，100字以内"
+              class="remark-input"
+              maxlength="100"
+            ></textarea>
+          </div>
+        </div>
+
+        <!-- 右侧：结算 -->
+        <div class="order-summary-section">
+          <div class="summary-card">
+            <h3 class="summary-title">订单结算</h3>
+
+            <!-- 收货地址 -->
+            <div class="address-block">
+              <div class="block-header">
+                <span class="block-icon">📍</span>
+                <span class="block-title">收货地址</span>
+              </div>
+              <div class="address-info" v-if="pageData.receiverAddress">
+                <p class="receiver">{{ pageData.receiverName }}</p>
+                <p class="phone">{{ pageData.receiverPhone }}</p>
+                <p class="address-text">{{ pageData.receiverAddress }}</p>
+              </div>
+              <div class="no-address" v-else>
+                <span>暂无地址，</span>
+                <span class="link" @click="handleAdd">新建地址</span>
+              </div>
+            </div>
+
+            <!-- 价格明细 -->
+            <div class="price-block">
+              <div class="price-row">
+                <span class="price-label">商品总价</span>
+                <span class="price-value">¥{{ orderSummary.totalSubtotal || '0.00' }}</span>
+              </div>
+              <div class="price-row">
+                <span class="price-label">{{ orderSummary.memberLevelName || '会员' }}折扣</span>
+                <span class="price-value discount">-¥{{ orderSummary.totalDiscountAmount || '0.00' }}</span>
+              </div>
+              <div class="price-row">
+                <span class="price-label">积分抵扣</span>
+                <div class="redeem-control">
+                  <input
+                    type="number"
+                    v-model.number="redeemPointsInput"
+                    :max="orderSummary.maxRedeemPoints || 0"
+                    min="0"
+                    placeholder="0"
+                    class="redeem-input"
+                    @input="onRedeemInput"
+                  />
+                  <span class="redeem-unit">积分</span>
+                </div>
+              </div>
+              <div class="price-row">
+                <span class="price-label">可获积分</span>
+                <span class="price-value earned">{{ orderSummary.totalEarnedPoints || 0 }}</span>
+              </div>
+
+              <div class="price-total">
+                <span class="total-label">实付金额</span>
+                <span class="total-value">¥{{ finalPayment }}</span>
+              </div>
+            </div>
+
+            <!-- 操作按钮 -->
+            <div class="action-buttons">
+              <button class="btn-back" @click="handleBack">返回</button>
+              <button class="btn-submit" @click="handleJiesuan">提交订单</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 新增地址弹窗 -->
     <a-modal
-      :visible="modal.visile"
+      v-model:open="modal.visile"
       :force-render="true"
-      :title="modal.title"
+      title="新增地址"
       ok-text="确认"
       cancel-text="取消"
       @cancel="handleCancel"
@@ -120,34 +161,18 @@
         :model="modal.form"
         :rules="modal.rules"
       >
-        <a-row :gutter="24">
-          <a-col :span="24">
-            <a-form-item label="姓名" name="name">
-              <a-input v-model:value="modal.form.name" placeholder="请输入" />
-            </a-form-item>
-          </a-col>
-        </a-row>
-        <a-row :gutter="24">
-          <a-col :span="24">
-            <a-form-item label="电话号码" name="mobile">
-              <a-input v-model:value="modal.form.mobile" placeholder="请输入" />
-            </a-form-item>
-          </a-col>
-        </a-row>
-        <a-row :gutter="24">
-          <a-col :span="24">
-            <a-form-item label="送货地址" name="desc">
-              <a-input v-model:value="modal.form.desc" placeholder="请输入" />
-            </a-form-item>
-          </a-col>
-        </a-row>
-        <a-row :gutter="24">
-          <a-col :span="24">
-            <a-form-item label="默认地址">
-              <a-switch v-model:checked="modal.form.default" />
-            </a-form-item>
-          </a-col>
-        </a-row>
+        <a-form-item label="姓名" name="name">
+          <a-input v-model:value="modal.form.name" placeholder="请输入收货人姓名" />
+        </a-form-item>
+        <a-form-item label="电话号码" name="mobile">
+          <a-input v-model:value="modal.form.mobile" placeholder="请输入手机号码" />
+        </a-form-item>
+        <a-form-item label="送货地址" name="desc">
+          <a-input v-model:value="modal.form.desc" placeholder="请输入详细地址" />
+        </a-form-item>
+        <a-form-item label="默认地址">
+          <a-switch v-model:checked="modal.form.default" />
+        </a-form-item>
       </a-form>
     </a-modal>
   </div>
@@ -156,7 +181,6 @@
 <script setup lang="ts">
 import { message } from 'ant-design-vue';
 import Header from '/@/views/index/components/header.vue';
-import DeleteIcon from '/@/assets/images/delete-icon.svg';
 import { createApi } from '/@/api/order';
 import { listApi as listAddressListApi, createApi as createAddressApi } from '/@/api/address';
 import {
@@ -232,20 +256,16 @@ const loadCart = () => {
           item.cover = BASE_URL + '/api/staticfiles/image/' + item.cover;
         }
         item.count = Number(item.count);
-        // finalPrice 由后端返回，若无则用原价
         if (!item.finalPrice) {
           item.finalPrice = (Number(item.price) * item.count).toFixed(2);
         }
       });
       cartRows.value = rows;
-      // 从第一个元素取订单汇总信息
       if (rows.length > 0 && rows[0]._orderSummary) {
         orderSummary.value = rows[0]._orderSummary;
       } else {
-        // 购物车为空时重置订单汇总
         orderSummary.value = {};
       }
-      // 重置积分输入
       redeemPointsInput.value = 0;
     })
     .catch(() => {
@@ -276,7 +296,6 @@ const recalcOrderSummary = () => {
   cartRows.value.forEach((row: any) => {
     const subtotal = Number(row.price) * row.count;
     totalSubtotal += subtotal;
-    // 使用会员折扣率计算折后价
     const finalPrice = subtotal * discountRate;
     row.finalPrice = finalPrice.toFixed(2);
     totalFinalPrice += finalPrice;
@@ -426,7 +445,6 @@ const handleJiesuan = async () => {
     const formData = new FormData();
     formData.append('userId', String(userId));
 
-    // 批量商品列表
     const items = cartRows.value.map(item => ({
       thingId: String(item.thingId),
       count: String(item.count),
@@ -454,374 +472,556 @@ const handleJiesuan = async () => {
 </script>
 
 <style scoped lang="less">
-.flex-view {
+/* ==================== 变量定义 ==================== */
+@primary-blue: #3b82f6;
+@primary-blue-dark: #1d4ed8;
+@primary-blue-light: #60a5fa;
+@bg-gradient-start: #f0f4f8;
+@bg-gradient-end: #e2e8f0;
+@text-dark: #1e293b;
+@text-muted: #64748b;
+@text-light: #94a3b8;
+@glass-bg: rgba(255, 255, 255, 0.7);
+@glass-border: rgba(255, 255, 255, 0.9);
+@glass-shadow: 0 8px 32px rgba(59, 130, 246, 0.08);
+@radius-lg: 20px;
+@radius-md: 14px;
+
+/* ==================== 页面背景 ==================== */
+.cart-page-wrapper {
+  min-height: 100vh;
+  background: linear-gradient(180deg, @bg-gradient-start 0%, @bg-gradient-end 100%);
+}
+
+.cart-content {
+  width: 1100px;
+  margin: 0 auto;
+  padding: 100px 16px 60px;
+}
+
+/* ==================== 页面标题 ==================== */
+.page-header {
   display: flex;
-}
-
-.cart-page {
-  width: 1024px;
-  min-height: 50vh;
-  margin: 100px auto;
-}
-
-.empty-hint {
-  color: #909090;
-  padding: 24px 0 40px;
-  font-size: 14px;
-}
-
-.left-flex {
-  flex: 17;
-  padding-right: 20px;
-}
-
-.title {
-  justify-content: space-between;
   align-items: center;
+  gap: 16px;
+  margin-bottom: 32px;
 
-  h3 {
-    color: #152844;
-    font-weight: 600;
-    font-size: 18px;
-    height: 26px;
-    line-height: 26px;
+  .page-title {
+    font-size: 28px;
+    font-weight: 700;
+    color: @text-dark;
     margin: 0;
   }
-}
 
-.cart-list-view {
-  margin: 4px 0 40px;
-
-  .list-th {
-    height: 42px;
-    line-height: 42px;
-    border-bottom: 1px solid #cedce4;
-    color: #152844;
+  .item-count {
     font-size: 14px;
+    color: @text-muted;
+    background: rgba(59, 130, 246, 0.1);
+    padding: 4px 12px;
+    border-radius: 20px;
+  }
+}
 
-    .line-1 {
-      flex: 1;
-      margin-right: 20px;
-    }
+/* ==================== 空购物车 ==================== */
+.empty-cart {
+  text-align: center;
+  padding: 80px 20px;
+  background: @glass-bg;
+  backdrop-filter: blur(20px);
+  border: 1px solid @glass-border;
+  border-radius: @radius-lg;
+  box-shadow: @glass-shadow;
 
-    .line-2 {
-      width: 65px;
-      margin-right: 10px;
-      text-decoration: line-through;
-      color: #999;
-    }
+  .empty-icon {
+    font-size: 64px;
+    margin-bottom: 20px;
+  }
 
-    .line-3 {
-      width: 65px;
-      margin-right: 10px;
-      color: #ff6600;
-      font-weight: 600;
-    }
+  .empty-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: @text-dark;
+    margin: 0 0 8px;
+  }
 
-    .line-5 {
-      width: 100px;
-      margin-right: 40px;
-    }
+  .empty-text {
+    font-size: 14px;
+    color: @text-muted;
+    margin: 0 0 24px;
+  }
 
-    .line-6 {
-      width: 28px;
+  .btn-primary {
+    background: linear-gradient(135deg, @primary-blue 0%, @primary-blue-dark 100%);
+    border: none;
+    border-radius: @radius-md;
+    color: white;
+    font-size: 15px;
+    font-weight: 600;
+    padding: 12px 32px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
     }
   }
 }
 
-.items {
-  align-items: center;
-  margin-top: 20px;
-  padding: 12px 8px;
-  border-radius: @radius-md;
-  transition: background @transition-fast, box-shadow @transition-base;
+/* ==================== 购物车主内容 ==================== */
+.cart-main {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 24px;
+  align-items: start;
+}
 
-  &:hover {
-    background: @bg-hover;
-    box-shadow: @shadow-sm;
+/* ==================== 商品列表区 ==================== */
+.cart-items-section {
+  background: @glass-bg;
+  backdrop-filter: blur(20px);
+  border: 1px solid @glass-border;
+  border-radius: @radius-lg;
+  box-shadow: @glass-shadow;
+  padding: 24px;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(59, 130, 246, 0.12);
+  font-size: 13px;
+  font-weight: 600;
+  color: @text-muted;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+
+  .header-label {
+    flex: 1;
   }
 
-  .book {
-    flex: 1;
+  .header-unit {
+    width: 90px;
+    text-align: center;
+  }
+
+  .header-action {
+    width: 50px;
+    text-align: center;
+  }
+}
+
+.items-list {
+  .cart-item {
+    display: flex;
     align-items: center;
-    margin-right: 20px;
-    cursor: pointer;
+    padding: 20px 0;
+    border-bottom: 1px dashed rgba(59, 130, 246, 0.12);
+    transition: background 0.2s;
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    &:hover {
+      background: rgba(59, 130, 246, 0.02);
+    }
+  }
+}
+
+.item-product {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  cursor: pointer;
+
+  .product-image {
+    width: 72px;
+    height: 72px;
+    border-radius: 12px;
+    overflow: hidden;
+    background: white;
+    flex-shrink: 0;
 
     img {
-      width: 48px;
-      margin-right: 16px;
-      border-radius: 4px;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
     }
+  }
 
-    h2 {
-      flex: 1;
+  .product-info {
+    .product-name {
       font-size: 14px;
-      line-height: 22px;
-      color: #152844;
-      font-weight: normal;
+      font-weight: 500;
+      color: @text-dark;
       margin: 0;
+      line-height: 1.4;
     }
   }
+}
 
-  .pay {
-    font-weight: 600;
-    font-size: 16px;
-    width: 65px;
-    margin-right: 10px;
-  }
+.item-price {
+  width: 90px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
 
-  .pay.origin {
+  &.origin {
     color: #999;
     text-decoration: line-through;
   }
 
-  .pay.discounted {
+  &.discounted {
     color: #ff6600;
     font-weight: 700;
   }
-
-  .num-box {
-    width: 100px;
-    margin-right: 40px;
-    border-radius: @radius-md;
-    border: 1px solid @border-light;
-    justify-content: space-between;
-    align-items: center;
-    height: 34px;
-    padding: 0 8px;
-    user-select: none;
-    background: @white;
-    transition: border-color @transition-fast;
-
-    &:hover {
-      border-color: @border-subtle;
-    }
-  }
-
-  .num-btn {
-    cursor: pointer;
-    color: @primary-blue;
-    font-size: 18px;
-    line-height: 1;
-    padding: 0 4px;
-    transition: color @transition-fast;
-
-    &:hover {
-      color: @primary-blue-hover;
-    }
-  }
-
-  .num-val {
-    font-size: @font-size-base;
-    color: @navy-dark;
-    font-weight: 500;
-    min-width: 24px;
-    text-align: center;
-  }
-
-  .delete {
-    width: 24px;
-    cursor: pointer;
-    opacity: 0.6;
-    transition: transform @transition-fast, opacity @transition-fast;
-
-    &:hover {
-      transform: scale(1.2);
-      opacity: 1;
-    }
-  }
 }
 
-.remark {
-  width: 100%;
-  background: @bg-input;
-  border: 1px solid @border-light;
-  border-radius: @radius-md;
-  padding: 10px 14px;
-  margin-top: 16px;
-  resize: none;
-  height: 60px;
-  line-height: 22px;
-  font-size: @font-size-base;
-  color: @text-primary;
-  transition: all @transition-fast;
-
-  &::placeholder {
-    color: @text-hint;
-  }
-
-  &:focus {
-    outline: none;
-    border-color: @primary-blue;
-    background: @white;
-    box-shadow: 0 0 0 3px @primary-blue-subtle;
-  }
+.item-quantity {
+  width: 90px;
+  text-align: center;
 }
 
-.right-flex {
-  flex: 8;
-  padding-left: 24px;
-  border-left: 1px solid #cedce4;
-}
-
-.click-txt {
-  color: #4684e2;
-  font-size: 14px;
-  cursor: pointer;
-}
-
-.address-view {
-  margin: 12px 0 24px;
-
-  .info {
-    color: #909090;
-    font-size: 14px;
-
-    .info-blue {
-      cursor: pointer;
-      color: #4684e2;
-    }
-  }
-
-  .name {
-    color: #152844;
-    font-weight: 500;
-  }
-
-  .tel {
-    color: #152844;
-    float: right;
-  }
-
-  .address {
-    color: #152844;
-    margin-top: 4px;
-  }
-}
-
-.price-view {
+.quantity-control {
+  display: inline-flex;
+  align-items: center;
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
   overflow: hidden;
-  margin-top: 16px;
-  background: @bg-page;
-  border-radius: @radius-lg;
-  padding: 16px;
-  border: 1px solid @border-light;
 
-  .price-item {
+  .qty-btn {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    color: #152844;
+    cursor: pointer;
+    transition: background 0.2s;
+
+    &:hover {
+      background: #f5f5f5;
+    }
+  }
+
+  .qty-value {
+    width: 36px;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 500;
+    color: #152844;
+  }
+}
+
+.item-actions {
+  width: 50px;
+  text-align: center;
+}
+
+.delete-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  opacity: 0.5;
+  transition: all 0.2s;
+
+  &:hover {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+}
+
+/* ==================== 备注区域 ==================== */
+.remark-section {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(59, 130, 246, 0.12);
+
+  .remark-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #909090;
+    margin-bottom: 8px;
+  }
+
+  .remark-input {
+    width: 100%;
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-size: 14px;
+    color: #152844;
+    resize: none;
+    height: 60px;
+    transition: all 0.2s;
+
+    &::placeholder {
+      color: #c0c0c0;
+    }
+
+    &:focus {
+      outline: none;
+      border-color: @primary-blue;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+  }
+}
+
+/* ==================== 结算区 ==================== */
+.order-summary-section {
+  position: sticky;
+  top: 100px;
+}
+
+.summary-card {
+  background: @glass-bg;
+  backdrop-filter: blur(20px);
+  border: 1px solid @glass-border;
+  border-radius: @radius-lg;
+  box-shadow: @glass-shadow;
+  padding: 24px;
+
+  .summary-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: @text-dark;
+    margin: 0 0 20px;
+  }
+}
+
+/* 收货地址 */
+.address-block {
+  background: white;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 20px;
+  border: 1px solid #e0e0e0;
+
+  .block-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+
+    .block-icon {
+      font-size: 16px;
+    }
+
+    .block-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #909090;
+    }
+  }
+
+  .address-info {
+    .receiver {
+      font-size: 15px;
+      font-weight: 600;
+      color: #152844;
+      margin: 0 0 4px;
+    }
+
+    .phone {
+      font-size: 13px;
+      color: #666;
+      margin: 0 0 4px;
+    }
+
+    .address-text {
+      font-size: 13px;
+      color: #666;
+      margin: 0;
+    }
+  }
+
+  .no-address {
+    font-size: 13px;
+    color: #909090;
+
+    .link {
+      color: @primary-blue;
+      cursor: pointer;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+}
+
+/* 价格明细 */
+.price-block {
+  border-top: 1px solid rgba(59, 130, 246, 0.12);
+  padding-top: 16px;
+  margin-bottom: 20px;
+
+  .price-row {
+    display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 8px;
+    margin-bottom: 10px;
     font-size: 14px;
 
-    .item-name {
+    .price-label {
+      color: #909090;
+    }
+
+    .price-value {
+      font-weight: 500;
+      color: #152844;
+
+      &.discount {
+        color: #52c41a;
+      }
+
+      &.earned {
+        color: @primary-blue;
+      }
+    }
+  }
+
+  .redeem-control {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+
+    .redeem-input {
+      width: 60px;
+      height: 28px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      text-align: center;
+      font-size: 13px;
+      color: #152844;
+      background: white;
+
+      &:focus {
+        outline: none;
+        border-color: @primary-blue;
+      }
+    }
+
+    .redeem-unit {
+      font-size: 12px;
+      color: #666;
+    }
+  }
+
+  .price-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 12px;
+    border-top: 1px solid rgba(59, 130, 246, 0.12);
+    margin-top: 8px;
+
+    .total-label {
+      font-size: 14px;
+      font-weight: 600;
       color: #152844;
     }
 
-    .price-txt {
-      font-weight: 500;
-      color: #ff8a00;
+    .total-value {
+      font-size: 24px;
+      font-weight: 700;
+      color: #ff6600;
     }
+  }
+}
 
-    .price-txt.discount {
-      color: #52c41a;
-    }
+/* 操作按钮 */
+.action-buttons {
+  display: flex;
+  gap: 12px;
 
-    .price-txt.redeem {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-end;
-      gap: 2px;
-    }
+  .btn-back {
+    flex: 1;
+    height: 48px;
+    background: white;
+    border: 1px solid @primary-blue;
+    border-radius: @radius-md;
+    font-size: 15px;
+    font-weight: 600;
+    color: @primary-blue;
+    cursor: pointer;
+    transition: all 0.25s ease;
 
-    .redeem-input {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-
-      input {
-        width: 60px;
-        height: 24px;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        text-align: center;
-        font-size: 12px;
-        color: #152844;
-        padding: 0 4px;
-
-        &:focus {
-          outline: none;
-          border-color: #4684e2;
-        }
-      }
-
-      span {
-        color: #666;
-        font-size: 12px;
-      }
-    }
-
-    .redeem-money {
-      color: #52c41a;
-      font-size: 12px;
+    &:hover {
+      background: rgba(59, 130, 246, 0.05);
     }
   }
 
-  .total-price-view {
-    margin-top: 12px;
-    border-top: 1px solid #cedce4;
-    justify-content: space-between;
-    align-items: flex-start;
-    padding-top: 10px;
-    color: #152844;
-    font-weight: 500;
+  .btn-submit {
+    flex: 1;
+    height: 48px;
+    background: linear-gradient(135deg, @primary-blue 0%, @primary-blue-dark 100%);
+    border: none;
+    border-radius: @radius-md;
+    font-size: 15px;
+    font-weight: 600;
+    color: white;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.35);
 
-    .price {
-      color: #ff8a00;
-      font-size: 16px;
-      height: 36px;
-      line-height: 36px;
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(59, 130, 246, 0.45);
     }
   }
+}
 
-  .btns-view {
-    margin-top: 24px;
-    text-align: right;
+/* ==================== 响应式 ==================== */
+@media (max-width: 900px) {
+  .cart-main {
+    grid-template-columns: 1fr;
+  }
 
-    .buy {
-      background: @white;
-      color: @primary-blue;
-      border: 1px solid @primary-blue;
+  .order-summary-section {
+    position: static;
+  }
+}
+
+@media (max-width: 600px) {
+  .cart-content {
+    padding: 80px 12px 40px;
+  }
+
+  .section-header {
+    display: none;
+  }
+
+  .cart-item {
+    flex-wrap: wrap;
+
+    .item-product {
+      width: 100%;
+      margin-bottom: 12px;
     }
 
-    .jiesuan {
-      cursor: pointer;
-      background: @primary-blue;
-      color: @white;
-      box-shadow: @shadow-button;
+    .item-price {
+      width: 50%;
+      text-align: left;
+      padding-left: 88px;
     }
 
-    .btn {
-      cursor: pointer;
-      width: 96px;
-      height: 36px;
-      line-height: 33px;
-      margin-left: 16px;
-      text-align: center;
-      border-radius: @radius-full;
-      font-size: @font-size-base;
-      font-weight: 500;
-      outline: none;
-      transition: all @transition-fast;
+    .item-quantity {
+      width: 50%;
+    }
 
-      &:hover {
-        transform: translateY(-1px);
-        box-shadow: @shadow-button-hover;
-      }
-
-      &:active {
-        transform: translateY(0);
-        box-shadow: @shadow-xs;
-      }
+    .item-actions {
+      position: absolute;
+      right: 0;
+      top: 20px;
     }
   }
 }

@@ -1,160 +1,178 @@
 <template>
-  <div>
-    <Header/>
-    <section class="cart-page flex-view">
-      <div class="left-flex">
-        <div class="title flex-view">
-          <h3>订单明细</h3>
-        </div>
-        <div class="cart-list-view">
-          <div class="list-th flex-view">
-            <span class="line-1">商品名称</span>
-            <span class="line-2">单价</span>
-            <span class="line-3">折扣价</span>
-            <span class="line-5">数量</span>
-          </div>
-          <div class="list">
-            <div class="items flex-view">
-              <div class="book flex-view" @click="openDetail">
-                <img :src="pageData.cover">
-                <h2>{{ pageData.title }}</h2>
-              </div>
-              <div class="pay origin">¥{{ memberPrice.price }}</div>
-              <div class="pay discounted">¥{{ itemFinalPrice }}</div>
-              <a-input-number v-model:value="pageData.count" :min="1" :max="10" @change="onCountChange"/>
-            </div>
-          </div>
-        </div>
-        <div class="title flex-view">
-          <h3>备注</h3>
-        </div>
-        <textarea v-model="pageData.remark" placeholder="输入备注信息，100字以内" class="remark">
-    </textarea>
-      </div>
-      <div class="right-flex">
-        <div class="title flex-view">
-          <h3>收货地址</h3>
-        </div>
-        <div class="address-view">
-          <div class="info" style="">
-            <span>收件人：</span>
-            <span class="name">{{ pageData.receiverName }}
-          </span>
-            <span class="tel">{{ pageData.receiverPhone }}
-          </span>
-          </div>
-          <div class="address" v-if="pageData.receiverAddress"> {{ pageData.receiverAddress }}</div>
-          <div class="info" v-else>
-            <span>目前暂无地址信息，请</span>
-            <span class="info-blue" @click="handleAdd">新建地址</span>
-          </div>
-        </div>
-        <div class="title flex-view">
-          <h3>结算</h3>
-          <span class="click-txt">价格</span>
-        </div>
-        <div class="price-view">
-          <div class="price-item flex-view">
-            <div class="item-name">商品总价（原价）</div>
-            <div class="price-txt">¥{{ memberPrice.subtotal }}</div>
-          </div>
-          <div class="price-item flex-view">
-            <div class="item-name">{{ memberPrice.memberLevelName }}折扣</div>
-            <div class="price-txt discount">-¥{{ memberPrice.discountAmount }}</div>
-          </div>
-          <div class="price-item flex-view">
-            <div class="item-name">积分抵扣</div>
-            <div class="price-txt redeem">
-              <span class="redeem-input">
-                <input
-                  type="number"
-                  v-model.number="redeemPointsInput"
-                  :max="memberPrice.maxRedeemPoints || 0"
-                  min="0"
-                  placeholder="0"
-                  @input="onRedeemInput"
-                />
-                <span>积分</span>
-              </span>
-              <span class="redeem-money">抵¥{{ redeemMoneyDisplay }}</span>
-            </div>
-          </div>
-          <div class="price-item flex-view">
-            <div class="item-name">本单可获积分</div>
-            <div class="price-txt">≈{{ memberPrice.earnedPoints }}积分</div>
-          </div>
-          <div class="total-price-view flex-view">
-            <span>合计（实付）</span>
-            <div class="price">
-              <span class="font-big">¥{{ finalPayment }}</span>
-            </div>
-          </div>
-          <div class="btns-view">
-            <button class="btn buy" @click="handleBack()">返回</button>
-            <button class="btn pay jiesuan" @click="handleJiesuan()">提交</button>
-          </div>
-        </div>
-      </div>
-    </section>
+  <div class="confirm-page-wrapper">
+    <Header />
 
-    <!--选择弹窗区域-->
-    <div>
-      <a-modal
-          :visible="modal.visile"
-          :forceRender="true"
-          :title="modal.title"
-          ok-text="确认"
-          cancel-text="取消"
-          @cancel="handleCancel"
-          @ok="handleOk"
-      >
-        <a-form
-            ref="myform"
-            :label-col="{ style: { width: '80px' } }"
-            :model="modal.form"
-            :rules="modal.rules"
-        >
-          <a-row :gutter="24">
-            <a-col span="24">
-              <a-form-item label="姓名" name="name">
-                <a-input placeholder="请输入" v-model:value="modal.form.name"></a-input>
-              </a-form-item>
-            </a-col>
-          </a-row>
-          <a-row :gutter="24">
-            <a-col span="24">
-              <a-form-item label="电话号码" name="mobile">
-                <a-input placeholder="请输入" v-model:value="modal.form.mobile"></a-input>
-              </a-form-item>
-            </a-col>
-          </a-row>
-          <a-row :gutter="24">
-            <a-col span="24">
-              <a-form-item label="送货地址" name="desc">
-                <a-input placeholder="请输入" v-model:value="modal.form.desc"></a-input>
-              </a-form-item>
-            </a-col>
-          </a-row>
-          <a-row :gutter="24">
-            <a-col span="24">
-              <a-form-item label="默认地址">
-                <a-switch v-model:checked="modal.form.default"></a-switch>
-              </a-form-item>
-            </a-col>
-          </a-row>
-        </a-form>
-      </a-modal>
+    <div class="confirm-content">
+      <!-- 页面标题 -->
+      <div class="page-header">
+        <h1 class="page-title">确认订单</h1>
+      </div>
+
+      <!-- 订单主体 -->
+      <div class="order-main">
+        <!-- 左侧：订单信息 -->
+        <div class="order-info-section">
+          <!-- 商品信息 -->
+          <div class="info-card">
+            <div class="card-header">
+              <span class="card-icon">📦</span>
+              <span class="card-title">商品信息</span>
+            </div>
+
+            <div class="product-item">
+              <div class="product-image" @click="openDetail">
+                <img :src="pageData.cover" :alt="pageData.title" />
+              </div>
+              <div class="product-detail">
+                <h3 class="product-name">{{ pageData.title }}</h3>
+                <div class="product-price">
+                  <span class="price-origin">¥{{ memberPrice.price }}</span>
+                  <span class="price-final">¥{{ itemFinalPrice }}</span>
+                </div>
+              </div>
+              <div class="product-quantity">
+                <a-input-number
+                  v-model:value="pageData.count"
+                  :min="1"
+                  :max="10"
+                  @change="onCountChange"
+                  class="qty-input"
+                />
+              </div>
+            </div>
+          </div>
+
+          <!-- 收货地址 -->
+          <div class="info-card">
+            <div class="card-header">
+              <span class="card-icon">📍</span>
+              <span class="card-title">收货地址</span>
+            </div>
+
+            <div class="address-display" v-if="pageData.receiverAddress">
+              <div class="address-main">
+                <span class="receiver-name">{{ pageData.receiverName }}</span>
+                <span class="receiver-phone">{{ pageData.receiverPhone }}</span>
+              </div>
+              <p class="receiver-address">{{ pageData.receiverAddress }}</p>
+            </div>
+            <div class="no-address" v-else>
+              <span>暂无收货地址，</span>
+              <span class="link" @click="handleAdd">点击添加</span>
+            </div>
+          </div>
+
+          <!-- 备注 -->
+          <div class="info-card">
+            <div class="card-header">
+              <span class="card-icon">📝</span>
+              <span class="card-title">订单备注</span>
+            </div>
+            <textarea
+              v-model="pageData.remark"
+              placeholder="输入备注信息，100字以内"
+              class="remark-input"
+              maxlength="100"
+            ></textarea>
+          </div>
+        </div>
+
+        <!-- 右侧：结算 -->
+        <div class="order-summary-section">
+          <div class="summary-card">
+            <h3 class="summary-title">订单结算</h3>
+
+            <!-- 价格明细 -->
+            <div class="price-list">
+              <div class="price-row">
+                <span class="price-label">商品原价</span>
+                <span class="price-value">¥{{ memberPrice.subtotal }}</span>
+              </div>
+              <div class="price-row">
+                <span class="price-label">{{ memberPrice.memberLevelName }}折扣</span>
+                <span class="price-value discount">-¥{{ memberPrice.discountAmount }}</span>
+              </div>
+              <div class="price-row">
+                <span class="price-label">积分抵扣</span>
+                <div class="redeem-control">
+                  <input
+                    type="number"
+                    v-model.number="redeemPointsInput"
+                    :max="memberPrice.maxRedeemPoints || 0"
+                    min="0"
+                    placeholder="0"
+                    class="redeem-input"
+                    @input="onRedeemInput"
+                  />
+                  <span class="redeem-unit">积分</span>
+                </div>
+              </div>
+              <div class="price-row">
+                <span class="price-label">本单可获积分</span>
+                <span class="price-value earned">{{ memberPrice.earnedPoints }}</span>
+              </div>
+            </div>
+
+            <!-- 会员提示 -->
+            <div class="member-tip" v-if="memberPrice.nextLevelThreshold">
+              <span class="tip-icon">⭐</span>
+              <span class="tip-text">再消费 ¥{{ memberPrice.nextLevelThreshold }} 即可升级</span>
+            </div>
+
+            <!-- 实付金额 -->
+            <div class="total-block">
+              <span class="total-label">实付金额</span>
+              <span class="total-value">¥{{ finalPayment }}</span>
+            </div>
+
+            <!-- 操作按钮 -->
+            <div class="action-buttons">
+              <button class="btn-back" @click="handleBack">返回</button>
+              <button class="btn-submit" @click="handleJiesuan">提交订单</button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
+
+    <!-- 新增地址弹窗 -->
+    <a-modal
+      v-model:open="modal.visile"
+      :force-render="true"
+      title="新增地址"
+      ok-text="确认"
+      cancel-text="取消"
+      @cancel="handleCancel"
+      @ok="handleOk"
+    >
+      <a-form
+        ref="myform"
+        :label-col="{ style: { width: '80px' } }"
+        :model="modal.form"
+        :rules="modal.rules"
+      >
+        <a-form-item label="姓名" name="name">
+          <a-input v-model:value="modal.form.name" placeholder="请输入收货人姓名" />
+        </a-form-item>
+        <a-form-item label="电话号码" name="mobile">
+          <a-input v-model:value="modal.form.mobile" placeholder="请输入手机号码" />
+        </a-form-item>
+        <a-form-item label="送货地址" name="desc">
+          <a-input v-model:value="modal.form.desc" placeholder="请输入详细地址" />
+        </a-form-item>
+        <a-form-item label="默认地址">
+          <a-switch v-model:checked="modal.form.default" />
+        </a-form-item>
+      </a-form>
+    </a-modal>
   </div>
 </template>
 
 <script setup lang="ts">
-import {message} from "ant-design-vue";
+import { message } from "ant-design-vue";
 import Header from '/@/views/index/components/header.vue'
-import Footer from '/@/views/index/components/footer.vue'
-import DeleteIcon from '/@/assets/images/delete-icon.svg'
-import {createApi} from '/@/api/order'
-import {listApi as listAddressListApi, createApi as createAddressApi} from '/@/api/address'
+import { createApi } from '/@/api/order'
+import { listApi as listAddressListApi, createApi as createAddressApi } from '/@/api/address'
 import {calcPriceApi} from '/@/api/member'
 import {useUserStore} from "/@/store";
 import {BASE_URL} from "/@/store/constants";
@@ -193,7 +211,6 @@ const memberPrice = reactive({
 
 const redeemPointsInput = ref(0)
 
-// 弹窗数据
 const modal = reactive({
   visile: false,
   editFlag: false,
@@ -319,9 +336,7 @@ const handleOk = () => {
 };
 
 const handleCancel = () => hideModal();
-
 const resetModal = () => myform.value?.resetFields();
-
 const hideModal = () => { modal.visile = false; };
 
 const listAddressData = () => {
@@ -371,293 +386,434 @@ const handleJiesuan = () => {
     message.error(err.msg || '下单失败')
   })
 }
-
 </script>
 
 <style scoped lang="less">
+/* ==================== 变量定义 ==================== */
+@primary-blue: #3b82f6;
+@primary-blue-dark: #1d4ed8;
+@primary-blue-light: #60a5fa;
+@bg-gradient-start: #f0f4f8;
+@bg-gradient-end: #e2e8f0;
+@text-dark: #1e293b;
+@text-muted: #64748b;
+@text-light: #94a3b8;
+@glass-bg: rgba(255, 255, 255, 0.7);
+@glass-border: rgba(255, 255, 255, 0.9);
+@glass-shadow: 0 8px 32px rgba(59, 130, 246, 0.08);
+@radius-lg: 20px;
+@radius-md: 14px;
 
-.flex-view {
-  display: flex;
+/* ==================== 页面背景 ==================== */
+.confirm-page-wrapper {
+  min-height: 100vh;
+  background: linear-gradient(180deg, @bg-gradient-start 0%, @bg-gradient-end 100%);
 }
 
-.cart-page {
-  width: 1024px;
-  min-height: 50vh;
-  margin: 100px auto;
+.confirm-content {
+  width: 1100px;
+  margin: 0 auto;
+  padding: 100px 16px 60px;
 }
 
-.left-flex {
-  flex: 17;
-  padding-right: 20px;
-}
+/* ==================== 页面标题 ==================== */
+.page-header {
+  margin-bottom: 32px;
 
-.title {
-  justify-content: space-between;
-  align-items: center;
-
-  h3 {
-    color: #152844;
-    font-weight: 600;
-    font-size: 18px;
-    height: 26px;
-    line-height: 26px;
+  .page-title {
+    font-size: 28px;
+    font-weight: 700;
+    color: @text-dark;
     margin: 0;
   }
 }
 
-.cart-list-view {
-  margin: 4px 0 40px;
+/* ==================== 订单主体 ==================== */
+.order-main {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 24px;
+  align-items: start;
+}
 
-  .list-th {
-    height: 42px;
-    line-height: 42px;
-    border-bottom: 1px solid #cedce4;
-    color: #152844;
-    font-size: 14px;
+/* ==================== 信息卡片 ==================== */
+.order-info-section {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
 
-    .line-1 {
-      flex: 1;
-      margin-right: 20px;
-    }
+.info-card {
+  background: @glass-bg;
+  backdrop-filter: blur(20px);
+  border: 1px solid @glass-border;
+  border-radius: @radius-lg;
+  box-shadow: @glass-shadow;
+  padding: 24px;
+}
 
-    .line-2 {
-      width: 65px;
-      margin-right: 10px;
-      text-decoration: line-through;
-      color: #999;
-    }
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(59, 130, 246, 0.12);
 
-    .line-3 {
-      width: 65px;
-      margin-right: 10px;
-      color: #ff6600;
-      font-weight: 600;
-    }
+  .card-icon {
+    font-size: 18px;
+  }
 
-    .line-5 {
-      width: 80px;
-      margin-right: 0;
-    }
+  .card-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: @text-dark;
   }
 }
 
-.items {
+/* 商品信息 */
+.product-item {
+  display: flex;
   align-items: center;
-  margin-top: 20px;
+  gap: 16px;
 
-  .book {
-    flex: 1;
-    align-items: center;
-    margin-right: 20px;
+  .product-image {
+    width: 80px;
+    height: 80px;
+    border-radius: 12px;
+    overflow: hidden;
+    background: white;
     cursor: pointer;
+    transition: transform 0.2s;
+
+    &:hover {
+      transform: scale(1.05);
+    }
 
     img {
-      width: 48px;
-      margin-right: 16px;
-      border-radius: 4px;
-    }
-
-    h2 {
-      flex: 1;
-      font-size: 14px;
-      line-height: 22px;
-      color: #152844;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
     }
   }
 
-  .pay {
-    font-weight: 600;
-    font-size: 16px;
-    width: 65px;
-    margin-right: 10px;
-  }
+  .product-detail {
+    flex: 1;
 
-  .pay.origin {
-    color: #999;
-    text-decoration: line-through;
-  }
-
-  .pay.discounted {
-    color: #ff6600;
-    font-weight: 700;
-  }
-}
-
-.remark {
-  width: 100%;
-  background: #f6f9fb;
-  border: 0;
-  border-radius: 4px;
-  padding: 6px 12px;
-  margin-top: 16px;
-  resize: none;
-  height: 56px;
-  line-height: 22px;
-}
-
-.right-flex {
-  flex: 8;
-  padding-left: 24px;
-  border-left: 1px solid #cedce4;
-}
-
-.click-txt {
-  color: #4684e2;
-  font-size: 14px;
-  cursor: pointer;
-}
-
-.address-view {
-  margin: 12px 0 24px;
-  background: @white;
-  border-radius: @radius-lg;
-  padding: 16px;
-  border: 1px solid @border-light;
-  transition: border-color @transition-fast, box-shadow @transition-fast;
-
-  &:hover {
-    border-color: @primary-blue;
-    box-shadow: @shadow-sm;
-  }
-
-  .info {
-    color: #909090;
-    font-size: 14px;
-
-    .info-blue {
-      cursor: pointer;
-      color: #4684e2;
-    }
-  }
-
-  .name {
-    color: #152844;
-    font-weight: 500;
-  }
-
-  .tel {
-    color: #152844;
-    float: right;
-  }
-
-  .address {
-    color: #152844;
-    margin-top: 4px;
-  }
-}
-
-.price-view {
-  overflow: hidden;
-  margin-top: 16px;
-  background: @bg-page;
-  border-radius: @radius-lg;
-  padding: 16px;
-  border: 1px solid @border-light;
-
-  .price-item {
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 8px;
-    font-size: 14px;
-
-    .item-name {
-      color: #152844;
+    .product-name {
+      font-size: 15px;
+      font-weight: 600;
+      color: @text-dark;
+      margin: 0 0 8px;
+      line-height: 1.4;
     }
 
-    .price-txt {
-      font-weight: 500;
-      color: #ff8a00;
-    }
-
-    .price-txt.discount {
-      color: #52c41a;
-    }
-
-    .price-txt.redeem {
+    .product-price {
       display: flex;
-      flex-direction: column;
-      align-items: flex-end;
-      gap: 2px;
+      align-items: baseline;
+      gap: 10px;
+
+      .price-origin {
+        font-size: 14px;
+        color: @text-light;
+        text-decoration: line-through;
+      }
+
+      .price-final {
+        font-size: 18px;
+        font-weight: 700;
+        color: @primary-blue;
+      }
     }
+  }
 
-    .redeem-input {
-      display: flex;
-      align-items: center;
-      gap: 4px;
+  .product-quantity {
+    .qty-input {
+      width: 100px;
 
-      input {
-        width: 60px;
-        height: 24px;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        text-align: center;
-        font-size: 12px;
-        color: #152844;
-        padding: 0 4px;
+      :deep(.ant-input-number) {
+        width: 100%;
+        background: rgba(255, 255, 255, 0.6);
+        border-color: rgba(59, 130, 246, 0.3);
+        border-radius: 10px;
 
-        &:focus {
-          outline: none;
-          border-color: #4684e2;
+        &:hover {
+          border-color: @primary-blue;
+        }
+
+        &.ant-input-number-focused {
+          border-color: @primary-blue;
+          box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
         }
       }
-
-      span {
-        color: #666;
-        font-size: 12px;
-      }
-    }
-
-    .redeem-money {
-      color: #52c41a;
-      font-size: 12px;
-    }
-  }
-
-  .total-price-view {
-    margin-top: 12px;
-    border-top: 1px solid #cedce4;
-    justify-content: space-between;
-    align-items: flex-start;
-    padding-top: 10px;
-    color: #152844;
-    font-weight: 500;
-
-    .price {
-      color: #ff6600;
-      font-size: 16px;
-      height: 36px;
-      line-height: 36px;
-    }
-  }
-
-  .btns-view {
-    margin-top: 24px;
-    text-align: right;
-
-    .buy {
-      background: #fff;
-      color: #4684e2;
-      border: 1px solid #4684e2;
-    }
-
-    .jiesuan {
-      cursor: pointer;
-      background: #4684e2;
-      color: #fff;
-    }
-
-    .btn {
-      cursor: pointer;
-      width: 96px;
-      height: 36px;
-      line-height: 33px;
-      margin-left: 16px;
-      text-align: center;
-      border-radius: 32px;
-      font-size: 16px;
-      outline: none;
     }
   }
 }
 
+/* 收货地址 */
+.address-display {
+  .address-main {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+
+    .receiver-name {
+      font-size: 16px;
+      font-weight: 700;
+      color: @text-dark;
+    }
+
+    .receiver-phone {
+      font-size: 14px;
+      color: @text-muted;
+    }
+  }
+
+  .receiver-address {
+    font-size: 14px;
+    color: @text-muted;
+    margin: 0;
+    line-height: 1.5;
+  }
+}
+
+.no-address {
+  font-size: 14px;
+  color: @text-muted;
+
+  .link {
+    color: @primary-blue;
+    cursor: pointer;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+/* 备注 */
+.remark-input {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: 14px;
+  color: @text-dark;
+  resize: none;
+  height: 70px;
+  transition: all 0.2s;
+
+  &::placeholder {
+    color: @text-light;
+  }
+
+  &:focus {
+    outline: none;
+    border-color: @primary-blue;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+}
+
+/* ==================== 结算区 ==================== */
+.order-summary-section {
+  position: sticky;
+  top: 100px;
+}
+
+.summary-card {
+  background: @glass-bg;
+  backdrop-filter: blur(20px);
+  border: 1px solid @glass-border;
+  border-radius: @radius-lg;
+  box-shadow: @glass-shadow;
+  padding: 24px;
+
+  .summary-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: @text-dark;
+    margin: 0 0 20px;
+  }
+}
+
+/* 价格明细 */
+.price-list {
+  border-top: 1px solid rgba(59, 130, 246, 0.12);
+  padding-top: 16px;
+
+  .price-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    font-size: 14px;
+
+    .price-label {
+      color: #909090;
+    }
+
+    .price-value {
+      font-weight: 500;
+      color: #152844;
+
+      &.discount {
+        color: #52c41a;
+      }
+
+      &.earned {
+        color: @primary-blue;
+      }
+    }
+  }
+
+  .redeem-control {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+
+    .redeem-input {
+      width: 60px;
+      height: 28px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      text-align: center;
+      font-size: 13px;
+      color: #152844;
+      background: white;
+
+      &:focus {
+        outline: none;
+        border-color: @primary-blue;
+      }
+    }
+
+    .redeem-unit {
+      font-size: 12px;
+      color: #666;
+    }
+  }
+}
+
+/* 会员提示 */
+.member-tip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+  padding: 12px;
+  background: rgba(59, 130, 246, 0.06);
+  border-radius: 10px;
+
+  .tip-icon {
+    font-size: 14px;
+  }
+
+  .tip-text {
+    font-size: 13px;
+    color: @primary-blue;
+  }
+}
+
+/* 实付金额 */
+.total-block {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(59, 130, 246, 0.12);
+
+  .total-label {
+    font-size: 15px;
+    font-weight: 600;
+    color: #152844;
+  }
+
+  .total-value {
+    font-size: 28px;
+    font-weight: 700;
+    color: #ff6600;
+  }
+}
+
+/* 操作按钮 */
+.action-buttons {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+
+  .btn-back {
+    flex: 1;
+    height: 48px;
+    background: rgba(255, 255, 255, 0.7);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    border-radius: @radius-md;
+    font-size: 15px;
+    font-weight: 600;
+    color: @primary-blue;
+    cursor: pointer;
+    transition: all 0.25s ease;
+
+    &:hover {
+      background: rgba(59, 130, 246, 0.08);
+      border-color: @primary-blue;
+    }
+  }
+
+  .btn-submit {
+    flex: 1;
+    height: 48px;
+    background: linear-gradient(135deg, @primary-blue 0%, @primary-blue-dark 100%);
+    border: none;
+    border-radius: @radius-md;
+    font-size: 15px;
+    font-weight: 600;
+    color: white;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.35);
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(59, 130, 246, 0.45);
+    }
+  }
+}
+
+/* ==================== 响应式 ==================== */
+@media (max-width: 900px) {
+  .order-main {
+    grid-template-columns: 1fr;
+  }
+
+  .order-summary-section {
+    position: static;
+  }
+}
+
+@media (max-width: 600px) {
+  .confirm-content {
+    padding: 80px 12px 40px;
+  }
+
+  .product-item {
+    flex-wrap: wrap;
+
+    .product-image {
+      width: 60px;
+      height: 60px;
+    }
+
+    .product-detail {
+      width: calc(100% - 76px);
+    }
+
+    .product-quantity {
+      width: 100%;
+      margin-top: 12px;
+    }
+  }
+}
 </style>

@@ -3,163 +3,163 @@
     <Header/>
 
     <div class="detail-content">
+      <!-- 顶部商品信息 -->
       <div class="detail-content-top">
-        <div style="position: relative;">
-          <div class="thing-infos-view">
-            <div class="thing-infos">
-              <div class="thing-img-box">
-                <img :src="detailData.cover"/>
-              </div>
-              <div class="thing-info-box">
-                <div class="thing-state">
-                  <span class="state hidden-sm">商品状态</span>
-                  <span>上市销售</span>
-                </div>
-                <h1 class="thing-name">{{ detailData.title }}</h1>
-                <span>
-                  <span class="a-price-symbol">¥</span>
-                  <span class="a-price">{{detailData.price}}</span>
-                </span>
-                <div class="translators flex-view" style="">
-                  <span>分类：</span>
-                  <span class="name">{{ detailData.classification_title }}</span>
-                </div>
-                <div class="translators flex-view" style="">
-                  <span>库存：</span>
-                  <span class="name">{{ detailData.repertory }}</span>
-                </div>
-                <div class="buy-btn-row flex-view">
-                  <button type="button" class="buy-btn" @click="handleOrder(detailData)">
-                    <img :src="AddIcon" />
-                    <span>立即购买</span>
-                  </button>
-                  <button type="button" class="buy-btn" @click="addToCart">
-                    <img :src="AddIcon" />
-                    <span>加入购物车</span>
-                  </button>
-                </div>
-              </div>
+        <div class="glass-product-card">
+          <!-- 左侧图片 -->
+          <div class="product-image-section">
+            <div class="main-image-wrapper">
+              <img :src="detailData.cover" class="main-image" />
             </div>
-            <div class="thing-counts hidden-sm">
-              <div class="count-item flex-view pointer" @click="addToWish()">
-                <div class="count-img">
-                  <img :src="WantIcon">
-                </div>
-                <div class="count-box flex-view">
-                  <div class="count-text-box">
-                    <span class="count-title">加入心愿单</span>
-                  </div>
-                  <div class="count-num-box">
-                    <span class="num-text">{{ detailData.wishCount }}</span>
-                  </div>
-                </div>
+          </div>
+
+          <!-- 右侧信息 -->
+          <div class="product-info-section">
+            <div class="product-status">
+              <span class="status-tag">上市销售</span>
+            </div>
+            <h1 class="product-title">{{ detailData.title }}</h1>
+
+            <div class="price-container">
+              <span class="current-price">¥{{ detailData.price }}</span>
+            </div>
+
+            <div class="info-divider"></div>
+
+            <div class="info-row">
+              <span class="info-label">分类</span>
+              <span class="info-value">{{ detailData.classification_title }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">库存</span>
+              <span class="info-value">{{ detailData.repertory }} 件</span>
+            </div>
+
+            <div class="info-divider"></div>
+
+            <!-- 操作按钮 -->
+            <div class="action-buttons">
+              <button type="button" class="btn-primary" @click="handleOrder(detailData)">
+                立即购买
+              </button>
+              <button type="button" class="btn-secondary" @click="addToCart">
+                加入购物车
+              </button>
+            </div>
+
+            <!-- 互动统计 -->
+            <div class="互动-stats">
+              <div class="stat-item" @click="addToWish">
+                <span class="stat-icon">♥</span>
+                <span class="stat-label">加入心愿单</span>
+                <span class="stat-count">{{ detailData.wishCount }}</span>
               </div>
-              <div class="count-item flex-view pointer" @click="collect()">
-                <div class="count-img">
-                  <img :src="RecommendIcon">
-                </div>
-                <div class="count-box flex-view">
-                  <div class="count-text-box">
-                    <span class="count-title">收藏</span>
-                  </div>
-                  <div class="count-num-box">
-                    <span class="num-text">{{ detailData.collectCount }}</span>
-                  </div>
-                </div>
+              <div class="stat-item" @click="collect">
+                <span class="stat-icon">★</span>
+                <span class="stat-label">收藏</span>
+                <span class="stat-count">{{ detailData.collectCount }}</span>
               </div>
-              <div class="count-item flex-view" @click="share()">
-                <div class="count-img">
-                  <img :src="ShareIcon">
-                </div>
-                <div class="count-box flex-view">
-                  <div class="count-text-box">
-                    <span class="count-title">分享</span>
-                  </div>
-                  <div class="count-num-box">
-                    <span class="num-text"></span>
-                    <img :src="WeiboShareIcon" class="mg-l">
-                  </div>
-                </div>
+              <div class="stat-item" @click="share">
+                <span class="stat-icon">↗</span>
+                <span class="stat-label">分享</span>
               </div>
             </div>
           </div>
         </div>
       </div>
+
+      <!-- 底部详情 -->
       <div class="detail-content-bottom">
-        <div class="thing-content-view flex-view">
-          <div class="main-content">
-            <div class="order-view main-tab">
-          <span class="tab"
-                :class="selectTabIndex===index? 'tab-select':''"
-                v-for="(item,index) in tabData"
-                :key="index"
-                @click="selectTab(index)">
-            {{ item }}
-          </span>
-              <span :style="{left: tabUnderLeft + 'px'}" class="tab-underline"></span>
-            </div>
-
-            <!--简介-->
-            <div class="thing-intro" :class="selectTabIndex <= 0? '':'hide'">
-              <p class="text" style="">{{ detailData.description }}</p>
-            </div>
-
-            <!--评论-->
-            <div class="thing-comment" :class="selectTabIndex > 0? '':'hide'">
-              <div class="title">发表新的评论</div>
-              <div class="publish flex-view">
-                <img :src="AvatarIcon" class="mine-img">
-                <input placeholder="说点什么..." class="content-input" ref="commentRef">
-                <button class="send-btn" @click="sendComment()">发送</button>
-              </div>
-              <div class="tab-view flex-view">
-                <div class="count-text">共有{{ commentData.length }}条评论</div>
-                <div class="tab-box flex-view" v-if="commentData.length > 0">
-                  <span :class="sortIndex === 0? 'tab-select': ''" @click="sortCommentList('recent')">最新</span>
-                  <div class="line"></div>
-                  <span :class="sortIndex === 1? 'tab-select': ''" @click="sortCommentList('hot')">热门</span>
-                </div>
-              </div>
-              <div class="comments-list">
-                <div class="comment-item" v-for="item in commentData">
-                  <div class="flex-item flex-view">
-                    <img :src="AvatarIcon" class="avator">
-                    <div class="person">
-                      <div class="name">{{ item.username }}</div>
-                      <div class="time">{{ item.commentTime }}</div>
-                    </div>
-                    <div class="float-right">
-                      <span @click="like(item.id)">推荐</span>
-                      <span class="num">{{ item.likeCount }}</span>
-                    </div>
-                  </div>
-                  <p class="comment-content">{{ item.content }}</p>
-                </div>
-                <div class="infinite-loading-container">
-                  <div class="infinite-status-prompt" style="">
-                    <div slot="no-results" class="no-results">
-                      <div></div>
-                      <p>没有更多了</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
+        <div class="glass-detail-card">
+          <div class="detail-tabs">
+            <span
+              class="tab"
+              :class="{ active: selectTabIndex === 0 }"
+              @click="selectTab(0)"
+            >
+              简介
+            </span>
+            <span
+              class="tab"
+              :class="{ active: selectTabIndex === 1 }"
+              @click="selectTab(1)"
+            >
+              评论 {{ commentData.length }}
+            </span>
           </div>
-          <div class="recommend" style="">
-            <div class="title">热门推荐</div>
-            <div class="things">
-              <div class="thing-item thing-item" v-for="item in recommendData" @click="handleDetail(item)">
-                <div class="img-view">
-                  <img :src="item.cover"></div>
-                <div class="info-view">
-                  <h3 class="thing-name">{{ item.title.substring(0, 12)}}</h3>
-                  <span>
-                    <span class="a-price-symbol">¥</span>
-                    <span class="a-price">{{item.price}}</span>
-                  </span>
+
+          <!-- 简介内容 -->
+          <div class="tab-content" v-show="selectTabIndex === 0">
+            <p class="description-text">{{ detailData.description }}</p>
+          </div>
+
+          <!-- 评论内容 -->
+          <div class="tab-content" v-show="selectTabIndex === 1">
+            <!-- 发布评论 -->
+            <div class="comment-publish">
+              <img :src="AvatarIcon" class="comment-avatar">
+              <input
+                placeholder="说点什么..."
+                class="comment-input"
+                ref="commentRef"
+              />
+              <button class="send-btn" @click="sendComment">发送</button>
+            </div>
+
+            <!-- 排序 -->
+            <div class="comment-sort">
+              <span class="comment-count">共有 {{ commentData.length }} 条评论</span>
+              <div class="sort-tabs" v-if="commentData.length > 0">
+                <span
+                  :class="{ active: sortIndex === 0 }"
+                  @click="sortCommentList('recent')"
+                >最新</span>
+                <span class="sort-line">|</span>
+                <span
+                  :class="{ active: sortIndex === 1 }"
+                  @click="sortCommentList('hot')"
+                >热门</span>
+              </div>
+            </div>
+
+            <!-- 评论列表 -->
+            <div class="comments-list">
+              <div class="comment-item" v-for="item in commentData" :key="item.id">
+                <div class="comment-header">
+                  <img :src="AvatarIcon" class="comment-avatar">
+                  <div class="comment-meta">
+                    <span class="comment-author">{{ item.username }}</span>
+                    <span class="comment-time">{{ item.commentTime }}</span>
+                  </div>
+                  <div class="comment-actions">
+                    <span @click="like(item.id)">推荐 {{ item.likeCount }}</span>
+                  </div>
                 </div>
+                <p class="comment-text">{{ item.content }}</p>
+              </div>
+              <div class="no-more" v-if="commentData.length === 0">
+                <p>暂无评论</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 热门推荐 -->
+        <div class="recommend-section">
+          <h3 class="recommend-title">热门推荐</h3>
+          <div class="recommend-grid">
+            <div
+              class="recommend-card"
+              v-for="item in recommendData"
+              :key="item.id"
+              @click="handleDetail(item)"
+            >
+              <div class="recommend-image-wrapper">
+                <img :src="item.cover" class="recommend-image">
+              </div>
+              <div class="recommend-info">
+                <h4 class="recommend-name">{{ item.title.substring(0, 12) }}</h4>
+                <span class="recommend-price">¥{{ item.price }}</span>
               </div>
             </div>
           </div>
@@ -170,15 +170,11 @@
     <Footer/>
   </div>
 </template>
+
 <script setup>
 import {message} from "ant-design-vue";
 import Header from '/@/views/index/components/header.vue'
 import Footer from '/@/views/index/components/footer.vue'
-import AddIcon from '/@/assets/images/add.svg';
-import WantIcon from '/@/assets/images/want-read-hover.svg';
-import RecommendIcon from '/@/assets/images/recommend-hover.svg';
-import ShareIcon from '/@/assets/images/share-icon.svg';
-import WeiboShareIcon from '/@/assets/images/wb-share.svg';
 import AvatarIcon from '/@/assets/images/avatar.jpg';
 import {
   detailApi,
@@ -200,30 +196,28 @@ const cartStore = useCartStore();
 
 let thingId = ref('')
 let detailData = ref({})
-let tabUnderLeft = ref(6)
 let tabData = ref(['简介', '评论'])
 let selectTabIndex = ref(0)
 
 let commentData = ref([])
 let recommendData = ref([])
 let sortIndex = ref(0)
-let order = ref('recent') // 默认排序最新
+let order = ref('recent')
 
 let commentRef = ref()
 
-onMounted(()=>{
+onMounted(() => {
   thingId.value = route.query.id.trim()
   getThingDetail()
   getRecommendThing()
   getCommentList()
 })
 
-const selectTab =(index)=> {
+const selectTab = (index) => {
   selectTabIndex.value = index
-  tabUnderLeft.value = 6 + 54 * index
 }
 
-const getThingDetail =()=> {
+const getThingDetail = () => {
   detailApi({id: thingId.value}).then(res => {
     detailData.value = res.data
     detailData.value.cover = BASE_URL + '/api/staticfiles/image/' + detailData.value.cover
@@ -231,7 +225,8 @@ const getThingDetail =()=> {
     message.error('获取详情失败')
   })
 }
-const addToWish =()=> {
+
+const addToWish = () => {
   let userId = userStore.user_id
   if (userId) {
     wishApi({thingId: thingId.value, userId: userId}).then(res => {
@@ -244,7 +239,8 @@ const addToWish =()=> {
     message.warn('请先登录')
   }
 }
-const collect =()=> {
+
+const collect = () => {
   let userId = userStore.user_id
   if (userId) {
     collectApi({thingId: thingId.value, userId: userId}).then(res => {
@@ -257,6 +253,7 @@ const collect =()=> {
     message.warn('请先登录')
   }
 }
+
 const addToCart = () => {
   const userId = userStore.user_id
   if (!userId) {
@@ -274,24 +271,28 @@ const addToCart = () => {
     message.error(err.msg || '加入失败')
   })
 }
-const share =()=> {
+
+const share = () => {
   let content = '分享一个非常好玩的网站 ' + window.location.href
   let shareHref = 'http://service.weibo.com/share/share.php?title=' + content
   window.open(shareHref)
 }
-const handleOrder =(detailData)=> {
+
+const handleOrder = (detailData) => {
   console.log(detailData)
   const userId = userStore.user_id
-  router.push({name: 'confirm',
-    query:
-        {
-          id: detailData.id,
-          title: detailData.title,
-          cover: detailData.cover,
-          price: detailData.price
-        }})
+  router.push({
+    name: 'confirm',
+    query: {
+      id: detailData.id,
+      title: detailData.title,
+      cover: detailData.cover,
+      price: detailData.price
+    }
+  })
 }
-const getRecommendThing =()=> {
+
+const getRecommendThing = () => {
   listThingList({sort: 'recommend'}).then(res => {
     res.data.forEach((item, index) => {
       if (item.cover) {
@@ -304,12 +305,13 @@ const getRecommendThing =()=> {
     console.log(err)
   })
 }
-const handleDetail =(item)=> {
-  // 跳转新页面
+
+const handleDetail = (item) => {
   let text = router.resolve({name: 'detail', query: {id: item.id}})
   window.open(text.href, '_blank')
 }
-const sendComment =()=> {
+
+const sendComment = () => {
   console.log(commentRef.value)
   let text = commentRef.value.value.trim()
   console.log(text)
@@ -329,14 +331,16 @@ const sendComment =()=> {
     router.push({name: 'login'})
   }
 }
-const like =(commentId)=> {
+
+const like = (commentId) => {
   likeApi({id: commentId}).then(res => {
     getCommentList()
   }).catch(err => {
     console.log(err)
   })
 }
-const getCommentList =()=> {
+
+const getCommentList = () => {
   listThingCommentsApi({thingId: thingId.value, order: order.value}).then(res => {
     res.data.forEach(item => {
       item.commentTime = getFormatTime(item.commentTime, true)
@@ -346,7 +350,8 @@ const getCommentList =()=> {
     console.log(err)
   })
 }
-const sortCommentList =(sortType)=> {
+
+const sortCommentList = (sortType) => {
   if (sortType === 'recent') {
     sortIndex.value = 0
   } else {
@@ -355,668 +360,525 @@ const sortCommentList =(sortType)=> {
   order.value = sortType
   getCommentList()
 }
-
 </script>
-<style scoped lang="less">
 
-.hide {
-  display: none;
+<style scoped lang="less">
+/* ==================== 变量定义 ==================== */
+@primary-blue: #3b82f6;
+@primary-blue-dark: #1d4ed8;
+@primary-blue-light: #60a5fa;
+@bg-gradient-start: #f0f4f8;
+@bg-gradient-end: #e2e8f0;
+@text-dark: #1e293b;
+@text-muted: #64748b;
+@glass-bg: rgba(255, 255, 255, 0.7);
+@glass-border: rgba(255, 255, 255, 0.9);
+@glass-shadow: 0 8px 32px rgba(59, 130, 246, 0.08);
+
+/* ==================== 页面背景 ==================== */
+.detail {
+  min-height: 100vh;
+  background: linear-gradient(180deg, @bg-gradient-start 0%, @bg-gradient-end 100%);
 }
 
 .detail-content {
-  display: flex;
-  flex-direction: column;
   width: 1100px;
-  margin: 4px auto;
+  margin: 0 auto;
+  padding: 20px 16px 60px;
 }
 
-.flex-view {
-  display: -webkit-box;
-  display: -ms-flexbox;
+/* ==================== 玻璃效果基础 ==================== */
+.glass-card {
+  background: @glass-bg;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid @glass-border;
+  border-radius: 24px;
+  box-shadow: @glass-shadow;
+}
+
+.glass-card-dark {
+  background: rgba(59, 130, 246, 0.08);
+  border: 1px solid rgba(59, 130, 246, 0.15);
+}
+
+/* ==================== 商品信息卡片 ==================== */
+.glass-product-card {
   display: flex;
+  gap: 32px;
+  padding: 28px;
+  margin-top: 80px;
+  .glass-card();
 }
 
-.hidden-lg {
-  display: none !important;
-}
+/* 左侧图片 */
+.product-image-section {
+  flex: 0 0 360px;
 
-.thing-infos-view {
-  display: flex;
-  margin: 89px 0 40px;
-  overflow: hidden;
-
-  .thing-infos {
-    -webkit-box-flex: 1;
-    -ms-flex: 1;
-    flex: 1;
-    display: flex;
-  }
-
-  .mobile-share-box {
-    height: 38px;
-    background: transparent;
-    padding: 0 16px;
-    margin: 12px 0;
-    font-size: 0;
-    -webkit-box-align: center;
-    -ms-flex-align: center;
-    align-items: center;
-    -webkit-box-pack: justify;
-    -ms-flex-pack: justify;
-    justify-content: space-between;
-
-    .state {
-      width: 64px;
-      height: 24px;
-      line-height: 24px;
-      background: rgba(70, 132, 226, .1);
-      border-radius: 2px;
-      font-weight: 500;
-      font-size: 12px;
-      color: #4684e2;
-      text-align: center;
-    }
-
-    .share-img {
-      background: #fff;
-      width: 38px;
-      height: 38px;
-      border-radius: 50%;
-      text-align: center;
-
-      img {
-        position: relative;
-        top: 4px;
-        width: 24px;
-      }
-    }
-  }
-
-  .thing-img-box {
-    -webkit-box-flex: 0;
-    -ms-flex: 0 0 235px;
-    flex: 0 0 235px;
-    margin: 0 40px 0 0;
+  .main-image-wrapper {
+    background: white;
+    border-radius: 20px;
+    padding: 16px;
     overflow: hidden;
-    border-radius: @radius-lg;
 
-    img {
-      width: 200px;
-      height: 186px;
-      display: block;
-      transition: transform @transition-slow;
-      cursor: zoom-in;
-    }
-
-    &:hover img {
-      transform: scale(1.08);
-    }
-  }
-
-  .thing-info-box {
-    text-align: left;
-    padding: 0;
-    margin: 0;
-  }
-
-  .thing-state {
-    height: 26px;
-    line-height: 26px;
-
-    .state {
-      font-weight: 500;
-      color: #4684e2;
-      background: rgba(70, 132, 226, .1);
-      border-radius: 2px;
-      padding: 5px 8px;
-      margin-right: 16px;
-    }
-
-    span {
-      font-size: 14px;
-      color: #152844;
-    }
-  }
-
-  .thing-name {
-    line-height: 32px;
-    margin: 16px 0;
-    color: #0F1111!important;
-    font-size: 15px!important;
-    font-weight: 400!important;
-    font-style: normal!important;
-    text-transform: none!important;
-    text-decoration: none!important;
-  }
-
-  .translators, .authors {
-    line-height: 18px;
-    font-size: 14px;
-    margin: 8px 0;
-    -webkit-box-align: start;
-    -ms-flex-align: start;
-    align-items: flex-start;
-    -webkit-box-pack: start;
-    -ms-flex-pack: start;
-    justify-content: flex-start;
-
-    .name {
-      color: #315c9e;
-      white-space: normal;
-    }
-  }
-
-  .tags {
-    position: absolute;
-    bottom: 20px;
-    margin-top: 16px;
-
-    .category-box {
-      color: #152844;
-      font-size: 14px;
-
-      .title {
-        color: #787878;
-      }
-    }
-  }
-
-  .thing-counts {
-    -webkit-box-flex: 0;
-    -ms-flex: 0 0 235px;
-    flex: 0 0 235px;
-    margin-left: 20px;
-  }
-
-  .pointer {
-    cursor: pointer;
-  }
-
-  .count-item {
-    height: 64px;
-    -webkit-box-align: center;
-    -ms-flex-align: center;
-    align-items: center;
-    cursor: pointer;
-  }
-
-  .count-img {
-    -webkit-box-flex: 0;
-    -ms-flex: 0 0 32px;
-    flex: 0 0 32px;
-    margin-right: 24px;
-    font-size: 0;
-
-    img {
+    .main-image {
       width: 100%;
-      display: block;
-    }
-  }
-
-  .count-box {
-    position: relative;
-    border-bottom: 1px solid #cedce4;
-    -webkit-box-align: center;
-    -ms-flex-align: center;
-    align-items: center;
-    -webkit-box-pack: justify;
-    -ms-flex-pack: justify;
-    justify-content: space-between;
-    -webkit-box-flex: 1;
-    -ms-flex: 1;
-    flex: 1;
-    height: 100%;
-  }
-
-  .count-text-box {
-    font-size: 0;
-
-    .count-title {
-      color: #152844;
-      font-weight: 600;
-      font-size: 16px;
-      line-height: 18px;
-      display: block;
-      height: 18px;
-    }
-  }
-
-  .count-num-box {
-    font-weight: 600;
-    font-size: 20px;
-    line-height: 24px;
-    color: #152844;
-  }
-}
-
-.buy-btn-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-top: 20px;
-  align-items: center;
-}
-
-.buy-btn {
-  cursor: pointer;
-  display: block;
-  background: @primary-blue;
-  border-radius: @radius-md;
-  text-align: center;
-  color: @white;
-  font-size: @font-size-base;
-  font-weight: 500;
-  height: 38px;
-  line-height: 38px;
-  width: 120px;
-  outline: none;
-  border: none;
-  margin-top: 0;
-  box-shadow: @shadow-button;
-  transition: all @transition-fast;
-
-  &:hover {
-    background: @primary-blue-hover;
-    box-shadow: @shadow-button-hover;
-    transform: translateY(-2px);
-  }
-
-  &:active {
-    background: @primary-blue-active;
-    transform: translateY(0);
-    box-shadow: @shadow-xs;
-  }
-}
-
-.buy-btn img {
-  width: 12px;
-  margin-right: 4px;
-  vertical-align: middle;
-}
-
-.buy-btn span {
-  vertical-align: middle;
-}
-
-.buy-way {
-  overflow: hidden;
-
-  .title {
-    font-weight: 600;
-    font-size: 18px;
-    height: 26px;
-    line-height: 26px;
-    color: #152844;
-    margin-bottom: 12px;
-  }
-}
-
-.thing-content-view {
-  margin-top: 40px;
-  padding-bottom: 50px;
-}
-
-.main-content {
-  -webkit-box-flex: 1;
-  -ms-flex: 1;
-  flex: 1;
-
-  .text {
-    color: #484848;
-    font-size: 16px;
-    line-height: 26px;
-    padding-left: 12px;
-    margin: 11px 0;
-    white-space: pre-wrap;
-  }
-}
-
-.main-tab {
-  border-bottom: 1px solid #cedce4;
-}
-
-.order-view {
-  position: relative;
-  color: @text-muted;
-  font-size: @font-size-base;
-  line-height: 40px;
-
-  .title {
-    margin-right: 8px;
-  }
-
-  .tab {
-    margin-right: 20px;
-    cursor: pointer;
-    color: @navy-light;
-    font-size: @font-size-lg;
-    transition: color @transition-fast;
-  }
-
-  .tab:hover {
-    color: @text-secondary;
-  }
-
-  .tab-select {
-    color: @navy-dark;
-    font-weight: 600;
-  }
-
-  .tab-underline {
-    position: absolute;
-    bottom: 0;
-    left: 84px;
-    width: 20px;
-    height: 3px;
-    background: @primary-blue;
-    -webkit-transition: left @transition-base, width @transition-base;
-    transition: left @transition-base, width @transition-base;
-    border-radius: 2px;
-    box-shadow: 0 1px 4px rgba(70, 132, 226, 0.4);
-  }
-}
-
-.recommend {
-  -webkit-box-flex: 0;
-  -ms-flex: 0 0 235px;
-  flex: 0 0 235px;
-  margin-left: 20px;
-
-  .title {
-    font-weight: 600;
-    font-size: 18px;
-    line-height: 26px;
-    color: #152844;
-    margin-bottom: 12px;
-  }
-
-  .things {
-    border-top: 1px solid #cedce4;
-
-    .thing-item {
-      min-width: 255px;
-      max-width: 255px;
-      position: relative;
-      flex: 1;
-      margin-right: 20px;
-      height: fit-content;
-      overflow: hidden;
-      margin-top: 26px;
-      margin-bottom: 36px;
-      padding-bottom: 24px;
-      border-bottom: 1px #e1e1e1 solid;
-      cursor: pointer;
-
-      .img-view {
-        //background: #f3f3f3;
-        //text-align: center;
-        height: 200px;
-        width: 255px;
-        //border: 1px #f3f3f3 solid;
-
-        img {
-          height: 200px;
-          width: 186px;
-          overflow: hidden;
-          margin: 0 auto;
-          background-size: contain;
-          object-fit: contain;
-        }
-      }
-
-      .info-view {
-        //background: #f6f9fb;
-        overflow: hidden;
-        padding: 0 16px;
-        .thing-name {
-          line-height: 32px;
-          margin-top: 12px;
-          color: #0F1111!important;
-          font-size: 15px!important;
-          font-weight: 400!important;
-          font-style: normal!important;
-          text-transform: none!important;
-          text-decoration: none!important;
-        }
-
-        .price {
-          color: #ff7b31;
-          font-size: 20px;
-          line-height: 20px;
-          margin-top: 4px;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          white-space: nowrap;
-        }
-
-        .translators {
-          color: #6f6f6f;
-          font-size: 12px;
-          line-height: 14px;
-          margin-top: 4px;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          white-space: nowrap;
-        }
-      }
-    }
-
-  }
-}
-
-.flex-view {
-  display: flex;
-}
-
-.thing-comment {
-  .title {
-    font-weight: 600;
-    font-size: 14px;
-    line-height: 22px;
-    height: 22px;
-    color: #152844;
-    margin: 24px 0 12px;
-  }
-
-  .publish {
-    -webkit-box-align: center;
-    -ms-flex-align: center;
-    align-items: center;
-
-    .mine-img {
-      -webkit-box-flex: 0;
-      -ms-flex: 0 0 40px;
-      flex: 0 0 40px;
-      margin-right: 12px;
-      border-radius: 50%;
-      width: 40px;
-      height: 40px;
-    }
-
-    .content-input {
-      -webkit-box-flex: 1;
-      -ms-flex: 1;
-      flex: 1;
-      background: @bg-input;
-      border-radius: @radius-md;
-      height: 38px;
-      line-height: 38px;
-      color: @text-primary;
-      padding: 5px 14px;
-      white-space: nowrap;
-      outline: none;
-      border: 1px solid @border-light;
-      transition: all @transition-fast;
-
-      &::placeholder {
-        color: @text-hint;
-      }
-
-      &:focus {
-        border-color: @primary-blue;
-        background: @white;
-        box-shadow: 0 0 0 3px @primary-blue-subtle;
-      }
-    }
-
-    .send-btn {
-      margin-left: 12px;
-      background: @primary-blue;
-      border-radius: @radius-md;
-      -webkit-box-flex: 0;
-      -ms-flex: 0 0 80px;
-      flex: 0 0 80px;
-      color: @white;
-      font-size: @font-size-base;
-      font-weight: 500;
-      text-align: center;
-      height: 38px;
-      line-height: 38px;
-      outline: none;
-      border: 0px;
-      cursor: pointer;
-      box-shadow: @shadow-button;
-      transition: all @transition-fast;
+      height: 320px;
+      object-fit: cover;
+      border-radius: 16px;
+      transition: transform 0.3s ease;
 
       &:hover {
-        background: @primary-blue-hover;
-        box-shadow: @shadow-button-hover;
-        transform: translateY(-1px);
+        transform: scale(1.02);
       }
-
-      &:active {
-        background: @primary-blue-active;
-        transform: translateY(0);
-        box-shadow: @shadow-xs;
-      }
-    }
-  }
-
-  .tab-view {
-    -webkit-box-pack: justify;
-    -ms-flex-pack: justify;
-    justify-content: space-between;
-    font-size: 14px;
-    -webkit-box-align: center;
-    -ms-flex-align: center;
-    align-items: center;
-    margin: 24px 0;
-
-    .count-text {
-      color: #484848;
-      float: left;
-    }
-
-    .tab-box {
-      color: #5f77a6;
-      -webkit-box-align: center;
-      -ms-flex-align: center;
-      align-items: center;
-
-      .tab-select {
-        color: #152844;
-      }
-
-      span {
-        cursor: pointer;
-      }
-    }
-
-    .line {
-      width: 1px;
-      height: 12px;
-      margin: 0 12px;
-      background: #cedce4;
     }
   }
 }
 
+/* 右侧信息 */
+.product-info-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
 
+.product-status {
+  margin-bottom: 12px;
+
+  .status-tag {
+    display: inline-block;
+    padding: 4px 12px;
+    background: rgba(59, 130, 246, 0.1);
+    color: @primary-blue;
+    font-size: 13px;
+    font-weight: 500;
+    border-radius: 6px;
+  }
+}
+
+.product-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: @text-dark;
+  margin: 0 0 16px;
+  line-height: 1.4;
+}
+
+.price-container {
+  margin-bottom: 20px;
+
+  .current-price {
+    font-size: 36px;
+    font-weight: 700;
+    color: @primary-blue;
+  }
+}
+
+.info-divider {
+  height: 1px;
+  background: rgba(59, 130, 246, 0.12);
+  margin: 16px 0;
+}
+
+.info-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+
+  .info-label {
+    color: @text-muted;
+    font-size: 14px;
+    width: 60px;
+  }
+
+  .info-value {
+    color: @text-dark;
+    font-size: 14px;
+    font-weight: 500;
+  }
+}
+
+/* 操作按钮 */
+.action-buttons {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+
+  .btn-primary {
+    flex: 1;
+    height: 48px;
+    background: linear-gradient(135deg, @primary-blue 0%, @primary-blue-dark 100%);
+    border: none;
+    border-radius: 14px;
+    color: white;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.35);
+    transition: all 0.25s ease;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(59, 130, 246, 0.45);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+  }
+
+  .btn-secondary {
+    flex: 1;
+    height: 48px;
+    background: rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    border-radius: 14px;
+    color: @primary-blue;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s ease;
+
+    &:hover {
+      background: rgba(59, 130, 246, 0.08);
+      border-color: @primary-blue;
+    }
+  }
+}
+
+/* 互动统计 */
+.互动-stats {
+  display: flex;
+  gap: 24px;
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(59, 130, 246, 0.1);
+
+  .stat-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: opacity 0.2s;
+
+    &:hover {
+      opacity: 0.7;
+    }
+
+    .stat-icon {
+      font-size: 16px;
+      color: @primary-blue;
+    }
+
+    .stat-label {
+      font-size: 13px;
+      color: @text-muted;
+    }
+
+    .stat-count {
+      font-size: 14px;
+      font-weight: 600;
+      color: @text-dark;
+    }
+  }
+}
+
+/* ==================== 详情底部 ==================== */
+.detail-content-bottom {
+  margin-top: 24px;
+}
+
+.glass-detail-card {
+  padding: 28px;
+  .glass-card();
+}
+
+/* Tab 切换 */
+.detail-tabs {
+  display: flex;
+  gap: 32px;
+  border-bottom: 1px solid rgba(59, 130, 246, 0.12);
+  margin-bottom: 24px;
+
+  .tab {
+    padding: 12px 0;
+    font-size: 15px;
+    font-weight: 500;
+    color: @text-muted;
+    cursor: pointer;
+    position: relative;
+    transition: color 0.2s;
+
+    &.active {
+      color: @primary-blue;
+      font-weight: 600;
+
+      &::after {
+        content: '';
+        position: absolute;
+        bottom: -1px;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: @primary-blue;
+        border-radius: 2px;
+      }
+    }
+  }
+}
+
+/* 简介内容 */
+.description-text {
+  color: @text-muted;
+  font-size: 15px;
+  line-height: 1.8;
+  white-space: pre-wrap;
+  margin: 0;
+}
+
+/* 评论发布 */
+.comment-publish {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+
+  .comment-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+
+  .comment-input {
+    flex: 1;
+    height: 40px;
+    padding: 0 16px;
+    background: rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    border-radius: 10px;
+    font-size: 14px;
+    outline: none;
+    transition: all 0.2s;
+
+    &:focus {
+      border-color: @primary-blue;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    &::placeholder {
+      color: @text-muted;
+    }
+  }
+
+  .send-btn {
+    height: 40px;
+    padding: 0 24px;
+    background: linear-gradient(135deg, @primary-blue 0%, @primary-blue-dark 100%);
+    border: none;
+    border-radius: 10px;
+    color: white;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.35);
+    }
+  }
+}
+
+/* 评论排序 */
+.comment-sort {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+
+  .comment-count {
+    font-size: 14px;
+    color: @text-muted;
+  }
+
+  .sort-tabs {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 14px;
+
+    span {
+      color: @text-muted;
+      cursor: pointer;
+      transition: color 0.2s;
+
+      &.active {
+        color: @primary-blue;
+        font-weight: 600;
+      }
+    }
+
+    .sort-line {
+      color: #d1d5db;
+    }
+  }
+}
+
+/* 评论列表 */
 .comments-list {
   .comment-item {
-    .flex-item {
-      -webkit-box-align: center;
-      -ms-flex-align: center;
-      align-items: center;
-      padding-top: 16px;
+    padding: 16px 0;
+    border-bottom: 1px dashed rgba(59, 130, 246, 0.15);
 
-      .avator {
-        -webkit-box-flex: 0;
-        -ms-flex: 0 0 40px;
-        flex: 0 0 40px;
-        width: 40px;
-        height: 40px;
-        margin-right: 12px;
-        border-radius: 50%;
-        cursor: pointer;
-      }
+    &:last-child {
+      border-bottom: none;
+    }
+  }
 
-      .person {
-        -webkit-box-flex: 1;
-        -ms-flex: 1;
-        flex: 1;
-      }
+  .comment-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
 
-      .name {
-        color: #152844;
+    .comment-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-right: 10px;
+    }
+
+    .comment-meta {
+      flex: 1;
+
+      .comment-author {
+        font-size: 14px;
         font-weight: 600;
-        font-size: 14px;
-        line-height: 22px;
-        height: 22px;
-        cursor: pointer;
+        color: @text-dark;
+        display: block;
       }
 
-      .time {
-        color: #5f77a6;
+      .comment-time {
         font-size: 12px;
-        line-height: 16px;
-        height: 16px;
-        margin-top: 2px;
+        color: @text-muted;
       }
+    }
 
-      .float-right {
-        color: #4684e2;
-        font-size: 14px;
-        float: right;
+    .comment-actions {
+      font-size: 13px;
+      color: @primary-blue;
+      cursor: pointer;
 
-        span {
-          margin-left: 19px;
-          cursor: pointer;
-        }
-
-        .num {
-          color: #152844;
-          margin-left: 6px;
-          cursor: auto;
-        }
+      span {
+        margin-left: 16px;
       }
+    }
+  }
+
+  .comment-text {
+    margin: 0 0 0 46px;
+    font-size: 14px;
+    color: @text-muted;
+    line-height: 1.6;
+  }
+
+  .no-more {
+    text-align: center;
+    padding: 40px 0;
+    color: @text-muted;
+  }
+}
+
+/* ==================== 推荐区域 ==================== */
+.recommend-section {
+  margin-top: 32px;
+
+  .recommend-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: @text-dark;
+    margin: 0 0 20px;
+  }
+}
+
+.recommend-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.recommend-card {
+  padding: 16px;
+  background: @glass-bg;
+  backdrop-filter: blur(20px);
+  border: 1px solid @glass-border;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px rgba(59, 130, 246, 0.12);
+  }
+
+  .recommend-image-wrapper {
+    width: 100%;
+    aspect-ratio: 1;
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 12px;
+
+    .recommend-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+
+  .recommend-info {
+    .recommend-name {
+      font-size: 14px;
+      font-weight: 500;
+      color: @text-dark;
+      margin: 0 0 8px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .recommend-price {
+      font-size: 16px;
+      font-weight: 700;
+      color: @primary-blue;
     }
   }
 }
 
-.comment-content {
-  margin-top: 8px;
-  color: #484848;
-  font-size: 14px;
-  line-height: 22px;
-  padding-bottom: 16px;
-  border-bottom: 1px dashed #cedce4;
-  margin-left: 52px;
-  overflow: hidden;
-  word-break: break-word;
-}
+/* ==================== 响应式 ==================== */
+@media (max-width: 768px) {
+  .detail-content {
+    width: 100%;
+    padding: 16px 12px 40px;
+  }
 
-.infinite-loading-container {
-  clear: both;
-  text-align: center;
-}
+  .glass-product-card {
+    flex-direction: column;
+    padding: 20px;
+    margin-top: 70px;
 
-.a-price-symbol {
-  top: -0.5em;
-  font-size: 12px;
-}
-.a-price {
-  color: #0F1111;
-  font-size:21px;
+    .product-image-section {
+      flex: none;
+
+      .main-image-wrapper .main-image {
+        height: 280px;
+      }
+    }
+  }
+
+  .recommend-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 </style>
