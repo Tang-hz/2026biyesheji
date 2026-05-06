@@ -61,24 +61,24 @@ public class ThingServiceImpl extends ServiceImpl<ThingMapper, Thing> implements
             queryWrapper.eq(true, "classification_id", c);
         }
 
-        List<Thing> things = mapper.selectList(queryWrapper);
-
-        // tag筛选
+        // tag筛选 - 改为 SQL 子查询
         if (StringUtils.isNotBlank(tag)) {
-            List<Thing> tThings = new ArrayList<>();
-            QueryWrapper<ThingTag> thingTagQueryWrapper = new QueryWrapper<>();
-            thingTagQueryWrapper.eq("tag_id", tag);
-            List<ThingTag> thingTagList = thingTagMapper.selectList(thingTagQueryWrapper);
-            for (Thing thing : things) {
-                for (ThingTag thingTag : thingTagList) {
-                    if (thing.getId().equals(thingTag.getThingId())) {
-                        tThings.add(thing);
-                    }
-                }
+            // 先查匹配 tag 的 thing_id
+            QueryWrapper<ThingTag> tagQ = new QueryWrapper<>();
+            tagQ.eq("tag_id", tag);
+            List<Long> matchedThingIds = thingTagMapper.selectList(tagQ).stream()
+                .map(ThingTag::getThingId)
+                .collect(Collectors.toList());
+
+            if (!matchedThingIds.isEmpty()) {
+                queryWrapper.in("id", matchedThingIds);
+            } else {
+                // 没有匹配的 tag 返回空列表
+                queryWrapper.eq("id", -1L);
             }
-            things.clear();
-            things.addAll(tThings);
         }
+
+        List<Thing> things = mapper.selectList(queryWrapper);
 
         fillThingTags(things);
         return things;
