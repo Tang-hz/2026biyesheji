@@ -1,5 +1,10 @@
 server.port: 9100
 server.servlet.context-path: /api
+server.tomcat:
+  threads:
+    max: 500
+    min-spare: 20
+  max-connections: 10000
 
 BASE_LOCATION: D:\毕业设计\java_shop-master\java_shop-master
 DB_NAME: java_shop
@@ -17,9 +22,9 @@ spring:
       database: 0
       lettuce:
         pool:
-          max-active: 8
-          max-idle: 8
-          min-idle: 0
+          max-active: 100
+          max-idle: 50
+          min-idle: 10
 
   datasource:
     username: root
@@ -32,7 +37,7 @@ spring:
       # 连接池的配置信息
       initial-size: 5
       min-idle: 5
-      maxActive: 20
+      maxActive: 300
       # 配置获取连接等待超时的时间
       maxWait: 60000
       # 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒
