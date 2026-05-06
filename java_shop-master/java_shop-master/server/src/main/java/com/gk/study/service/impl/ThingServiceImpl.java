@@ -177,16 +177,22 @@ public class ThingServiceImpl extends ServiceImpl<ThingMapper, Thing> implements
     }
 
     private void fillThingTags(List<Thing> things) {
-        if (things == null) {
+        if (things == null || things.isEmpty()) {
             return;
         }
-        for (Thing thing : things) {
-            QueryWrapper<ThingTag> thingTagQueryWrapper = new QueryWrapper<>();
-            thingTagQueryWrapper.lambda().eq(ThingTag::getThingId, thing.getId());
-            List<ThingTag> thingTags = thingTagMapper.selectList(thingTagQueryWrapper);
-            List<Long> tags = thingTags.stream().map(ThingTag::getTagId).collect(Collectors.toList());
-            thing.setTags(tags);
-        }
+        List<Long> thingIds = things.stream().map(Thing::getId).collect(Collectors.toList());
+
+        // 一次 IN 查询拿所有关联
+        QueryWrapper<ThingTag> q = new QueryWrapper<>();
+        q.in("thing_id", thingIds);
+        List<ThingTag> allLinks = thingTagMapper.selectList(q);
+
+        // 按 thing_id 分组
+        Map<Long, List<Long>> tagMap = allLinks.stream()
+            .collect(Collectors.groupingBy(ThingTag::getThingId,
+                Collectors.mapping(ThingTag::getTagId, Collectors.toList())));
+
+        things.forEach(t -> t.setTags(tagMap.getOrDefault(t.getId(), List.of())));
     }
 
     @Override
