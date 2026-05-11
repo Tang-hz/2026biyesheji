@@ -22,7 +22,7 @@ import java.time.Duration;
 
 /**
  * 统一装配：按 {@link AiProperties#getProvider()} 选择阿里百炼（OpenAI 兼容），
- * 统一使用 RAG + 工具的 {@link RagAnswerAi} 服务。
+ * 统一使用 RAG + 工具的 {@link  } 服务。
  */
 @Configuration
 @EnableConfigurationProperties(AiProperties.class)

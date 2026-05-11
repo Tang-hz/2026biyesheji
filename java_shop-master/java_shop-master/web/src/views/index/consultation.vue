@@ -94,41 +94,25 @@ import { userWishListApi } from '/@/api/thingWish';
 import { detailApi } from '/@/api/user';
 import AvatarIcon from '/@/assets/images/avatar.jpg';
 
-// ========== JSON 块解析 ==========
+// 渲染消息文本 - AI 纯文本输出，美化换行和格式
+const renderMessage = (text: string, role: 'user' | 'ai'): string => {
+  if (!text) return '';
 
-// JSON 块缓冲：当检测到 JSON_START 时，进入 buffer 模式直到 JSON_END
-const jsonBuffer = ref('');
+  // AI 消息：纯文本展示，美化换行
+  if (role === 'ai') {
+    // 自动转换换行为 <br>，保持纯文本格式
+    let formatted = text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      // 换行符转换为 <br>
+      .replace(/\n/g, '<br>');
 
-// 检测 JSON 块边界，返回 { text, jsonBlock }
-const detectJsonBlock = (chunk: string): { text: string; jsonBlock: string | null } => {
-  if (jsonBuffer.value) {
-    jsonBuffer.value += chunk;
-    const jsonEndIdx = jsonBuffer.value.indexOf('___JSON_END___');
-    if (jsonEndIdx !== -1) {
-      const jsonContent = jsonBuffer.value.substring(0, jsonEndIdx);
-      jsonBuffer.value = '';
-      return { text: '', jsonBlock: jsonContent };
-    }
-    return { text: '', jsonBlock: null };
+    return `<span class="ai-text">${formatted}</span>`;
   }
 
-  const jsonStartIdx = chunk.indexOf('___JSON_START___');
-  if (jsonStartIdx !== -1) {
-    const beforeJson = chunk.substring(0, jsonStartIdx);
-    const afterStart = chunk.substring(jsonStartIdx + '___JSON_START___'.length);
-    const jsonEndIdx = afterStart.indexOf('___JSON_END___');
-    if (jsonEndIdx !== -1) {
-      const jsonContent = afterStart.substring(0, jsonEndIdx);
-      const afterJson = afterStart.substring(jsonEndIdx + '___JSON_END___'.length);
-      if (afterJson) jsonBuffer.value = afterJson;
-      return { text: beforeJson, jsonBlock: jsonContent };
-    } else {
-      jsonBuffer.value = afterStart;
-      return { text: beforeJson, jsonBlock: null };
-    }
-  }
-
-  return { text: chunk, jsonBlock: null };
+  // 用户消息直接返回
+  return escapeHtml(text);
 };
 
 // HTML 实体转义
@@ -140,36 +124,6 @@ const escapeHtml = (str: string): string => {
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#039;');
 };
-
-// 解析 JSON 表格为 HTML
-const parseTableJson = (jsonStr: string): string => {
-  try {
-    const data = JSON.parse(jsonStr);
-    if (data.type !== 'table') return '';
-    const { title, columns, rows } = data;
-    const titleHtml = title ? `<div class="ai-table-title">${escapeHtml(title)}</div>` : '';
-    const headerCells = (columns ?? []).map(col => `<th>${escapeHtml(col)}</th>`).join('');
-    const bodyRows = (rows ?? []).map((row) => {
-      const cells = row.map(cell => `<td>${escapeHtml(cell)}</td>`).join('');
-      return `<tr>${cells}</tr>`;
-    }).join('');
-    return `<div class="ai-table">${titleHtml}<table><thead><tr>${headerCells}</tr></thead><tbody>${bodyRows}</tbody></table></div>`;
-  } catch {
-    return '';
-  }
-};
-
-// 渲染消息文本
-const renderMessage = (text: string, role: 'user' | 'ai'): string => {
-  if (!text) return '';
-  if (role === 'user') {
-    return escapeHtml(text);
-  }
-  // AI 消息直接输出（JSON 块已在 SSE 处理时转为 HTML 表格）
-  return text;
-};
-
-// ========== 组件逻辑 ==========
 
 type ChatRole = 'user' | 'ai';
 type ChatStatus = 'thinking' | 'speaking' | 'done';
@@ -187,6 +141,7 @@ const userStore = useUserStore();
 const historyRef = ref<HTMLDivElement | null>(null);
 const inputText = ref('');
 
+// 左侧用户卡片数据：当前先做 UI 结构，统计值从业务接口接入后再替换。
 const userName = ref<string>(userStore.user_name || 'tls');
 const avatarText = ref<string>((userName.value || 'tls').slice(0, 1));
 const activeDays = ref<number>(123);
@@ -227,6 +182,7 @@ const chatMessages = ref<ChatMessage[]>([
 const formatTime = (d: Date) => d.toLocaleTimeString().slice(0, 5);
 
 const go = (name: string) => {
+  // 用户中心页面在 root.ts 的子路由里，直接按 name 跳转即可。
   router.push({ name });
 };
 
@@ -274,6 +230,7 @@ const handleSend = () => {
   inputText.value = '';
   scrollToBottom();
 
+  // SSE：RAG + LangChain4j 多轮记忆（userId 与后端会话隔离；未登录用 guest）
   const aiMsgId = Date.now() + 1;
   chatMessages.value.push({
     id: aiMsgId,
@@ -292,16 +249,10 @@ const handleSend = () => {
   const es = new EventSource(url);
   es.onmessage = (evt) => {
     const chunk = evt.data ?? '';
-    const { text: textChunk, jsonBlock } = detectJsonBlock(chunk);
     const msg = chatMessages.value.find((m) => m.id === aiMsgId);
     if (msg) {
       if (msg.status === 'thinking') msg.status = 'speaking';
-      if (textChunk) {
-        msg.text += textChunk;
-      }
-      if (jsonBlock) {
-        msg.text += parseTableJson(jsonBlock);
-      }
+      msg.text += chunk;
     }
     scrollToBottom();
   };
@@ -529,78 +480,10 @@ const handleSend = () => {
   white-space: pre-wrap;
   word-break: break-word;
 
-  :deep(.ai-table) {
-    margin: 12px 0;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-    border: 1px solid #e8ecf0;
-  }
-  :deep(.ai-table-title) {
-    background: linear-gradient(135deg, #4684e2 0%, #5a9aed 100%);
-    color: #fff;
-    font-weight: 600;
-    padding: 10px 16px;
-    font-size: 14px;
-    border-radius: 8px 8px 0 0;
-  }
-  :deep(.ai-table table) {
-    width: 100%;
-    border-collapse: collapse;
-  }
-  :deep(.ai-table th) {
-    background: #f0f5ff;
-    color: #152844;
-    font-weight: 600;
-    padding: 10px 16px;
-    text-align: left;
-    border-bottom: 1px solid #e8ecf0;
-  }
-  :deep(.ai-table td) {
-    padding: 10px 16px;
-    border-bottom: 1px solid #f0f0f0;
-    color: #333;
-  }
-  :deep(.ai-table tr:last-child td) {
-    border-bottom: none;
-  }
-  :deep(.ai-table tr:hover td) {
-    background: #f8faff;
-  }
-  :deep(.ai-table tr:nth-child(even) td) {
-    background: #fafcff;
-  }
-  :deep(ul), :deep(ol) {
-    margin: 8px 0;
-    padding-left: 20px;
-  }
-  :deep(li) {
-    margin: 4px 0;
-  }
-  :deep(code) {
-    background: #f0f0f0;
-    padding: 2px 6px;
-    border-radius: 4px;
-    font-family: monospace;
-    font-size: 13px;
-  }
-  :deep(pre) {
-    background: #f5f5f5;
-    padding: 12px 16px;
-    border-radius: 8px;
-    overflow-x: auto;
-    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.06);
-  }
-  :deep(pre) :deep(code) {
-    background: none;
-    padding: 0;
-  }
-  :deep(blockquote) {
-    border-left: 3px solid #4684e2;
-    margin: 10px 0;
-    padding: 8px 16px;
-    background: #f8fafc;
-    border-radius: 0 8px 8px 0;
+  // AI 纯文本美化
+  :deep(.ai-text) {
+    display: block;
+    line-height: 1.8;
   }
 }
 

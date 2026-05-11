@@ -6,7 +6,8 @@
 
 **Architecture:** 保持 SSE 流式传输不变，后端输出标准 Markdown，前端通过增强后的 marked 管道统一渲染为 HTML。移除三层自定义表格解析，依赖 marked 自身 gfm 表格渲染。
 
-**Tech Stack:** marked v9.1.6, highlight.js, marked-highlight, marked-task-lists, Vue 3
+**Tech Stack:** marked v9.1.6, highlight.js, marked-highlight, Vue 3
+**Note:** marked v9 + gfm:true 原生支持任务列表，无需额外 `marked-task-lists` 包
 
 ---
 
@@ -14,7 +15,7 @@
 
 | 文件 | 变更 |
 |------|------|
-| `web/package.json` | 添加 `highlight.js`、`marked-highlight`、`marked-task-lists` 依赖 |
+| `web/package.json` | 添加 `highlight.js`、`marked-highlight` 依赖（marked-task-lists 不存在于 npm，marked v9 原生支持任务列表） |
 | `web/src/views/index/consultation.vue` | 移除自定义表格解析；增强 marked 配置；添加链接卡片 + 图片点击 + 任务列表 + 代码高亮 |
 | `web/src/views/index/consultation.vue` (style) | 添加链接卡片、图片、任务列表、代码块的 CSS 样式 |
 
@@ -39,7 +40,6 @@
   "highlight.js": "^11.9.0",
   "marked": "^9.1.6",
   "marked-highlight": "^2.1.1",
-  "marked-task-lists": "^1.0.0",
   "pinia": "^2.0.28",
   "pinia-plugin-persistedstate": "^3.0.2",
   "qs": "^6.11.0",
@@ -111,7 +111,6 @@ marked.setOptions({
 import { marked } from 'marked';
 import { markedHighlight } from 'marked-highlight';
 import hljs from 'highlight.js';
-import { markedTaskLists } from 'marked-task-lists';
 
 // 配置 marked 代码高亮
 marked.use(markedHighlight({
@@ -122,10 +121,7 @@ marked.use(markedHighlight({
   }
 }));
 
-// 配置任务列表
-marked.use(markedTaskLists({ enabled: true }));
-
-// 配置 marked 基本选项
+// 配置 marked 基本选项（gfm:true 包含任务列表支持）
 marked.use({
   gfm: true,
   breaks: true,

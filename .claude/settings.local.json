@@ -2,7 +2,31 @@
   "permissions": {
     "allow": [
       "Bash(npm run *)",
-      "Bash(git push *)"
+      "Bash(git push *)",
+      "Bash(npx vercel *)",
+      "Bash(VERCEL_DEBUG=1 vercel link)",
+      "Bash(npm cache *)",
+      "Bash(rm -rf ~/AppData/Local/npm-cache/*)",
+      "Bash(npx --yes vercel@latest link)",
+      "Bash(vercel api *)",
+      "Bash(vercel help *)",
+      "Bash(vercel projects *)",
+      "Bash(vercel whoami *)",
+      "Bash(vercel git *)",
+      "Bash(vercel --yes)",
+      "Bash(dir \"D:\\\\毕业设计\\\\java_shop-master\\\\java_shop-master\\\\web\\\\src\")",
+      "mcp__web-browser__ww_browser_session",
+      "Bash(taskkill /F /IM java.exe)",
+      "Bash(taskkill /F /IM node.exe)",
+      "Bash(tasklist)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(mvn compile *)",
+      "Bash(git restore *)",
+      "Bash(netstat -ano)",
+      "Bash(mvn spring-boot:run)",
+      "Bash(java -jar target/biyesheji-0.0.1-SNAPSHOT.jar)",
+      "Bash(redis-cli -a 123456 ping)"
     ]
   }
 }

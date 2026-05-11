@@ -124,13 +124,14 @@ D：
 cd D:\毕业设计\java_shop-master\java_shop-master\web
 npm run dev
 
+第三步:
 浏览器访问即可
 
 ### 接口文档访问
 http://localhost:9100/api/swagger-ui/index.html
 
 
----
+------------------------------------------------------------------------------------------------------------------------
 
 ## 接口文档
 
@@ -607,9 +608,9 @@ GET /api/ai/customer-service/stream?message=怎么申请退款？&userId=1
     "yfddrs": 40,
     "qxdd": 2,
     "qxddrs": 2,
-    "popularThings": [...],
-    "popularClassification": [...],
-    "visitList": [...]
+    "popularThings": [  ],
+    "popularClassification": [  ],
+    "visitList": [  ]
   }
 }
 ```
