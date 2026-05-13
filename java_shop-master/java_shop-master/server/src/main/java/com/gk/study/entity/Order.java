@@ -39,6 +39,8 @@ public class Order implements Serializable {
     public String remark;
     @TableField("total_price")
     public BigDecimal totalPrice; // 订单总金额（含折扣）
+    @TableField("trade_no")
+    public String tradeNo; // 支付宝交易号
 
     @TableField(exist = false)
     public String username; // 用户名

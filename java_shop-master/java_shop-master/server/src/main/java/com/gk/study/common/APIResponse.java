@@ -38,7 +38,7 @@ public class APIResponse<T> implements Serializable {
 
     public APIResponse(ResponeCode responseCode, String msg, T data) {
         this(responseCode);
-        this.trace = msg;
+        this.msg = msg;
         this.data = data;
     }
 

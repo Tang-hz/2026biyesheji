@@ -40,7 +40,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
 
     @Override
     @Transactional
-    public void createOrder(Order order, List<Order.ThingItem> items) {
+    public String createOrder(Order order, List<Order.ThingItem> items) {
 
         // 如果是批量下单（items 不为空）
         if (items != null && !items.isEmpty()) {
@@ -107,35 +107,24 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
                 subOrder.setReceiverAddress(order.getReceiverAddress());
                 subOrder.setOrderNumber(sharedOrderNumber);
                 subOrder.setOrderTime(sharedOrderTime);
-                subOrder.setStatus("2"); // 已支付
+                subOrder.setStatus("1"); // 待支付
                 subOrder.setTotalPrice(finalPrice);
 
                 mapper.insert(subOrder);
 
-                // 订单完成后处理积分
-                int earnedPoints = finalPrice.intValue();
-                if (earnedPoints > 0) {
-                    pointsService.earnPoints(userId, earnedPoints, PointsRule.TYPE_ORDER,
-                            subOrder.getId(), "购物获得积分");
-                }
-                if (itemRedeemPoints > 0) {
-                    pointsService.deductPoints(userId, itemRedeemPoints, "订单抵扣");
-                }
-
                 totalAmount = totalAmount.add(finalPrice);
             }
 
-            // 更新用户累计消费金额并检查会员升级（按实际支付总额）
-            memberService.checkAndUpgrade(userId, totalAmount);
+            return sharedOrderNumber;
 
         } else {
             // 单商品下单（原逻辑保持兼容）
-            createSingleOrder(order);
+            return createSingleOrder(order);
         }
     }
 
     // 单商品下单（原逻辑抽取）
-    private void createSingleOrder(Order order) {
+    private String createSingleOrder(Order order) {
         Thing thing = thingMapper.selectById(order.getThingId());
         if (thing == null) throw new RuntimeException("商品不存在");
 
@@ -157,20 +146,11 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
 
         order.setOrderTime(java.time.LocalDateTime.now());
         order.setOrderNumber(String.valueOf(System.currentTimeMillis()));
-        order.setStatus("2");
+        order.setStatus("1"); // 待支付
         order.setTotalPrice(finalPrice);
 
         mapper.insert(order);
-
-        int earnedPoints = finalPrice.intValue();
-        if (earnedPoints > 0) {
-            pointsService.earnPoints(userId, earnedPoints, PointsRule.TYPE_ORDER,
-                    order.getId(), "购物获得积分");
-        }
-        if (usedPoints > 0) {
-            pointsService.deductPoints(userId, usedPoints, "订单抵扣");
-        }
-        memberService.checkAndUpgrade(userId, finalPrice);
+        return order.getOrderNumber();
     }
 
     @Override
@@ -186,5 +166,10 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
     @Override
     public List<Order> getUserOrderList(String userId, String status) {
         return mapper.getUserOrderList(userId, status);
+    }
+
+    @Override
+    public List<Order> getOrderListByOrderNumber(String orderNumber) {
+        return mapper.getListByOrderNumber(orderNumber);
     }
 }

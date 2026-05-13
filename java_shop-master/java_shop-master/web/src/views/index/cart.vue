@@ -460,11 +460,12 @@ const handleJiesuan = async () => {
       formData.append('redeemPoints', String(redeemPointsInput.value));
     }
 
-    await createApi(formData);
+    const res = await createApi(formData);
     await clearCartApi({ userId: String(userId) });
     await cartStore.refreshCount();
-    message.success('请支付订单');
-    router.push({ name: 'pay', query: { amount: finalPayment.value } });
+    message.success('订单创建成功，请支付');
+    const orderNumber = res.data?.orderNumber || Date.now().toString();
+    router.push({ name: 'pay', query: { amount: finalPayment.value, orderNumber: orderNumber } });
   } catch (e: any) {
     message.error(e.msg || e.message || '下单失败');
   }

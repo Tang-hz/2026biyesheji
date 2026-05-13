@@ -34,68 +34,47 @@ spring:
     type: com.alibaba.druid.pool.DruidDataSource
 
     druid:
-      # 连接池的配置信息
       initial-size: 5
       min-idle: 5
       maxActive: 300
-      # 配置获取连接等待超时的时间
       maxWait: 60000
-      # 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒
       timeBetweenEvictionRunsMillis: 60000
-      # 配置一个连接在池中最小生存的时间，单位是毫秒
       minEvictableIdleTimeMillis: 300000
       validationQuery: SELECT 1
       testWhileIdle: true
       testOnBorrow: false
       testOnReturn: false
-      # 打开PSCache，并且指定每个连接上PSCache的大小
       poolPreparedStatements: true
       maxPoolPreparedStatementPerConnectionSize: 20
-      # 配置监控统计拦截的filters，去掉后监控界面sql无法统计，'wall'用于防火墙
       filters: stat,slf4j
-      # 通过connectProperties属性来打开mergeSql功能；慢SQL记录
       connectionProperties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=5000
-      # 配置DruidStatFilter
       web-stat-filter:
         enabled: true
         url-pattern: "/*"
         exclusions: "*.js,*.gif,*.jpg,*.bmp,*.png,*.css,*.ico,/druid/*"
-      # 配置DruidStatViewServlet
       stat-view-servlet:
-        # IP白名单(没有配置或者为空，则允许所有访问)
         allow: 127.0.0.1
-        # IP黑名单 (存在共同时，deny优先于allow)
         deny: 192.168.1.73
-        # 禁用HTML页面上的“Reset All”功能
         reset-enable: false
-        # druid登录的账户名
         login-username: admin
-        # druid登录的密码
         login-password: 123
-        # 不要写2个*号！要1个！
         url-pattern: "/druid/*"
-        #这里配true才能访问监控页面！
         enabled: true
 
   servlet:
     multipart:
-      max-request-size: 10MB  # 上传文件总的最大值 默认10MB
-      max-file-size: 1MB #单个文件最大值 默认1MB
-      location: ${BASE_LOCATION}\server\upload\tmp # 临时上传目录
+      max-request-size: 10MB
+      max-file-size: 1MB
+      location: ${BASE_LOCATION}\server\upload\tmp
       enabled: true
 
-
-
-  # 静态资源路径
   mvc:
-    static-path-pattern: /staticfiles/**  # 别名
+    static-path-pattern: /staticfiles/**
     async:
       request-timeout: 30000
   web:
     resources:
-#      static-locations: classpath:/static
       static-locations: file:${BASE_LOCATION}\server\upload
-
 
 File:
   uploadPath: ${BASE_LOCATION}\server\upload
@@ -103,7 +82,6 @@ File:
 mybatis:
   configuration:
     map-underscore-to-camel-case: true
-    # 使用 MyBatis-Plus 的 Spring Boot 类型处理器包，自动处理 LocalDateTime 等类型
     type-handlers-package: com.baomidou.mybatisplus.extension.handlers
 
 logging:
@@ -113,12 +91,8 @@ logging:
     org.apache: error
     com.gk.study: debug
 
-
 ai:
-  # 提供方： bailian（阿里百炼 ）
   provider: bailian
-
-  # 阿里百炼（OpenAI 兼容端点）
   bailian:
     base-url: https://dashscope.aliyuncs.com/compatible-mode/v1
     api-key: ${BAILIAN_API_KEY}
@@ -130,31 +104,23 @@ ai:
     memory:
       max-messages: 30
 
-# AI 客服对话在 Redis 中的 key 前缀（与 spring.data.redis 使用同一连接）
 app:
   redis:
     chat-memory:
       key-prefix: "ai:chat:memory:"
 
 rag:
-  # RAG 向量库：LangChain4j Redis 实现需 Redis Stack（RediSearch + RedisJSON）。普通 Redis 无 FT.* 命令。
-  # false=内存向量（默认，可启动）；true=向量存 Redis（需先安装 Stack 并设好密码等）。
   redis:
     stack-enabled: false
     index-name: java-shop-rag-index
     key-prefix: "rag:embedding:"
-    # 须与当前 Embedding 模型维度一致（百炼 text-embedding-v3 默认 1024）
     embedding-dimension: 1024
-  # 知识库目录（src/main/resources/Rag/Knowledge）
   knowledge-pattern: classpath*:Rag/Knowledge/*.md
-  # 文本分块参数：块越大语义越完整，块越小检索越精确
   max-segment-size: 600
   max-overlap-size: 80
-  # 检索参数：返回前 topK 个片段 + 最小相似度阈值min-score
   top-k: 6
   min-score: 0.5
 
-# ====================== Knife4j / SpringDoc 接口文档（须为根级，勿放在 rag 下）======================
 knife4j:
   enable: true
   setting:
@@ -170,3 +136,11 @@ springdoc:
     path: /v3/api-docs
   swagger-ui:
     path: /swagger-ui.html
+
+alipay:
+  app-id: 9021000163661482
+  gateway: https://openapi-sandbox.dl.alipaydev.com/gateway.do
+  private-key: MIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQCRJL787eNOXuOBZ0mcadPakXEBKDzTjbVDAR9W0JFuAYwwPoSx0j0JgjRN47KjfJfJjlYjNwqV1UuKlTGN3FVN3cweWow1erRc0K1voP1A+an7I0e5Ef3qoGLIEmNube/APpZeHJ0bT4UvCBRuzrvf1hrgxfdZOmaYqxMgdAi68CGiBI3FgyY6c60mxQildiqKrGkJmhxuWv+W3Zwuuf9NMRrHDCWU6S5X3xpgjgdh8epX4Ym2jyoM76HX74gygJdvDE7Zfs6nnsOe+vx1tqwdAQk2xd1hRyE5zxOZIbXPasUwznZ6fpbUKrtLow7HOYxUM7PftNNV+LWAWiBk/1l1AgMBAAECggEAYbI7QCKb2vex6Ttt5/Ov3zIAv4enEbsT5EsQHi57hXFTPHIIfW0HGqxiqn72kmbeAJRnVILLBDmzBFASL+u8G5KMv22xbJnwZ30rELVrYl3q1ZlUwLTklhZpB0ShWwZy15MJQcW+1lA7VIH6xu8utKb4Jo36RTwzLNYSJMkVy0WqrSNYF9ifr8C8JeUZGtGWHyZWF7LXfyaLYCr7K4hOQX7RWuKP1eciEDdYMLn2kSWJnQCscIaIAYvLbphT/U0WfwqLe75FY7lnbk6msiG6UPgDylKosW/6M3Id7tqiQFcBTG1aG2M4fjOvdYMkWLT8iLtXIRijEqYbqXq3vM8ETQKBgQDhG8faz4jOAey0pCGW18/l3Ln7x0SDJpY25yKIWhkeqSJaoP28CnwimA79bSMryolfGOMGZK1bcMMDPwcU4vD8Hkm/V6v+jviX6Es25EpDILkwI4WO+EZu/m4IGJw/b02LHubyJgNV8JQjFkEroRNf3tM1RURoOnum+/+iIEnTdwKBgQClD71nH1zbo8B/zGiGHAZIqvkZYlb/B33ImGNOhZ6t5eylRQRrr2wKyK2QVkZ+I/97l2xBlcBmezxtgssJOSR3vxX8RrrqCXaPTK73D0bWSr6u3bIpJBW8NgzBhCahY7XxM5O26DauwRS4G6Wrn8cwpPD6xIae6V1SlIrcv549cwKBgEDexpsxz1S+jT4JRny3uHufPiFmbUH2Lrenp/XvMOn7B6FiX3x+8QLvGvLBLq+B8FBtVY8UGDkPp8MZuKq2M4gUGmB/nVsATHdKQ9KPuy7ZEUTkF6r5tSJrQ74liXFmW8xJnXgOqEttxuLNmP4/rtuj1O23Bl2a7ONUH3jTITNFAoGAKU68Fp+ZrHnZheIQ0mcXB36KIlki7mXgi5/fUlpMMLbWtzGDfrOC9VvtW67Lq2u01yg49lzUrpDuuXU+/IrpXnJavSyyQDmoCwqkyr1u+9fuynI+0N7v9Y8NOCyrQj5i3P8MW3zXmnpFhiGdH0s4HStaB1fBXOmH6k+0RLRLlJMCgYAPARaD7hrU69MP/pYUAf6L5xTg67BmXrni1KnQO04ByOFO/1Anos1wpq1Bf6yzi0ra5aZnKd/kRzIVNrrEvmFqTFogC8fjOwlcaZflZJhtp2IEVqz+sP74PBKwYXD/yO8gf6uC3viyD/hrPnTD1eZUtxFHxf3j0n9M/KfbtJHbeA==
+  alipay-public-key: MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAlG9+LW2dBBdHZStBkWzzxhHcNePrfnL9LJnH54ZfKAfw9mgDIRxr5MMvGqCXQOyfqthZ5/gQJw3k4dVCMQvKQtnUc4sDFiZ+HrJ4dzhTfnQhszh7Sh4DTZdQaWmzcLYtHsyaZtfzUUCWQI7GJNpxrEnGyIkUljzz3LVtA+BtGOYUcoP6YtbaFPJtbOjqfF6n6JhlZt/5Y/YrcJYvYyECOu0IDAIbKyYsUtQlJO+8NplHgV6EMTjD9hrmk4AbNRY3goQTN+dC2gxpa9aw5ukTrxHbQsWmGlzkHblfoBz+4CkrutvpMx46JFaWTm0ZeWbOVB/YGWtK3ZrnS/g/rJoxyQIDAQAB
+  notify-url: http://127.0.0.1:9100/api/pay/alipay/notify
+  return-url: http://localhost:3000/pay/result

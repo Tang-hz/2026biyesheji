@@ -26,7 +26,10 @@
       "Bash(netstat -ano)",
       "Bash(mvn spring-boot:run)",
       "Bash(java -jar target/biyesheji-0.0.1-SNAPSHOT.jar)",
-      "Bash(redis-cli -a 123456 ping)"
+      "Bash(redis-cli -a 123456 ping)",
+      "Read(//c/Users/Administrator/.claude/plugins/**)",
+      "Read(//c/Users/Administrator/.claude/skills/**)",
+      "Read(//c/Users/Administrator/.claude/**)"
     ]
   }
 }

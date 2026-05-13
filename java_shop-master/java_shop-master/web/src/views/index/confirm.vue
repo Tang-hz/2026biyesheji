@@ -379,9 +379,10 @@ const handleJiesuan = () => {
   if (redeemPointsInput.value > 0) {
     formData.append('redeemPoints', String(redeemPointsInput.value))
   }
-  createApi(formData).then(() => {
-    message.success('请支付订单')
-    router.push({'name': 'pay', query: {'amount': finalPayment.value}})
+  createApi(formData).then((res) => {
+    message.success('订单创建成功，请支付')
+    const orderNumber = res.data?.orderNumber || Date.now().toString()
+    router.push({'name': 'pay', query: {'amount': finalPayment.value, 'orderNumber': orderNumber}})
   }).catch(err => {
     message.error(err.msg || '下单失败')
   })

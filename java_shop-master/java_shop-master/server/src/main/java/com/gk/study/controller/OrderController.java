@@ -20,7 +20,9 @@ import org.springframework.web.bind.annotation.RestController;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 订单管理控制器
@@ -88,8 +90,10 @@ public class OrderController {
             items = mapper.readValue(itemsJson,
                 mapper.getTypeFactory().constructCollectionType(List.class, Order.ThingItem.class));
         }
-        service.createOrder(order, items);
-        return new APIResponse(ResponeCode.SUCCESS, "创建成功");
+        String orderNumber = service.createOrder(order, items);
+        Map<String, Object> data = new HashMap<>();
+        data.put("orderNumber", orderNumber);
+        return new APIResponse(ResponeCode.SUCCESS, "创建成功", data);
     }
 
     /**

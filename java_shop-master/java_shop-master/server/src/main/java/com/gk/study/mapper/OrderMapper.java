@@ -12,4 +12,6 @@ public interface OrderMapper extends BaseMapper<Order> {
     List<Order> getList();
 
     List<Order> getUserOrderList(String userId, String status);
+
+    List<Order> getListByOrderNumber(String orderNumber);
 }

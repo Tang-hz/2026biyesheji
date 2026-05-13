@@ -3,46 +3,56 @@
     <Header />
 
     <div class="pay-content">
-      <!-- 成功图标 -->
-      <div class="success-icon-wrapper">
-        <div class="success-circle">
-          <span class="check-icon">✓</span>
+      <!-- 支付图标 -->
+      <div class="pay-icon-wrapper">
+        <div class="pay-circle" :class="{'pay-success': payStatus === 'success'}">
+          <span v-if="payStatus === 'pending'" class="pay-icon">💳</span>
+          <span v-else-if="payStatus === 'paying'" class="loading-icon">⏳</span>
+          <span v-else class="check-icon">✓</span>
         </div>
-        <div class="success-glow"></div>
+        <div class="pay-glow" :class="{'glow-success': payStatus === 'success'}"></div>
       </div>
 
       <!-- 标题 -->
-      <h1 class="page-title">订单提交成功</h1>
-      <p class="page-subtitle">感谢您的购买，订单已成功提交</p>
+      <h1 class="page-title" v-if="payStatus === 'pending'">等待支付</h1>
+      <h1 class="page-title" v-else-if="payStatus === 'paying'">支付中...</h1>
+      <h1 class="page-title" v-else>支付成功</h1>
+
+      <p class="page-subtitle" v-if="payStatus === 'pending'">请完成支付操作</p>
+      <p class="page-subtitle" v-else-if="payStatus === 'paying'">正在确认支付结果，请稍候...</p>
+      <p class="page-subtitle" v-else>感谢您的购买</p>
 
       <!-- 订单金额卡片 -->
       <div class="order-card">
         <div class="order-info">
-          <span class="order-label">实付金额</span>
+          <span class="order-label">支付金额</span>
           <span class="order-amount">¥{{ amount }}</span>
         </div>
         <div class="order-divider"></div>
-        <div class="order-time">
-          <span class="time-label">下单时间</span>
-          <span class="time-value">{{ currentTime }}</span>
+        <div class="order-detail">
+          <span class="detail-label">订单编号</span>
+          <span class="detail-value">{{ orderNumber }}</span>
         </div>
       </div>
 
-      <!-- 温馨提示 -->
-      <div class="tips-card">
-        <h3 class="tips-title">
-          <span class="tips-icon">💡</span>
-          温馨提示
-        </h3>
-        <ul class="tips-list">
-          <li>请在规定时间内完成支付，逾期订单将自动取消</li>
-          <li>支付完成后，可在"我的订单"中查看订单状态</li>
-          <li>如有疑问，请联系客服获取帮助</li>
-        </ul>
+      <!-- 支付操作区 -->
+      <div class="pay-action" v-if="payStatus === 'pending'">
+        <button class="btn-alipay" @click="handlePay">
+          <span class="btn-icon">💰</span>
+          打开支付宝支付
+        </button>
+        <p class="pay-tip">点击按钮后将打开支付宝收银台页面</p>
       </div>
 
-      <!-- 操作按钮 -->
-      <div class="action-buttons">
+      <!-- 支付中提示 -->
+      <div class="paying-tip" v-if="payStatus === 'paying'">
+        <div class="loading-spinner"></div>
+        <p>请在支付宝页面完成支付</p>
+        <p class="sub-tip">支付完成后会自动跳转</p>
+      </div>
+
+      <!-- 支付成功操作 -->
+      <div class="action-buttons" v-if="payStatus === 'success'">
         <button class="btn-view-order" @click="handleViewOrder">
           <span class="btn-icon">📋</span>
           查看订单
@@ -64,38 +74,85 @@
 
 <script setup>
 import Header from '/@/views/index/components/header.vue'
-import {message} from "ant-design-vue";
+import { message } from "ant-design-vue"
+import { createPayApi, queryPayStatusApi } from '/@/api/pay'
 
-const router = useRouter();
-const route = useRoute();
+const router = useRouter()
+const route = useRoute()
 
-let amount = ref()
-let currentTime = ref()
+const amount = ref('')
+const orderNumber = ref('')
+const payStatus = ref('pending') // pending, paying, success
+let pollTimer = null
 
 onMounted(() => {
   amount.value = route.query.amount
-  currentTime.value = formatDate(new Date().getTime(), 'YYYY-MM-DD HH:mm:ss')
+  orderNumber.value = route.query.orderNumber
+
+  if (!orderNumber.value) {
+    message.error('订单号不存在')
+    router.push({ name: 'index' })
+    return
+  }
 })
 
+onUnmounted(() => {
+  stopPolling()
+})
+
+const handlePay = async () => {
+  try {
+    const res = await createPayApi({ orderNumber: orderNumber.value })
+
+    if (res.data && res.data.form) {
+      // 在新窗口打开支付宝支付页面
+      const newWindow = window.open('', '_blank')
+      if (newWindow) {
+        newWindow.document.write(res.data.form)
+        newWindow.document.close()
+      } else {
+        message.warning('浏览器拦截了弹窗，请允许弹窗后重试')
+        return
+      }
+
+      // 开始轮询支付状态
+      payStatus.value = 'paying'
+      startPolling()
+    }
+  } catch (e) {
+    message.error('创建支付失败: ' + (e.msg || e.message || '未知错误'))
+  }
+}
+
+const startPolling = () => {
+  stopPolling()
+  pollTimer = setInterval(async () => {
+    try {
+      const res = await queryPayStatusApi({ orderNumber: orderNumber.value })
+      if (res.data && res.data.paid) {
+        payStatus.value = 'success'
+        stopPolling()
+        message.success('支付成功！')
+      }
+    } catch (e) {
+      console.error('查询支付状态失败', e)
+    }
+  }, 3000) // 每3秒查询一次
+}
+
+const stopPolling = () => {
+  if (pollTimer) {
+    clearInterval(pollTimer)
+    pollTimer = null
+  }
+}
+
 const handleViewOrder = () => {
-  router.push({name: 'orderView'})
+  router.push({ name: 'orderView' })
 }
 
 const handleBackHome = () => {
-  router.push({name: 'index'})
-}
-
-const formatDate = (time, format = 'YYYY-MM-DD HH:mm:ss') => {
-  const date = new Date(time)
-
-  const year = date.getFullYear(),
-      month = String(date.getMonth() + 1).padStart(2, '0'),
-      day = String(date.getDate()).padStart(2, '0'),
-      hour = String(date.getHours()).padStart(2, '0'),
-      min = String(date.getMinutes()).padStart(2, '0'),
-      sec = String(date.getSeconds()).padStart(2, '0')
-
-  return `${year}-${month}-${day} ${hour}:${min}:${sec}`
+  router.push({ name: 'index' })
 }
 </script>
 
@@ -104,6 +161,7 @@ const formatDate = (time, format = 'YYYY-MM-DD HH:mm:ss') => {
 @primary-blue: #3b82f6;
 @primary-blue-dark: #1d4ed8;
 @primary-blue-light: #60a5fa;
+@success-green: #10b981;
 @bg-gradient-start: #f0f4f8;
 @bg-gradient-end: #e2e8f0;
 @text-dark: #1e293b;
@@ -132,15 +190,15 @@ const formatDate = (time, format = 'YYYY-MM-DD HH:mm:ss') => {
   text-align: center;
 }
 
-/* ==================== 成功图标 ==================== */
-.success-icon-wrapper {
+/* ==================== 支付图标 ==================== */
+.pay-icon-wrapper {
   position: relative;
   width: 120px;
   height: 120px;
   margin: 0 auto 32px;
 }
 
-.success-circle {
+.pay-circle {
   width: 100px;
   height: 100px;
   background: linear-gradient(135deg, @primary-blue 0%, @primary-blue-dark 100%);
@@ -151,6 +209,21 @@ const formatDate = (time, format = 'YYYY-MM-DD HH:mm:ss') => {
   position: relative;
   z-index: 2;
   box-shadow: 0 8px 30px rgba(59, 130, 246, 0.4);
+  transition: all 0.3s ease;
+
+  &.pay-success {
+    background: linear-gradient(135deg, @success-green 0%, #059669 100%);
+    box-shadow: 0 8px 30px rgba(16, 185, 129, 0.4);
+  }
+
+  .pay-icon {
+    font-size: 48px;
+  }
+
+  .loading-icon {
+    font-size: 48px;
+    animation: spin 1s linear infinite;
+  }
 
   .check-icon {
     font-size: 48px;
@@ -159,7 +232,12 @@ const formatDate = (time, format = 'YYYY-MM-DD HH:mm:ss') => {
   }
 }
 
-.success-glow {
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.pay-glow {
   position: absolute;
   top: 50%;
   left: 50%;
@@ -170,6 +248,10 @@ const formatDate = (time, format = 'YYYY-MM-DD HH:mm:ss') => {
   border-radius: 50%;
   z-index: 1;
   animation: pulse 2s ease-in-out infinite;
+
+  &.glow-success {
+    background: radial-gradient(circle, rgba(16, 185, 129, 0.2) 0%, transparent 70%);
+  }
 }
 
 @keyframes pulse {
@@ -222,7 +304,7 @@ const formatDate = (time, format = 'YYYY-MM-DD HH:mm:ss') => {
   .order-amount {
     font-size: 36px;
     font-weight: 700;
-    color: @primary-blue;
+    color: #ff6600;
     letter-spacing: -1px;
   }
 }
@@ -233,61 +315,90 @@ const formatDate = (time, format = 'YYYY-MM-DD HH:mm:ss') => {
   margin: 20px 0;
 }
 
-.order-time {
+.order-detail {
   display: flex;
   justify-content: space-between;
   align-items: center;
 
-  .time-label {
+  .detail-label {
     font-size: 13px;
     color: @text-muted;
   }
 
-  .time-value {
+  .detail-value {
     font-size: 13px;
     color: @text-dark;
     font-weight: 500;
+    font-family: monospace;
   }
 }
 
-/* ==================== 提示卡片 ==================== */
-.tips-card {
-  background: rgba(59, 130, 246, 0.04);
-  border: 1px solid rgba(59, 130, 246, 0.1);
+/* ==================== 支付操作 ==================== */
+.pay-action {
+  margin-bottom: 24px;
+}
+
+.btn-alipay {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  height: 52px;
+  background: linear-gradient(135deg, #1677ff 0%, #0958d9 100%);
+  border: none;
   border-radius: @radius-md;
-  padding: 20px;
-  margin-bottom: 32px;
-  text-align: left;
+  font-size: 16px;
+  font-weight: 600;
+  color: white;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 15px rgba(22, 119, 255, 0.35);
 
-  .tips-title {
-    display: flex;
-    align-items: center;
-    gap: 8px;
+  .btn-icon {
+    font-size: 18px;
+  }
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(22, 119, 255, 0.45);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+.pay-tip {
+  font-size: 13px;
+  color: @text-muted;
+  margin-top: 12px;
+}
+
+/* ==================== 支付中提示 ==================== */
+.paying-tip {
+  margin-bottom: 24px;
+
+  p {
     font-size: 15px;
-    font-weight: 600;
     color: @text-dark;
-    margin: 0 0 12px;
-
-    .tips-icon {
-      font-size: 16px;
-    }
+    margin: 8px 0;
   }
 
-  .tips-list {
-    margin: 0;
-    padding-left: 20px;
-
-    li {
-      font-size: 13px;
-      color: @text-muted;
-      line-height: 1.8;
-      margin-bottom: 4px;
-
-      &:last-child {
-        margin-bottom: 0;
-      }
-    }
+  .sub-tip {
+    font-size: 13px;
+    color: @text-muted;
   }
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(59, 130, 246, 0.2);
+  border-top-color: @primary-blue;
+  border-radius: 50%;
+  margin: 0 auto 16px;
+  animation: spin 0.8s linear infinite;
 }
 
 /* ==================== 操作按钮 ==================== */
@@ -304,7 +415,7 @@ const formatDate = (time, format = 'YYYY-MM-DD HH:mm:ss') => {
   gap: 8px;
   width: 100%;
   height: 52px;
-  background: linear-gradient(135deg, @primary-blue 0%, @primary-blue-dark 100%);
+  background: linear-gradient(135deg, @success-green 0%, #059669 100%);
   border: none;
   border-radius: @radius-md;
   font-size: 16px;
@@ -312,7 +423,7 @@ const formatDate = (time, format = 'YYYY-MM-DD HH:mm:ss') => {
   color: white;
   cursor: pointer;
   transition: all 0.25s ease;
-  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.35);
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.35);
 
   .btn-icon {
     font-size: 18px;
@@ -320,7 +431,7 @@ const formatDate = (time, format = 'YYYY-MM-DD HH:mm:ss') => {
 
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(59, 130, 246, 0.45);
+    box-shadow: 0 8px 25px rgba(16, 185, 129, 0.45);
   }
 
   &:active {
@@ -380,22 +491,24 @@ const formatDate = (time, format = 'YYYY-MM-DD HH:mm:ss') => {
     padding: 30px 16px;
   }
 
-  .success-icon-wrapper {
+  .pay-icon-wrapper {
     width: 100px;
     height: 100px;
     margin-bottom: 24px;
   }
 
-  .success-circle {
+  .pay-circle {
     width: 80px;
     height: 80px;
 
+    .pay-icon,
+    .loading-icon,
     .check-icon {
       font-size: 40px;
     }
   }
 
-  .success-glow {
+  .pay-glow {
     width: 120px;
     height: 120px;
   }
